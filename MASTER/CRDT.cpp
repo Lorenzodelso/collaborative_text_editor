@@ -60,7 +60,8 @@ quint16 CRDT::retrieveStrategy(quint16 level) {
 }
 
 quint16 CRDT::generateIdBetween(quint16 id1, quint16 id2, quint16 strategy) {
-    if ((id2 - id1) < this->boundary) {
+    auto difference =id2-id1 > 0 ? id2-id1 : id1-id2;
+    if ((difference) < this->boundary) {
         id1 = id1 + 1;
     } else {
         if (strategy == MINUS_STRATEGY) {
@@ -72,7 +73,7 @@ quint16 CRDT::generateIdBetween(quint16 id1, quint16 id2, quint16 strategy) {
     }
     //return floor(random()%(id2-id1))+id1;
     QRandomGenerator* rand = new QRandomGenerator();
-    return quint16( rand->bounded(id1,id2) )+id1;
+    return quint16( rand->bounded(difference) )+id1;
 }
 
 
@@ -92,7 +93,7 @@ QVector<quint16> CRDT::generatePosBetween(QVector<quint16> pos1, QVector<quint16
     }else{
         id2 = base;
     }
-    auto difference = id2 - id1;
+    auto difference = id2 - id1 > 0 ? id2-id1 : id1-id2;
 
     if (difference > 1){
         quint16 newDigit = generateIdBetween(id1,id2,strategy);
