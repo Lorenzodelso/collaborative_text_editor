@@ -77,8 +77,8 @@ int main(int argc, char *argv[])
     ld->show();
 
     qint32 ris = a.exec();
-
     a.quit();
+
 
     return ris;
 }

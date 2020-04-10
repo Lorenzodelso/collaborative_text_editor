@@ -937,8 +937,8 @@ void TextEdit::enteringColorMode(){
         return;
     }
     auto colors = QColor::colorNames();
-    QTextCursor* colorCursor = new QTextCursor();
-    colorCursor->setPosition(0);
+    QTextCursor* colorCursor = new QTextCursor(textEdit->textCursor());
+    colorCursor->setPosition(QTextCursor::End);
 
     //Devo disconnettere e riconnettere il segnale per non far arrivare un segnale allo slot
     //che sto modificando il formato del testo
@@ -947,10 +947,11 @@ void TextEdit::enteringColorMode(){
 
     updateTreeWidget(colorWriting); //deve essere true per forza
     for (auto character:algoritmoCRDT->getListChar()){
-        QTextCharFormat format;
-        format.setForeground( QBrush( QColor(colors[character.getSiteId()]) ) );
-        colorCursor->mergeCharFormat(format);
-        colorCursor->movePosition(colorCursor->NextCharacter);
+        QTextCharFormat* format = new QTextCharFormat();
+        format->setForeground( QBrush( QColor(colors[character.getSiteId()]) ) );
+        colorCursor->movePosition(QTextCursor::PreviousCharacter,QTextCursor::KeepAnchor,1);
+        colorCursor->mergeCharFormat(*format);
+        //colorCursor->movePosition(colorCursor->NextCharacter);
     }
 
     //setto il colore del cursore corretto in base all'id del mio client
@@ -970,17 +971,15 @@ void TextEdit::quittingColorMode(){
         return;
     }
     auto colors = QColor::colorNames();
-    QTextCursor* colorCursor = new QTextCursor();
-    colorCursor->setPosition(0);
-
+    QTextCursor* colorCursor = new QTextCursor(textEdit->textCursor());
     QObject::disconnect(textEdit->document(),&QTextDocument::contentsChange,
             this, &TextEdit::CRDTInsertRemove );
     updateTreeWidget(colorWriting); //deve essere false per forza
     //caso in cui ci troviamo nella color mode e l'utente preme di nuovo il bottone per togliere la modalità
     //torniamo alla modalità in cui tutti i caratteri sono neri
-    colorCursor->movePosition(colorCursor->EndOfBlock,colorCursor->KeepAnchor);
     QTextCharFormat format;
     format.setForeground( QBrush( QColor("black") ) );
+    colorCursor->select(QTextCursor::Document);
     colorCursor->mergeCharFormat(format);
 
     //rimetto il colore del cursore a nero lasciando invariato il resto del formato
@@ -1011,8 +1010,8 @@ void TextEdit::pressedButtonTrigger(bool checked){
     colorWriting = checked;
     if (checked==true){ // solamente se entriamo nella color Mode
     //emetto segnale per inviare la richiesta al server di ricevere la lista con storico utenti
-        emit SigOpChiHaInseritoCosa();
-
+        //emit SigOpChiHaInseritoCosa();
+        enteringColorMode();
     }
     else{
         quittingColorMode();
