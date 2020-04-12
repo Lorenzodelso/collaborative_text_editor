@@ -9,6 +9,7 @@
 #include <QObject>
 #include "QUtente.h"
 #include "CRDT.h"
+#include <QTextCursor>
 //#include "WorkerSocket.h"
 
 class WorkerDoc : public QObject{
@@ -29,6 +30,7 @@ signals:
 
 public:
     WorkerDoc();
+    QMap<quint16,QTextCursor>* cursorMap = new QMap<quint16, QTextCursor>();
 
 public slots:
 

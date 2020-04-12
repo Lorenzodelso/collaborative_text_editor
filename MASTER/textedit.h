@@ -222,6 +222,7 @@ private slots:
     //slot che riceve segnale premuto bottone di Color Mode
     void pressedButtonTrigger(bool checked);
 
+
 private:
     void setupFileActions();
     void setupEditActions();
@@ -243,6 +244,9 @@ private:
     //entrata e uscita dalla color mode
     void enteringColorMode();
     void quittingColorMode();
+
+    //emissione del segnale con DocOperation per movimento cursore
+    void segnalaMovimentoCursore(QTextCursor cursor);
 
     QAction *actionSave;
     QAction *actionTextBold;
@@ -269,7 +273,7 @@ private:
     QString fileName;
     QTextEdit *textEdit;
     QTextCursor *cursor;
-    QMap<QString, QTextCursor> *cursorMap;
+    QMap<quint16, QTextCursor> *cursorMap;
     QTreeWidget *usersTree;
     QDockWidget *dockUsersTree;
 	

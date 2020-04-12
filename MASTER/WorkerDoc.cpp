@@ -101,18 +101,25 @@ void WorkerDoc::unClientHaChiusoIlDoc(){
 void WorkerDoc::opDoc(DocOperation docOp){
     //selezione dell'operazione da fare sul documento: per ora solo remote insert o delete
     //std::cout <<"Ricevuto segnale di operazione...\n"<<std::flush;
-    switch(docOp.type){
-        case remoteDelete:
-            this->crdt->remoteDelete(docOp.character);
-            break;
-        case remoteInsert:
-            this->crdt->remoteInsert(docOp.character);
-            break;
-    }
 
     // salvataggio su file del crdt ogni operazione che si effettua su di esso
     QDataStream outStream(this->openedFile);
-    outStream << *crdt;
+
+    switch(docOp.type){
+        case remoteDelete:
+            this->crdt->remoteDelete(docOp.character);
+            outStream << *crdt;
+            break;
+        case remoteInsert:
+            this->crdt->remoteInsert(docOp.character);
+            outStream << *crdt;
+            break;
+        case cursorMoved:
+            //Aggiorno la mappa dei cursori
+            QTextCursor* cursor = new QTextCursor();
+            cursor->setPosition(docOp.cursorPos,QTextCursor::MoveAnchor);
+            cursorMap->find(docOp.siteId).value() = *cursor;
+    }
 
     //std::cout <<"Invio segnale di esito operazione...\n"<<std::flush;
     emit SigEsitoOpDoc("success",docOp);

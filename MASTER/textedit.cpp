@@ -108,6 +108,7 @@ TextEdit::TextEdit(QWidget *parent)
     onlineUsers.append(*new QUser(15, "piero"));
     onlineUsers.append(*new QUser(12, "gianni"));
     offlineUsers.append(*new QUser(3, "laura"));
+
     updateTreeWidget(false);
 
     //connetto signal e slot che mi servono
@@ -122,7 +123,7 @@ TextEdit::TextEdit(QWidget *parent)
 #endif
     setWindowTitle(QCoreApplication::applicationName());
 
-    cursorMap = new QMap<QString, QTextCursor>();
+    cursorMap = new QMap<quint16, QTextCursor>();
     textEdit = new QTextEdit(this);
 
     connect(textEdit, &QTextEdit::currentCharFormatChanged,
@@ -636,6 +637,18 @@ void TextEdit::currentCharFormatChanged(const QTextCharFormat &format)
     colorChanged(format.foreground().color());
 }
 
+/*
+Funzione per creare una DocOperation che segnala il movimento del cursore
+Riceve come parametro il cursore ed emette un segnale con la DocOperation
+Nella DocOperation i parametri che non vengono utilizzati vengono settati a null
+*/
+
+void TextEdit::segnalaMovimentoCursore(QTextCursor cursor){
+    DocOperation* docOpCursore = new DocOperation(
+                cursorMoved,Char(),QTextCharFormat(),this->algoritmoCRDT->getSiteID(),cursor.position(),cursor.anchor() );
+    emit opDocRemota(*docOpCursore);
+}
+
 void TextEdit::cursorPositionChanged()
 {
     alignmentChanged(textEdit->alignment());
@@ -673,6 +686,9 @@ void TextEdit::cursorPositionChanged()
     } else {
         int headingLevel = textEdit->textCursor().blockFormat().headingLevel();
         comboStyle->setCurrentIndex(headingLevel ? headingLevel + 8 : 0);
+
+        //segnalo al WorkerSocketClient che c'è stato il movimento del cursore
+        segnalaMovimentoCursore(textEdit->textCursor());
     }
 }
 
@@ -916,6 +932,25 @@ void TextEdit::opDocRemota(DocOperation operation){
        }
       algoritmoCRDT->remoteFormatChange(operation.character);
       break;
+   case cursorMoved:
+       //Il QTextCursor si posiziona sempre in mezzo a due caratteri
+       //Supponiamo quindi che per gestire la viasualizzazione del cursore, il carattere '|' si posiziona sempre prima del cursore
+       // Esempio: testo di pro|(cursore)va
+
+       //Rimuovo carattere | dalla vecchia posizione
+       QTextCursor cursor = cursorMap->find(operation.siteId).value();
+       cursor.movePosition(QTextCursor::PreviousCharacter,QTextCursor::KeepAnchor,1);
+       cursor.removeSelectedText();
+
+       //Inserisco | nella nuova posizione col colore del client
+       auto colors = QColor::colorNames();
+       QTextCharFormat* formatoCursoreColore = new QTextCharFormat(cursor.charFormat());
+       formatoCursoreColore->setForeground(QBrush(QColor(colors[operation.siteId])));
+       cursor.setPosition(operation.cursorPos, QTextCursor::MoveAnchor);
+       cursor.insertText("|",*formatoCursoreColore);
+
+       //Aggiorno mappa siteId - cursore
+       cursorMap->find(operation.siteId).value() = cursor;
     }
 }
 

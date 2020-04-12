@@ -11,7 +11,8 @@
 enum typeList :quint16{
     remoteInsert = 0,
     remoteDelete = 1,
-    changedFormat = 2
+    changedFormat = 2,
+    cursorMoved = 3
 };
 
 class DocOperation
@@ -21,8 +22,13 @@ public:
     Char character;
     QTextCharFormat oldFormat; //serve per operazioni di UNDO
 
+    //Per operazioni su movimento cursore
+    quint16 siteId;
+    quint16 cursorPos;
+    quint16 cursorAnch;
+
     DocOperation();
-    DocOperation(quint16 type, Char ch, QTextCharFormat oldFormat);
+    DocOperation(quint16 type, Char ch, QTextCharFormat oldFormat,quint16 siteId, quint16 cursorPos, quint16 cursorAnch);
     void printOperation();
 
 };
