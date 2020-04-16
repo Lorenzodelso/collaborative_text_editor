@@ -93,7 +93,7 @@ const QString rsrcPath = ":/images/mac";
 const QString rsrcPath = ":/images/win";
 #endif
 
-TextEdit::TextEdit(QWidget *parent)
+TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP)
     : QMainWindow(parent)
 {
 	//Inserisco inizializzazione del CRDT
@@ -153,6 +153,24 @@ TextEdit::TextEdit(QWidget *parent)
     //connetto signal e slot che servono
     connect(textEdit->document(),&QTextDocument::contentsChange,
             this, &TextEdit::CRDTInsertRemove );
+
+    /*operazione locale sul documento*/
+    QObject::connect(this, &TextEdit::SigOpDocLocale, wscP, &WorkerSocketClient::opDocLocale);
+    QObject::connect(wscP, &WorkerSocketClient::SigEsitoOpDocLocale, this,  &TextEdit::esitoOpDocLocale);
+
+    /*operazione remota sul documento*/
+    QObject::connect(wscP, &WorkerSocketClient::SigOpDocRemota, this,  &TextEdit::opDocRemota);
+
+    /*un altro user ha aperto il doc*/
+    QObject::connect(wscP, &WorkerSocketClient::SigQuestoUserHaApertoIlDoc, this,  &TextEdit::questoUserHaAPertoIlDoc);
+
+    /*un altro user ha chiuso il doc*/
+    QObject::connect(wscP, &WorkerSocketClient::SigQuestoUserHaChiusoIlDoc, this,  &TextEdit::questoUserHaChiusoIlDoc);
+
+    /*op chi ha inserito cosa*/
+    QObject::connect(this, &TextEdit::SigChiHaInseritoCosa, wscP, &WorkerSocketClient::opChiHaInseritoCosa);
+    QObject::connect(wscP, &WorkerSocketClient::SigEsitoOpChiHaInseritoCosa, this,  &TextEdit::esitoOpChiHaInseritoCosa);
+
 
     setWindowModified(textEdit->document()->isModified());
     actionUndo->setEnabled(textEdit->document()->isUndoAvailable());
@@ -738,13 +756,7 @@ void TextEdit::alignmentChanged(Qt::Alignment a)
         actionAlignJustify->setChecked(true);
 }
 
-void TextEdit::attivaSocket(){
-    emit(SigConnessioneAlServer());
-}
 
-void TextEdit::disattivaSocket(){
-    emit(SigDisconnessioneDalServer());
-}
 
 void TextEdit::comunicaCRDTInserimentoLocale(QTextEdit* txe,QTextCursor* cursor, int pos, int numInserted,CRDT* algCRDT){
     auto inserted = txe->document()->toPlainText().mid(pos,numInserted);
@@ -840,50 +852,7 @@ int isSuccess(QString esito){
 }
 
 
-void TextEdit::esitoCreaDoc(QString esito, CRDT doc){
-  if (isSuccess(esito)){ //se esito positivo creo un CRDT vuoto perch� il documento � stato appena creato
-    algoritmoCRDT->setSiteID(doc.getSiteID()); //Prendo solamente il siteId corretto da mettere nel CRDT
-  }
-  else
-    //per ora solo messaggio di errore sull'output
-    std::cout << "Errore nella crazione di un nuovo documento\n" << std::flush;
-}
 
-void TextEdit::esitoApriDoc(QString esito, CRDT doc){
-  if (isSuccess(esito)){
-      algoritmoCRDT->setSiteID(doc.getSiteID());
-    //algoritmoCRDT = new CRDT(doc.getSiteID(),doc.getListChar()); //salvo nel CRDT la rappresentazione del file
-    // devo andare ad aggiornare il contenuto del QTextEdit tramite l'uso di cursori sulla base di quello che c'� scritto nel CRDT
-    int currentIndex = 0;
-    *this->cursor = textEdit->textCursor();
-    this->cursor->setPosition(currentIndex);
-    auto lista = doc.getListChar();
-    for (auto richChar = lista.cbegin(); richChar!=lista.cend(); richChar++ ){
-      QString str = "";
-      Char ch = *richChar;
-      str.append(ch.getValue());
-      this->cursor->insertText(str,ch.getFormat());
-      //Da controllare se il cursore si muove da solo dopo l'inserimento
-      //currentIndex++
-      //this->cursor->setPosition(currentIndex);
-    }
-  }
-  else
-    std::cout << "Errore nell'apertura di un file esistente\n" <<std::flush;
-}
-
-void TextEdit::esitoChiudiDoc(QString esito){
-  //Per ora stampo solo l'esito ricevuto dal server
-  //Per evitare la chiusura del file nel caso in cui si ricevesse un esito negativo devo mantenere l'informazione riguardante
-  //il QCloseEvent scatenante il messaggio di chiusura
-  std::cout << esito.toStdString()<< "\n" << std::flush;
-  if (isSuccess(esito)){
-     textEdit->close();
-  }
-  else
-      //Qui dovrebbe apparire una finestra in cui si indica l'errore, per far sapere all'utente che qualcosa è andato storto
-      std::cout << "Non ho chiuso il documento perchè il server ha risposto esito negativo\n"<<std::flush;
-}
 
 void TextEdit::esitoOpDocLocale(QString esito, DocOperation operation){
 
@@ -1036,9 +1005,7 @@ void TextEdit::esitoOpChiHaInseritoCosa(QList<QUser> users){
     updateTreeWidget(colorWriting);
 }
 
-QString TextEdit::esitoConnessioneAlServer(QString esito){
-    return esito;
-}
+
 
 //slot per gestire segnale di click sul color Mode
 void TextEdit::pressedButtonTrigger(bool checked){

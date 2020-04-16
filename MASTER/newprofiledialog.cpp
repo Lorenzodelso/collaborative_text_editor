@@ -7,7 +7,7 @@
 //
 //*********************************************************************
 
-newProfileDialog::newProfileDialog(QWidget *parent)
+newProfileDialog::newProfileDialog(QWidget *parent, WorkerSocketClient* wscP)
 {
     setParent(parent);
     setWindowFlag(Qt::Window);
@@ -55,6 +55,10 @@ newProfileDialog::newProfileDialog(QWidget *parent)
     connect(userPic, SIGNAL(hovered()), this, SLOT(imageHovered()));
     connect(userPic, SIGNAL(unHovered()), this, SLOT(imageUnhovered()));
     connect(userPic, SIGNAL(clicked()), this, SLOT(selectImagePressed()));
+
+    /*registrazione*/
+    QObject::connect(this, &newProfileDialog::SigRegistrazione, wscP, &WorkerSocketClient::registrazione);
+    QObject::connect(wscP, &WorkerSocketClient::SigEsitoRegistrazione,this,  &newProfileDialog::esitoRegistrazione);
 
     layout->addWidget(userPic);
     layout->setAlignment(userPic, Qt::AlignCenter);

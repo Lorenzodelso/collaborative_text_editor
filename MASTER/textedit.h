@@ -67,6 +67,7 @@
 #include <QDockWidget>
 #include "QUtente.h"
 #include "QUser.h"
+#include "WorkerSocketClient.h"
 
 //Includo classe per CRDT e rappresentazione dell'operazione sul documento
 #include "CRDT.h"
@@ -87,15 +88,9 @@ class TextEdit : public QMainWindow
     Q_OBJECT
 
 public:
-    TextEdit(QWidget *parent);
+    TextEdit(QWidget *parent, WorkerSocketClient *wscP);
 
     void load(const QString &f);
-
-    /*emette il segnale SigConnessioneAlServer*/
-    void attivaSocket();
-
-    /*emette il segnale SigDisconnessione al server*/
-    void disattivaSocket();
 
 public:
     signals:
@@ -108,37 +103,9 @@ public slots:
 
     void updateTreeWidget(bool checked);
 
-    /*
-    * ritorna il parametro ricevuto
-    * */
-    QString esitoConnessioneAlServer(QString esito/*esito*/);
+
 	
-    /*
-    * fa la cosa opportuna sulla base dell'esito ricevuto
-    *
-    * nota:
-    * se esito = "Failed" allora gli altri parametri sono oggetti vuoti costruiti localmente sul client chiamando
-    * il costruttore senza paramteri
-    * se esito = "Success" allora gli altri paramteri sono la deserializzazione di oggetti mandati dal server
-    *
-    * */
-    void esitoCreaDoc(QString esito/*esito*/, CRDT doc/*rappresentazione del file*/);
 
-    /*
-    * fa la cosa opportuna sulla base dell'esito ricevuto
-    *
-    * nota:
-    * se esito = "Failed" allora gli altri parametri sono oggetti vuoti costruiti localmente sul client chiamando
-    * il costruttore senza paramteri
-    * se esito = "Success" allora gli altri paramteri sono la deserializzazione di oggetti mandati dal server
-    *
-    * */
-    void esitoApriDoc(QString esito/*esito*/, CRDT doc/*rappresentazione del file*/);
-
-    /*
-    * fa la cosa opportuna sulla base dell'esito ricevuto
-    * */
-    void esitoChiudiDoc(QString esito/*esito*/);
 
     /*
      * manipolazione struttura CRDT conseguente all'esito ricevuto dal server e conseguenti ripercussioni sull'editor
@@ -181,15 +148,6 @@ protected:
 
 signals:
 
-    void SigConnessioneAlServer();
-
-    void SigDisconnessioneDalServer();
-
-    void SigCreaDoc(QString nomeFile);
-
-    void SigApriDoc(QString nomeFile);
-
-    void SigChiudiDoc(QString nomeFile);
 
     void SigOpDocLocale(DocOperation docOp);
 

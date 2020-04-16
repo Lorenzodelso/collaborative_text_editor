@@ -13,6 +13,7 @@
 #include "QUtente.h"
 #include "WorkerSocketClient.h"
 #include "recentdocsdialogs.h"
+#include "WorkerSocketClient.h"
 #include <QPixmap>
 
 class QLabel;
@@ -23,7 +24,7 @@ class newProfileDialog:public QDialog
 {
     Q_OBJECT
 public:
-    newProfileDialog(QWidget *parent);
+    newProfileDialog(QWidget *parent, WorkerSocketClient* wscP);
 
 signals:
     void SigRegistrazione(QUtente user);

@@ -1,7 +1,7 @@
 #include "recentdocsdialogs.h"
 
 
-recentDocsDialogs::recentDocsDialogs(QWidget *parent):QWidget(parent)
+recentDocsDialogs::recentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP):QWidget(parent)
 {
 
 //*********************************************************************
@@ -108,6 +108,18 @@ recentDocsDialogs::recentDocsDialogs(QWidget *parent):QWidget(parent)
     connect(abort, SIGNAL(clicked()), this, SLOT(abortPressed()));
     connect(recentDocs, SIGNAL(itemSelectionChanged()), this, SLOT(listItemSelected()));
     connect(editProfile, SIGNAL(clicked()), this, SLOT(launchEditProfile()));
+
+    /*creazione documento*/
+    QObject::connect(this, &recentDocsDialogs::SigCreaDoc, wscP, &WorkerSocketClient::creaDoc);
+    QObject::connect(wscP, &WorkerSocketClient::SigEsitoCreaDoc, this,  &recentDocsDialogs::esitoCreaDoc);
+
+    /*apertura documento*/
+    QObject::connect(this, &recentDocsDialogs::SigApriDoc, wscP, &WorkerSocketClient::apriDoc);
+    QObject::connect(wscP, &WorkerSocketClient::SigEsitoApriDoc, this,  &recentDocsDialogs::esitoApriDoc);
+
+    /*chiusura documento*/
+    QObject::connect(this, &recentDocsDialogs::SigChiudiDoc, wscP, &WorkerSocketClient::chiudiDoc);
+    QObject::connect(wscP, &WorkerSocketClient::SigEsitoChiudiDoc, this,  &recentDocsDialogs::esitoChiudiDoc);
 }
 
 //*********************************************************************
@@ -287,4 +299,49 @@ void recentDocsDialogs::updateRecDocs(){
     }
 
 
+}
+
+void recentDocsDialogs::esitoCreaDoc(QString esito, CRDT doc){
+  if (isSuccess(esito)){ //se esito positivo creo un CRDT vuoto perch� il documento � stato appena creato
+    algoritmoCRDT->setSiteID(doc.getSiteID()); //Prendo solamente il siteId corretto da mettere nel CRDT
+  }
+  else
+    //per ora solo messaggio di errore sull'output
+    std::cout << "Errore nella crazione di un nuovo documento\n" << std::flush;
+}
+
+void recentDocsDialogs::esitoApriDoc(QString esito, CRDT doc){
+  if (isSuccess(esito)){
+      algoritmoCRDT->setSiteID(doc.getSiteID());
+    //algoritmoCRDT = new CRDT(doc.getSiteID(),doc.getListChar()); //salvo nel CRDT la rappresentazione del file
+    // devo andare ad aggiornare il contenuto del QTextEdit tramite l'uso di cursori sulla base di quello che c'� scritto nel CRDT
+    int currentIndex = 0;
+    *this->cursor = textEdit->textCursor();
+    this->cursor->setPosition(currentIndex);
+    auto lista = doc.getListChar();
+    for (auto richChar = lista.cbegin(); richChar!=lista.cend(); richChar++ ){
+      QString str = "";
+      Char ch = *richChar;
+      str.append(ch.getValue());
+      this->cursor->insertText(str,ch.getFormat());
+      //Da controllare se il cursore si muove da solo dopo l'inserimento
+      //currentIndex++
+      //this->cursor->setPosition(currentIndex);
+    }
+  }
+  else
+    std::cout << "Errore nell'apertura di un file esistente\n" <<std::flush;
+}
+
+void recentDocsDialogs::esitoChiudiDoc(QString esito){
+  //Per ora stampo solo l'esito ricevuto dal server
+  //Per evitare la chiusura del file nel caso in cui si ricevesse un esito negativo devo mantenere l'informazione riguardante
+  //il QCloseEvent scatenante il messaggio di chiusura
+  std::cout << esito.toStdString()<< "\n" << std::flush;
+  if (isSuccess(esito)){
+     textEdit->close();
+  }
+  else
+      //Qui dovrebbe apparire una finestra in cui si indica l'errore, per far sapere all'utente che qualcosa è andato storto
+      std::cout << "Non ho chiuso il documento perchè il server ha risposto esito negativo\n"<<std::flush;
 }

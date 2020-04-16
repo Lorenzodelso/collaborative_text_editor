@@ -5,6 +5,7 @@
 #include <QVBoxLayout>
 #include "newprofiledialog.h"
 #include "recentdocsdialogs.h"
+#include "WorkerSocketClient.h"
 
 class QLabel;
 class QLineEdit;
@@ -13,13 +14,27 @@ class QPushButton;
 class loginDialog : public QWidget{
     Q_OBJECT
 public:
-    loginDialog(QWidget *parent = 0);
+    loginDialog(QWidget *parent = 0, WorkerSocketClient* wscP = 0);
+
+public slots:
+
+    /*emette il segnale SigConnessioneAlServer*/
+    void attivaSocket();
+
+    /*emette il segnale SigDisconnessione al server*/
+    void disattivaSocket();
+
 
 private slots:
     void loginClicked();
     void cancelClicked();
     void enableLoginButton();
     void registerClicked();
+
+    /*
+    * ritorna il parametro ricevuto
+    * */
+    QString esitoConnessioneAlServer(QString esito/*esito*/);
 
     /*
      * fa la cosa opportuna sulla base dell'esito ricevuto
@@ -35,7 +50,11 @@ private slots:
 
 signals:
     void loginSuccessful();
+
     void SigLogin(QUtente user);
+
+    void SigConnessioneAlServer();
+
     void SigDisconnessioneDalServer();
 
 

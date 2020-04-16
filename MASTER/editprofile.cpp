@@ -10,7 +10,7 @@
 //l'atto di modifica del profilo
 //
 //*********************************************************************
-editProfile::editProfile(QWidget *parent)
+editProfile::editProfile(QWidget *parent, WorkerSocketClient* wscP)
 {
     setParent(parent);
     if(!QDir(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/").exists()){
@@ -87,6 +87,11 @@ editProfile::editProfile(QWidget *parent)
     connect(nickEdit, SIGNAL(textEdited(const QString &)), this, SLOT(changedNick(const QString &)));
     connect(userPic, SIGNAL(hovered()), this, SLOT(imageHovered()));
     connect(userPic, SIGNAL(unHovered()), this, SLOT(imageUnhovered()));
+
+    /*modifica profilo utente*/
+    QObject::connect(this, &editProfile::SigModificaProfiloUtente, wscP, &WorkerSocketClient::modificaProfiloUtente);
+    QObject::connect(wscP, &WorkerSocketClient::SigEsitoModificaProfiloUtente,this,  &editProfile::esitoModificaProfiloUtente);
+
 
 //    //**********************************************************
 //    QUtente *utenteTest = new QUtente(1234, "mario", "grdnmario", "password", "");

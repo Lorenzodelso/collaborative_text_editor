@@ -3,7 +3,8 @@
 #include "textedit.h"
 #include "recentdocsdialogs.h"
 
-loginDialog::loginDialog(QWidget *parent)
+
+loginDialog::loginDialog(QWidget *parent, WorkerSocketClient* wscP)
     :QWidget(parent){
     this->setWindowTitle("Login");
 //********************************************************************************************
@@ -41,6 +42,14 @@ loginDialog::loginDialog(QWidget *parent)
     connect(cancelButton, SIGNAL(clicked()),
             this, SLOT(cancelClicked()));
     connect(newProfileButton, SIGNAL(clicked()), this, SLOT(registerClicked()));
+
+    /*settaggio connessione*/
+    QObject::connect(this, &loginDialog::SigConnessioneAlServer, wscP, &WorkerSocketClient::connessioneAlServer);
+    QObject::connect(wscP, &WorkerSocketClient::SigEsitoConnessioneAlServer, this,  &loginDialog::esitoConnessioneAlServer);
+
+    /*login*/
+    QObject::connect(this, &loginDialog::SigLogin, wscP, &WorkerSocketClient::login);
+    QObject::connect(wscP, &WorkerSocketClient::SigEsitoLogin, this,  &loginDialog::esitoLogin);
 
 
     QVBoxLayout *layout = new QVBoxLayout();
@@ -172,3 +181,14 @@ void loginDialog::esitoLogin(QString esito/*esito*/, QUtente user, QList<QString
 
 }
 
+void loginDialog::attivaSocket(){
+    emit(SigConnessioneAlServer());
+}
+
+void loginDialog::disattivaSocket(){
+    emit(SigDisconnessioneDalServer());
+}
+
+QString loginDialog::esitoConnessioneAlServer(QString esito){
+    return esito;
+}

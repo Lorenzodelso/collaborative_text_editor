@@ -17,6 +17,7 @@
 #include <QDesktopWidget>
 #include "textedit.h"
 #include "editprofile.h"
+#include "WorkerSocketClient.h"
 
 
 
@@ -25,10 +26,16 @@ class recentDocsDialogs : public QWidget
 {
     Q_OBJECT
 public:
-    recentDocsDialogs(QWidget *parent);
+    recentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP);
 
 signals:
     void SigDisconnessioneDalServer();
+
+    void SigCreaDoc(QString nomeFile);
+
+    void SigApriDoc(QString nomeFile);
+
+    void SigChiudiDoc(QString nomeFile);
 
 private slots:
     void newFilePressed();
@@ -40,6 +47,33 @@ private slots:
     void listItemSelected();
     void launchEditProfile();
     void updateRecDocs();
+
+    /*
+    * fa la cosa opportuna sulla base dell'esito ricevuto
+    *
+    * nota:
+    * se esito = "Failed" allora gli altri parametri sono oggetti vuoti costruiti localmente sul client chiamando
+    * il costruttore senza paramteri
+    * se esito = "Success" allora gli altri paramteri sono la deserializzazione di oggetti mandati dal server
+    *
+    * */
+    void esitoCreaDoc(QString esito/*esito*/, CRDT doc/*rappresentazione del file*/);
+
+    /*
+    * fa la cosa opportuna sulla base dell'esito ricevuto
+    *
+    * nota:
+    * se esito = "Failed" allora gli altri parametri sono oggetti vuoti costruiti localmente sul client chiamando
+    * il costruttore senza paramteri
+    * se esito = "Success" allora gli altri paramteri sono la deserializzazione di oggetti mandati dal server
+    *
+    * */
+    void esitoApriDoc(QString esito/*esito*/, CRDT doc/*rappresentazione del file*/);
+
+    /*
+    * fa la cosa opportuna sulla base dell'esito ricevuto
+    * */
+    void esitoChiudiDoc(QString esito/*esito*/);
 
 
 private:
