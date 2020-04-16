@@ -20,7 +20,8 @@ recentDocsDialogs::recentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP):
     this-> setWindowTitle("Recent Docs");
     setParent(parent);
     setAttribute(Qt::WA_DeleteOnClose);
-    mw = new TextEdit(this,new WorkerSocketClient /*manca il puntatore al WorkerSocket, l'errore è per quello*/);
+    mw = new TextEdit(this,wscP);
+    wscPointer = wscP;
     recentDocs = new QListWidget();
 
     if(!QDir(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/").exists()){
@@ -266,7 +267,7 @@ void recentDocsDialogs::listItemSelected(){
 //*********************************************************************
 
 void recentDocsDialogs::launchEditProfile(){
-    edit = new class editProfile(this,new WorkerSocketClient/*Anche qui manca il puntatore al worker socket*/);
+    edit = new class editProfile(this,wscPointer);
     edit->setWindowFlag(Qt::Window);
     edit->show();
 }
