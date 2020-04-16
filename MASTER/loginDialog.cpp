@@ -63,12 +63,12 @@ loginDialog::loginDialog(QWidget *parent)
     }
 
 //    //**********************************************************
-    QUtente *utenteTest = new QUtente(1234, "mario", "mariogrdn", "password", "");
-    QList<QString> *listaTest = new QList<QString>();
-    listaTest->append("ciao");
-    listaTest->append("come");
-    listaTest->append("stai");
-    esitoLogin("Success", *utenteTest, *listaTest);
+//    QUtente *utenteTest = new QUtente(1234, "mario", "mariogrdn", "password", "");
+//    QList<QString> *listaTest = new QList<QString>();
+//    listaTest->append("ciao");
+//    listaTest->append("come");
+//    listaTest->append("stai");
+//    esitoLogin("Success", *utenteTest, *listaTest);
 //    //**********************************************************
 }
 
@@ -124,6 +124,7 @@ void loginDialog::enableLoginButton(){
 void loginDialog::registerClicked(){
     newProfile = new newProfileDialog(this);
     newProfile->show();
+    this->hide();
 }
 
 /*
@@ -143,7 +144,6 @@ void loginDialog::esitoLogin(QString esito/*esito*/, QUtente user, QList<QString
         msgBox.setText(tr("Username and/or password are wrong. Please, try again"));
         msgBox.setIcon(QMessageBox::Critical);
         msgBox.exec();
-        return;
     }else{
         utente = new QUtente(user.getUserId(), user.getUsername(), user.getNickName(), user.getPassword(), user.getNomeImg());
         QList<QString> editedFiles = nomiFilesEditati;

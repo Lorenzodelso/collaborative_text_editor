@@ -11,6 +11,7 @@ newProfileDialog::newProfileDialog(QWidget *parent)
 {
     setParent(parent);
     setWindowFlag(Qt::Window);
+    setModal(true);
     username = new QLabel(tr("Username: "));
     userEdit = new QLineEdit();
     username->setBuddy(userEdit);
@@ -92,6 +93,7 @@ newProfileDialog::newProfileDialog(QWidget *parent)
 //*********************************************************************
 
 void newProfileDialog::abortPressed(){
+    parentWidget()->show();
     close();
 }
 
@@ -217,40 +219,21 @@ void newProfileDialog::selectImagePressed(){
  * */
 void newProfileDialog::esitoRegistrazione(QString esito/*esito*/, QUtente user, QList<QString> nomiFilesEditati){
     if(esito == "Failed"){
-        utente = new QUtente(0,"","","","");
+
         QMessageBox msgBox;
         msgBox.setText("An error occured while signing up. Please, try again.");
         msgBox.setIcon(QMessageBox::Critical);
         msgBox.exec();
-        return;
+
     }else{
-        utente = new QUtente(user.getUserId(), user.getUsername(), user.getNickName(), user.getPassword(), user.getNomeImg());
-        QList<QString> editedFiles = nomiFilesEditati;
-        QFile userSettings (QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/user.settings");
-        userSettings.open(QIODevice::WriteOnly);
-        QTextStream out(&userSettings);
-        out << utente->getUserId() << endl
-            << utente->getUsername() << endl
-            << utente->getNickName() << endl
-            << utente->getNomeImg() << endl;
-        userSettings.close();
-        QFile recentDocs(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/docs.recent");
-        recentDocs.open(QIODevice::WriteOnly);
-        QTextStream out2(&recentDocs);
-        QList<QString>::iterator iterator = editedFiles.begin();
-        while(iterator != editedFiles.end()){
-            out2 << *iterator << endl;
-            iterator++;
-        }
-        recentDocs.close();
-        docsDialog = new recentDocsDialogs(0);
-        docsDialog->show();
-        this->setAttribute(Qt::WA_DeleteOnClose);
-        if(this->parentWidget() != nullptr){
-            this->parentWidget()->setAttribute(Qt::WA_DeleteOnClose);
-            this->parentWidget()->hide();
-        }
+
+        QMessageBox msgBox;
+        msgBox.setText("Successful Registration");
+        msgBox.setIcon(QMessageBox::Information);
+        msgBox.exec();
+        parentWidget()->show();
         this->close();
+
     }
 
 }
