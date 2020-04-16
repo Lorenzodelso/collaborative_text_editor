@@ -81,9 +81,6 @@ QObject::connect(wscP, &WorkerSocketClient::SigEsitoCreaDoc, PUNTATORE,  &Client
 QObject::connect(PUNTATORE, &Client::SigApriDoc, wscP, &WorkerSocketClient::apriDoc);
 QObject::connect(wscP, &WorkerSocketClient::SigEsitoApriDoc, PUNTATORE,  &Client::esitoApriDoc);
 
-/*chiusura documento*/
-QObject::connect(PUNTATORE, &Client::SigChiudiDoc, wscP, &WorkerSocketClient::chiudiDoc);
-QObject::connect(wscP, &WorkerSocketClient::SigEsitoChiudiDoc, PUNTATORE,  &Client::esitoChiudiDoc);
 
 
 
@@ -99,6 +96,9 @@ QObject::connect(wscP, &WorkerSocketClient::SigEsitoModificaProfiloUtente,PUNTAT
 
 CLASSE TEXTEDIT DEVE AVERE QUESTI SIGNALS E QUESTI SLOTS
 (QUESTE COSE VANNO TOLTE DAL POSTO IN CUI SI TROVAVANO PRIMA)
+/*chiusura documento*/
+QObject::connect(PUNTATORE, &Client::SigChiudiDoc, wscP, &WorkerSocketClient::chiudiDoc);
+QObject::connect(wscP, &WorkerSocketClient::SigEsitoChiudiDoc, PUNTATORE,  &Client::esitoChiudiDoc);
 /*operazione locale sul documento*/
 QObject::connect(PUNTATORE, &Client::SigOpDocLocale, wscP, &WorkerSocketClient::opDocLocale);
 QObject::connect(wscP, &WorkerSocketClient::SigEsitoOpDocLocale, PUNTATORE,  &Client::esitoOpDocLocale);
