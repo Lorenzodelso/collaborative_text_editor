@@ -1,0 +1,120 @@
+/*inizio main*/
+QThread* tP = new QThread();
+WorkerSocketClient* wscP= new WorkerSocketClient();
+wscP->moveToThread(tP);
+
+/*deallocazione oggetto worker socket client se thread corrispondente finisce*/
+QObject::connect(tP, &QThread::finished, wscP, &QObject::deleteLater);
+
+
+tP->start();
+if((textEditObjP.attivaSocket()).compare("Failed")==0){
+/*dealloco thread socket*/
+tP->quit();
+tP->wait();
+delete tP;
+}
+
+/*res= exec*/
+
+/*sono qui se l'utente ha chiuso l'app */
+
+textEditObjP.disattivaSocket();
+/*dealloco thread socket*/
+tP->quit();
+tP->wait();
+delete tP;
+}
+
+/*delete radice*/
+
+/*return res*/
+
+/*fine main*/
+
+
+
+
+
+
+
+
+
+
+/* PUNTATORE è il puntatore all'oggetto della classe LATO CLIENT CHE HA QUEL SIGNAL/SLOT */
+
+
+
+CONVIENE PASSARE AL COSTRUTTORE DI OGNI OGGETTO MAN MANO IL PUNTATORE WSCP E SOSTITUIRE "PUNTATORE" CON THIS 
+
+
+
+CLASSE LOGIN DIALOG DEVE AVERE QUESTO SIGNAL E QUESTO SLOT E DEVE AVERE LE FUNZIONI ATTIVA SOCKET E DISATTIVA SOCKET 
+(QUESTE COSE VANNO TOLTE DAL POSTO IN CUI SI TROVAVANO PRIMA)
+/*settaggio connessione*/
+QObject::connect(PUNTATORE, &Client::SigConnessioneAlServer, wscP, &WorkerSocketClient::connessioneAlServer);
+QObject::connect(wscP, &WorkerSocketClient::SigEsitoConnessioneAlServer, PUNTATORE,  &Client::esitoConnessioneAlServer);
+
+
+
+
+CLASSE NEW PROFILE DIALOG DEVE AVERE QUESTI SIGNALS E QUESTI SLOTS
+(QUESTE COSE VANNO TOLTE DAL POSTO IN CUI SI TROVAVANO PRIMA)
+/*registrazione*/
+QObject::connect(PUNTATORE, &Client::SigRegistrazione, wscP, &WorkerSocketClient::registrazione);
+QObject::connect(wscP, &WorkerSocketClient::SigEsitoregistrazione,PUNTATORE,  &Client::esitoRegistrazione);
+
+/*login*/
+QObject::connect(PUNTATORE, &Client::SigLogin, wscP, &WorkerSocketClient::login);
+QObject::connect(wscP, &WorkerSocketClient::SigEsitoLogin, PUNTATORE,  &Client::esitoLogin);
+
+
+
+CLASSE RECENT DOCS DIALOGS DEVE AVERE QUESTI SIGNALS E QUESTI SLOTS
+(QUESTE COSE VANNO TOLTE DAL POSTO IN CUI SI TROVAVANO PRIMA)
+
+/*creazione documento*/
+QObject::connect(PUNTATORE, &Client::SigCreaDoc, wscP, &WorkerSocketClient::creaDoc);
+QObject::connect(wscP, &WorkerSocketClient::SigEsitoCreaDoc, PUNTATORE,  &Client::esitoCreaDoc);
+
+/*apertura documento*/
+QObject::connect(PUNTATORE, &Client::SigApriDoc, wscP, &WorkerSocketClient::apriDoc);
+QObject::connect(wscP, &WorkerSocketClient::SigEsitoApriDoc, PUNTATORE,  &Client::esitoApriDoc);
+
+/*chiusura documento*/
+QObject::connect(PUNTATORE, &Client::SigChiudiDoc, wscP, &WorkerSocketClient::chiudiDoc);
+QObject::connect(wscP, &WorkerSocketClient::SigEsitoChiudiDoc, PUNTATORE,  &Client::esitoChiudiDoc);
+
+
+
+
+CLASSE EDIT PROFILE DEVE AVERE QUESTO SIGNAL E QUESTO SLOT
+(QUESTE COSE VANNO TOLTE DAL POSTO IN CUI SI TROVAVANO PRIMA)
+/*modifica profilo utente*/
+QObject::connect(PUNTATORE, &Client::SigModificaProfiloUtente, wscP, &WorkerSocketClient::modificaProfiloUtente);
+QObject::connect(wscP, &WorkerSocketClient::SigEsitoModificaProfiloUtente,PUNTATORE,  &Client::esitoModificaProfiloUtente);
+
+
+
+
+CLASSE TEXTEDIT DEVE AVERE QUESTI SIGNALS E QUESTI SLOTS
+(QUESTE COSE VANNO TOLTE DAL POSTO IN CUI SI TROVAVANO PRIMA)
+/*operazione locale sul documento*/
+QObject::connect(PUNTATORE, &Client::SigOpDocLocale, wscP, &WorkerSocketClient::opDocLocale);
+QObject::connect(wscP, &WorkerSocketClient::SigEsitoOpDocLocale, PUNTATORE,  &Client::esitoOpDocLocale);
+
+/*operazione remota sul documento*/
+QObject::connect(wscP, &WorkerSocketClient::SigOpDocRemota, PUNTATORE,  &Client::opDocRemota);
+
+/*un altro user ha aperto il doc*/
+QObject::connect(wscP, &WorkerSocketClient::SigQuestoUserHaApertoIlDoc, PUNTATORE,  &Client::questoUserHaAPertoIlDoc);
+
+/*un altro user ha chiuso il doc*/
+QObject::connect(wscP, &WorkerSocketClient::SigQuestoUserHaChiusoIlDoc, PUNTATORE,  &Client::questoUserHaChiusoIlDoc);
+
+/*op chi ha inserito cosa*/
+QObject::connect(PUNTATORE, &Client::SigChiHaInseritoCosa, wscP, &WorkerSocketClient::opChiHaInseritoCosa);
+QObject::connect(wscP, &WorkerSocketClient::SigEsitoOpChiHaInseritoCosa, PUNTATORE,  &Client::esitoOpChiHaInseritoCosa);
+
+
+
