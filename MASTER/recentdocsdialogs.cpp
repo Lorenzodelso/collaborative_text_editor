@@ -20,7 +20,7 @@ recentDocsDialogs::recentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP):
     this-> setWindowTitle("Recent Docs");
     setParent(parent);
     setAttribute(Qt::WA_DeleteOnClose);
-    mw = new TextEdit(this);
+    mw = new TextEdit(this,new WorkerSocketClient /*manca il puntatore al WorkerSocket, l'errore è per quello*/);
     recentDocs = new QListWidget();
 
     if(!QDir(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/").exists()){
@@ -266,7 +266,7 @@ void recentDocsDialogs::listItemSelected(){
 //*********************************************************************
 
 void recentDocsDialogs::launchEditProfile(){
-    edit = new class editProfile(this);
+    edit = new class editProfile(this,new WorkerSocketClient/*Anche qui manca il puntatore al worker socket*/);
     edit->setWindowFlag(Qt::Window);
     edit->show();
 }
@@ -299,9 +299,17 @@ void recentDocsDialogs::updateRecDocs(){
 
 }
 
+int isSuccess(QString esito){
+  if (esito.compare("Success") == 0)
+    return 1;
+  else
+    return 0;
+}
+
+
 void recentDocsDialogs::esitoCreaDoc(QString esito, CRDT doc){
   if (isSuccess(esito)){ //se esito positivo creo un CRDT vuoto perch� il documento � stato appena creato
-    algoritmoCRDT->setSiteID(doc.getSiteID()); //Prendo solamente il siteId corretto da mettere nel CRDT
+    mw->getStrutturaCRDT()->setSiteID(doc.getSiteID()); //Prendo solamente il siteId corretto da mettere nel CRDT
   }
   else
     //per ora solo messaggio di errore sull'output
@@ -310,23 +318,8 @@ void recentDocsDialogs::esitoCreaDoc(QString esito, CRDT doc){
 
 void recentDocsDialogs::esitoApriDoc(QString esito, CRDT doc){
   if (isSuccess(esito)){
-      algoritmoCRDT->setSiteID(doc.getSiteID());
-    //algoritmoCRDT = new CRDT(doc.getSiteID(),doc.getListChar()); //salvo nel CRDT la rappresentazione del file
-    // devo andare ad aggiornare il contenuto del QTextEdit tramite l'uso di cursori sulla base di quello che c'� scritto nel CRDT
-    int currentIndex = 0;
-    *this->cursor = textEdit->textCursor();
-    this->cursor->setPosition(currentIndex);
-    auto lista = doc.getListChar();
-    for (auto richChar = lista.cbegin(); richChar!=lista.cend(); richChar++ ){
-      QString str = "";
-      Char ch = *richChar;
-      str.append(ch.getValue());
-      this->cursor->insertText(str,ch.getFormat());
-      //Da controllare se il cursore si muove da solo dopo l'inserimento
-      //currentIndex++
-      //this->cursor->setPosition(currentIndex);
+      mw->loadCRDTIntoEditor(doc);
     }
-  }
   else
     std::cout << "Errore nell'apertura di un file esistente\n" <<std::flush;
 }

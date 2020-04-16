@@ -92,6 +92,9 @@ public:
 
     void load(const QString &f);
 
+    CRDT* getStrutturaCRDT();
+    void loadCRDTIntoEditor(CRDT crdt);
+
 public:
     signals:
     void formatChanged(const QTextCharFormat &format);

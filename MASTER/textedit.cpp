@@ -203,6 +203,34 @@ TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP)
 #endif
 }
 
+//Le prossime due funzioni vengono usate nel RecentDocDialog per caricare il file
+// (cioè la struttura CRDT) nell'editor. Viene fatto dentro il textEditor per non far uscire il CRDT e i cursori
+
+CRDT* TextEdit::getStrutturaCRDT(){
+    return algoritmoCRDT;
+}
+
+void TextEdit::loadCRDTIntoEditor(CRDT crdt){
+  this->algoritmoCRDT->setSiteID(crdt.getSiteID());
+  //algoritmoCRDT = new CRDT(doc.getSiteID(),doc.getListChar()); //salvo nel CRDT la rappresentazione del file
+  // devo andare ad aggiornare il contenuto del QTextEdit tramite l'uso di cursori sulla base di quello che c'� scritto nel CRDT
+  int currentIndex = 0;
+  *this->cursor = textEdit->textCursor();
+  this->cursor->setPosition(currentIndex);
+  auto lista = crdt.getListChar();
+  for (auto richChar = lista.cbegin(); richChar!=lista.cend(); richChar++ ){
+    QString str = "";
+    Char ch = *richChar;
+    str.append(ch.getValue());
+    this->cursor->insertText(str,ch.getFormat());
+    //Da controllare se il cursore si muove da solo dopo l'inserimento
+    //currentIndex++
+    //this->cursor->setPosition(currentIndex);
+  }
+}
+
+
+
 void TextEdit::closeEvent(QCloseEvent *e)
 {
    if(parentWidget() != NULL){
