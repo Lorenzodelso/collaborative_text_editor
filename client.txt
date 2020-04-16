@@ -58,7 +58,7 @@ QObject::connect(wscP, &WorkerSocketClient::SigEsitoConnessioneAlServer, PUNTATO
 
 
 
-CLASSE NEW PROFILE DIALOG DEVE AVERE QUESTI SIGNALS E QUESTI SLOTS
+CLASSE LOGIN DIALOG DEVE AVERE QUESTI SIGNALS E QUESTI SLOTS
 (QUESTE COSE VANNO TOLTE DAL POSTO IN CUI SI TROVAVANO PRIMA)
 /*registrazione*/
 QObject::connect(PUNTATORE, &Client::SigRegistrazione, wscP, &WorkerSocketClient::registrazione);
