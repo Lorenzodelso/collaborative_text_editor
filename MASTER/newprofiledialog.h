@@ -45,7 +45,7 @@ public slots:
     * se esito = "Success" allora gli altri paramteri sono la deserializzazione di oggetti mandati dal server
     *
     * */
-    void esitoRegistrazione(QString esito/*esito*/, QUtente user, QList<QString> nomiFilesEditati);
+    void esitoRegistrazione(QString esito/*esito*/);
 
 
 private:

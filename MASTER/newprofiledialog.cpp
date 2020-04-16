@@ -217,7 +217,7 @@ void newProfileDialog::selectImagePressed(){
  * se esito = "Success" allora gli altri paramteri sono la deserializzazione di oggetti mandati dal server
  *
  * */
-void newProfileDialog::esitoRegistrazione(QString esito/*esito*/, QUtente user, QList<QString> nomiFilesEditati){
+void newProfileDialog::esitoRegistrazione(QString esito/*esito*/){
     if(esito == "Failed"){
 
         QMessageBox msgBox;
