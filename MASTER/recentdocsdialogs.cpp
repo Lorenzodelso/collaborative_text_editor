@@ -117,9 +117,7 @@ recentDocsDialogs::recentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP):
     QObject::connect(this, &recentDocsDialogs::SigApriDoc, wscP, &WorkerSocketClient::apriDoc);
     QObject::connect(wscP, &WorkerSocketClient::SigEsitoApriDoc, this,  &recentDocsDialogs::esitoApriDoc);
 
-    /*chiusura documento*/
-    QObject::connect(this, &recentDocsDialogs::SigChiudiDoc, wscP, &WorkerSocketClient::chiudiDoc);
-    QObject::connect(wscP, &WorkerSocketClient::SigEsitoChiudiDoc, this,  &recentDocsDialogs::esitoChiudiDoc);
+
 }
 
 //*********************************************************************
@@ -333,15 +331,3 @@ void recentDocsDialogs::esitoApriDoc(QString esito, CRDT doc){
     std::cout << "Errore nell'apertura di un file esistente\n" <<std::flush;
 }
 
-void recentDocsDialogs::esitoChiudiDoc(QString esito){
-  //Per ora stampo solo l'esito ricevuto dal server
-  //Per evitare la chiusura del file nel caso in cui si ricevesse un esito negativo devo mantenere l'informazione riguardante
-  //il QCloseEvent scatenante il messaggio di chiusura
-  std::cout << esito.toStdString()<< "\n" << std::flush;
-  if (isSuccess(esito)){
-     textEdit->close();
-  }
-  else
-      //Qui dovrebbe apparire una finestra in cui si indica l'errore, per far sapere all'utente che qualcosa è andato storto
-      std::cout << "Non ho chiuso il documento perchè il server ha risposto esito negativo\n"<<std::flush;
-}

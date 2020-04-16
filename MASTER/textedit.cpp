@@ -154,6 +154,10 @@ TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP)
     connect(textEdit->document(),&QTextDocument::contentsChange,
             this, &TextEdit::CRDTInsertRemove );
 
+    /*chiusura documento*/
+    QObject::connect(this, &TextEdit::SigChiudiDoc, wscP, &WorkerSocketClient::chiudiDoc);
+    QObject::connect(wscP, &WorkerSocketClient::SigEsitoChiudiDoc, this,  &TextEdit::esitoChiudiDoc);
+
     /*operazione locale sul documento*/
     QObject::connect(this, &TextEdit::SigOpDocLocale, wscP, &WorkerSocketClient::opDocLocale);
     QObject::connect(wscP, &WorkerSocketClient::SigEsitoOpDocLocale, this,  &TextEdit::esitoOpDocLocale);
@@ -162,13 +166,13 @@ TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP)
     QObject::connect(wscP, &WorkerSocketClient::SigOpDocRemota, this,  &TextEdit::opDocRemota);
 
     /*un altro user ha aperto il doc*/
-    QObject::connect(wscP, &WorkerSocketClient::SigQuestoUserHaApertoIlDoc, this,  &TextEdit::questoUserHaAPertoIlDoc);
+    QObject::connect(wscP, &WorkerSocketClient::SigQuestoUserHaApertoIlDoc, this,  &TextEdit::questoUserHaApertoIlDoc);
 
     /*un altro user ha chiuso il doc*/
     QObject::connect(wscP, &WorkerSocketClient::SigQuestoUserHaChiusoIlDoc, this,  &TextEdit::questoUserHaChiusoIlDoc);
 
     /*op chi ha inserito cosa*/
-    QObject::connect(this, &TextEdit::SigChiHaInseritoCosa, wscP, &WorkerSocketClient::opChiHaInseritoCosa);
+    QObject::connect(this, &TextEdit::SigOpChiHaInseritoCosa, wscP, &WorkerSocketClient::opChiHaInseritoCosa);
     QObject::connect(wscP, &WorkerSocketClient::SigEsitoOpChiHaInseritoCosa, this,  &TextEdit::esitoOpChiHaInseritoCosa);
 
 
@@ -1019,6 +1023,21 @@ void TextEdit::pressedButtonTrigger(bool checked){
         quittingColorMode();
     }
 }
+
+
+void TextEdit::esitoChiudiDoc(QString esito){
+  //Per ora stampo solo l'esito ricevuto dal server
+  //Per evitare la chiusura del file nel caso in cui si ricevesse un esito negativo devo mantenere l'informazione riguardante
+  //il QCloseEvent scatenante il messaggio di chiusura
+  std::cout << esito.toStdString()<< "\n" << std::flush;
+  if (isSuccess(esito)){
+     textEdit->close();
+  }
+  else
+      //Qui dovrebbe apparire una finestra in cui si indica l'errore, per far sapere all'utente che qualcosa è andato storto
+      std::cout << "Non ho chiuso il documento perchè il server ha risposto esito negativo\n"<<std::flush;
+}
+
 
 
 //***********************************

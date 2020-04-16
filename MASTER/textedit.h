@@ -95,6 +95,7 @@ public:
 public:
     signals:
     void formatChanged(const QTextCharFormat &format);
+     void SigChiudiDoc(QString nomeFile);
 	
 public slots:
     void fileNew(QString fileName);
@@ -179,6 +180,11 @@ private slots:
 
     //slot che riceve segnale premuto bottone di Color Mode
     void pressedButtonTrigger(bool checked);
+
+    /*
+    * fa la cosa opportuna sulla base dell'esito ricevuto
+    * */
+    void esitoChiudiDoc(QString esito/*esito*/);
 
 
 private:

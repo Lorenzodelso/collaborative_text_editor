@@ -35,7 +35,7 @@ signals:
 
     void SigApriDoc(QString nomeFile);
 
-    void SigChiudiDoc(QString nomeFile);
+
 
 private slots:
     void newFilePressed();
@@ -70,10 +70,7 @@ private slots:
     * */
     void esitoApriDoc(QString esito/*esito*/, CRDT doc/*rappresentazione del file*/);
 
-    /*
-    * fa la cosa opportuna sulla base dell'esito ricevuto
-    * */
-    void esitoChiudiDoc(QString esito/*esito*/);
+
 
 
 private:
