@@ -8,12 +8,14 @@
 
 #include <map>
 #include <QObject>
-//#include "QTcpServerMio.h"
+#include "QTcpServerMio.h"
 #include "WorkerSocket.h"
 #include "QUtente.h"
 #include "WorkerDoc.h"
 #include <QFile>
+#include "QTcpServerMio.h"
 #include "WorkerDoc.h"
+#include "QUtenteServer.h"
 #include <QThread>
 #include <iostream>
 /*
@@ -46,27 +48,18 @@ class Server : public QObject {
      * il processo server è un processo che nasce e non muore mai
      * qui tengo memorizzati tutti gli utenti della applicazione
      * */
-    QMap<quint32/*clientId*/,QUtente> users;
+    QMap<quint32/*clientId*/,QUtenteServer> users;
 
     quint32 currUserId;
 
-    /*
-     * devo creare un nuovo thread e dargli un nuovo oggetto WorkerSocket per ogni nuova connessione indipendentemente
-     * dal fatto che il client in questione si registri/faccia login con successo o fallisca
-     */
 
-    /* mantengo quindi in questa lista i puntatori ad ogni oggetto WorkerSocket che creo ad ogni nuova connessione */
-    QList<WorkerSocket*> connections;
 
     /*
-     * se l'operazione di login/registrazione del client ha successo salvo ANCHE qui il puntatore al WorkerSocket
+     * se l'operazione di login del client ha successo salvo ANCHE qui il puntatore al WorkerSocket
      * corrispondente
      * non solo, ma lo salvo associandolo all'identificativo del client in questione
      * in questo modo mantengo l'informazione su quale oggetto WorkerSocket è associato a quale client (che ha fatto
      * accesso con successo)
-     *
-     * (se l'operazione di registrazione/login fallisce rimuovo da "connections" il puntatore al WorkerSocket corrispondente
-     * (dopo aver fatto le opportune operazioni))
      *
      * */
     QMap<quint32 /*clientId*/,WorkerSocket*> userConnections;
@@ -88,7 +81,7 @@ class Server : public QObject {
     /*
      * socket principale su cui arrivano le richieste di connessione dei clients
      * */
-    //QTcpServerMio* mainSocketP;
+    QTcpServerMio* mainSocketP;
 
 public slots:
 
@@ -99,6 +92,7 @@ void creaDoc(QString nomeFile , WorkerSocket* wsP, QUtente user);
 void login(WorkerSocket* wsP, QUtente user);
 void registrazione(WorkerSocket* wsP, QUtente user);
 void chiusuraConnessioneDaParteDelClient(WorkerSocket* wsP, QUtente user);
+void chiusuraConnessioneDaParteDelServer(WorkerSocket* wsP);
 void chiusuraDocumentoDaParteDelClient(WorkerSocket* wsP, QUtente user);
 void modificaProfiloUtente(WorkerSocket* wsP, QUtente userOld, QUtente userNew);
 void nessunClientStaEditando(QString nomeFile);
@@ -114,7 +108,7 @@ void SigWorkerDocNsimaAperturaDoc(QUtente user, WorkerSocket* wsP);
 void SigEsitoChiusuraDocumentoDaParteDelClient(QString esito/*esito*/);
 
 void SigEsitoLogin(QUtente user, QList<QString> nomiFilesEditati);
-void SigEsitoRegistrazione(QUtente user ,QList<QString> nomiFilesEditati);
+void SigEsitoRegistrazione(QString esito, QString nomeImg);
 void SigEsitoModificaProfiloUtente(QUtente userNew);
 void SigChiHaInseritoCosa(QList<QUser> users/*lista degli utenti che hanno editato in passato e/o stanno editando questo doc*/);
 void SigQuestoUserHaApertoIlDoc(QUser user);

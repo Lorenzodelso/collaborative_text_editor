@@ -19,7 +19,7 @@ class WorkerSocketClient : public QObject{
 
     void SigEsitoConnessioneAlServer(QString esito/*esito*/);
 
-    void SigEsitoRegistrazione(QString esito/*esito*/, QUtente user, QList<QString> nomiFilesEditati);
+    void SigEsitoRegistrazione(QString esito/*esito*/);
 
     void SigEsitoLogin(QString esito/*esito*/, QUtente user, QList<QString> nomiFilesEditati);
 
@@ -61,15 +61,13 @@ public slots:
      *
      * SigEsitoRegistrazione
      *     se esito positivo
-     *        si salva internamente l'oggetto QUtente
      *        usa come parametri di tale segnale:
      *        -per l'esito "Success"
-     *        -per gli altri la deserializzazione degli oggetti ricevuti dal server
+     *
      *
      *     se esito negativo
      *        usa come parametridi tale segnale:
      *        -per l'esito "Failed"
-     *        -per gli altri oggetti che costruisce lui chiamando il costruttore senza parametri
      *
      * SigEsitoLogin
      *     se esito positivo
