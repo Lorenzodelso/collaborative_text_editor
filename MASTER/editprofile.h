@@ -61,6 +61,7 @@ private:
     QPushButton *save;
     QPushButton *discard;
     QUtente *user;
+    WorkerSocketClient* wscP;
 
 };
 

@@ -20,8 +20,8 @@ recentDocsDialogs::recentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP):
     this-> setWindowTitle("Recent Docs");
     setParent(parent);
     setAttribute(Qt::WA_DeleteOnClose);
-    mw = new TextEdit(this,wscP);
-    wscPointer = wscP;
+    this->wscP = wscP;
+    mw = new TextEdit(this, wscP);
     recentDocs = new QListWidget();
 
     if(!QDir(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/").exists()){
@@ -123,21 +123,14 @@ recentDocsDialogs::recentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP):
 
 //*********************************************************************
 //
-//Creazione dell'oggetto "textedit", che caricherà il documento selezionato
-//precedentemente il cui nome è salvato in "selectedDoc"
+//Emissione del segnale SigApriDoc per iniziare l'apertura del doc
+//selezionato
 //
 //*********************************************************************
 
 void recentDocsDialogs::openPressed(){
     QString selectedDoc = recentDocs->selectedItems().first()->text();
-    const QRect availableGeometry = QApplication::desktop()->availableGeometry(mw);
-    mw->resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);
-    mw->move((availableGeometry.width() - mw->width()) / 2,
-            (availableGeometry.height() - mw->height()) / 2);
-    mw->load(selectedDoc);
-    mw->setEnabled(true);
-    mw->show();
-    this->hide();
+    emit(SigApriDoc(selectedDoc));
 }
 
 //*********************************************************************
@@ -153,71 +146,24 @@ void recentDocsDialogs::abortPressed(){
 
 //*********************************************************************
 //
-//Creazione dell'oggetto "textedit", che caricherà il file tramite
-//l'uso di un URL. Il file aperto verrà aggiunto alla lista dei
-//documenti recenti dell'utente. Nel caso il file contenente la lista
-//dei documenti recenti non fosse già presente, verrà creato.
+//Emissione del segnale SigApriDoc per avviare l'apertura del file
+//da URL
 //
 //*********************************************************************
 void recentDocsDialogs::openUrlPressed(){
     QString urlDOC = URL->text();
-    const QRect availableGeometry = QApplication::desktop()->availableGeometry(mw);
-    mw->resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);
-    mw->move((availableGeometry.width() - mw->width()) / 2,
-            (availableGeometry.height() - mw->height()) / 2);
-    mw->load(urlDOC);
-    mw->setEnabled(true);
-    mw->show();
-    if(QFileInfo::exists(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/docs.recent")){
-         QFile recent(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/docs.recent");
-         recent.open(QIODevice::WriteOnly | QIODevice::Append);
-         QTextStream out (&recent);
-         out << URL;
-         recent.close();
-    }else{
-         QFile recent(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/docs.recent");
-         recent.open(QIODevice::WriteOnly);
-         QTextStream out (&recent);
-         out << URL;
-         recent.close();
-    }
-    this->hide();
+    emit(SigApriDoc(urlDOC));
 }
 
 //*********************************************************************
 //
-//Viene creato l'oggetto "textedit", che caricherà un documento nuovo
-//a cui verrà assegnato il nome contenuto nella variabile "docName".
-//Il documento verrà inserito nel file contenente la lista dei
-//documenti recenti. Nel caso questo file non fosse già presente,
-//verrà creato
+//Emissione del segnale SigCreaDoc per avviare la creazione e l'apertura
+//di un nuovo file
 //
 //*********************************************************************
 void recentDocsDialogs::newFilePressed(){
     QString docName = newFileName->text();
-    const QRect availableGeometry = QApplication::desktop()->availableGeometry(mw);
-    mw->resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);
-    mw->move((availableGeometry.width() - mw->width()) / 2,
-            (availableGeometry.height() - mw->height()) / 2);
-    mw->fileNew(docName);
-
-    if(QFileInfo::exists(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/docs.recent")){
-         QFile recent(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/docs.recent");
-         recent.open(QIODevice::WriteOnly | QIODevice::Append);
-         QTextStream out (&recent);
-         out << docName << endl;
-         recent.close();
-     }else{
-        QFile recent(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/docs.recent");
-        recent.open(QIODevice::WriteOnly);
-        QTextStream out (&recent);
-        out << docName << endl;
-        recent.close();
-    }
-    mw->show();
-    this->hide();
-
-
+    emit(SigCreaDoc(docName));
 }
 
 //*********************************************************************
@@ -267,7 +213,7 @@ void recentDocsDialogs::listItemSelected(){
 //*********************************************************************
 
 void recentDocsDialogs::launchEditProfile(){
-    edit = new class editProfile(this,wscPointer);
+    edit = new class editProfile(this, this->wscP);
     edit->setWindowFlag(Qt::Window);
     edit->show();
 }
@@ -308,20 +254,94 @@ int isSuccess(QString esito){
 }
 
 
+//*************************************************
+//
+//Nel caso l'esito della creazione del nuovo doc
+//sia positivo, il textEditor viene popolato e mostrato.
+//La lista dei file recenti viene aggiornata
+//con il nuovo file. In caso di errore
+//viene visualizzato un msgBox che avvisa l'utente
+//del problema.
+//
+//*************************************************
+
 void recentDocsDialogs::esitoCreaDoc(QString esito, CRDT doc){
-  if (isSuccess(esito)){ //se esito positivo creo un CRDT vuoto perch� il documento � stato appena creato
+  if (isSuccess(esito)){ //se esito positivo creo un CRDT vuoto perché il documento é stato appena creato
     mw->getStrutturaCRDT()->setSiteID(doc.getSiteID()); //Prendo solamente il siteId corretto da mettere nel CRDT
+    QString docName = newFileName->text();
+    const QRect availableGeometry = QApplication::desktop()->availableGeometry(mw);
+    mw->resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);
+    mw->move((availableGeometry.width() - mw->width()) / 2,
+            (availableGeometry.height() - mw->height()) / 2);
+    mw->setCurrentFileName(docName);
+    if(QFileInfo::exists(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/docs.recent")){
+         QFile recent(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/docs.recent");
+         recent.open(QIODevice::WriteOnly | QIODevice::Append);
+         QTextStream out (&recent);
+         out << docName << endl;
+         recent.close();
+     }else{
+        QFile recent(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/docs.recent");
+        recent.open(QIODevice::WriteOnly);
+        QTextStream out (&recent);
+        out << docName << endl;
+        recent.close();
+    }
+    mw->show();
+    this->hide();
   }
   else
-    //per ora solo messaggio di errore sull'output
-    std::cout << "Errore nella crazione di un nuovo documento\n" << std::flush;
+  {
+      QMessageBox msgBox;
+      msgBox.setText(tr("A problem occured while creating a new doc. Please, try again"));
+      msgBox.setIcon(QMessageBox::Critical);
+      msgBox.exec();
+  }
 }
 
+//******************************************
+//
+//Nel caso l'esito dell'apertura di un doc
+//esistente sia positivo, il textEditor viene
+//popolato e mostrato. Viene aggiornata la lista
+//dei documenti recenti. In caso di errore
+//viene visualizzato un msgBox che avvisa l'utente
+//del problema.
+//
+//******************************************
 void recentDocsDialogs::esitoApriDoc(QString esito, CRDT doc){
   if (isSuccess(esito)){
       mw->loadCRDTIntoEditor(doc);
+      QString docName = recentDocs->selectedItems().first()->text();
+      const QRect availableGeometry = QApplication::desktop()->availableGeometry(mw);
+      mw->resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);
+      mw->move((availableGeometry.width() - mw->width()) / 2,
+              (availableGeometry.height() - mw->height()) / 2);
+      mw->setCurrentFileName(docName);
+      if(QFileInfo::exists(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/docs.recent")){
+           QFile recent(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/docs.recent");
+           recent.open(QIODevice::WriteOnly | QIODevice::Append);
+           QTextStream out (&recent);
+           out << docName << endl;
+           recent.close();
+       }else{
+          QFile recent(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/docs.recent");
+          recent.open(QIODevice::WriteOnly);
+          QTextStream out (&recent);
+          out << docName << endl;
+          recent.close();
+      }
+      mw->show();
+      this->hide();
+
     }
   else
-    std::cout << "Errore nell'apertura di un file esistente\n" <<std::flush;
+  {
+      QMessageBox msgBox;
+      msgBox.setText(tr("A problem occured while opening the selected doc. Please, try again"));
+      msgBox.setIcon(QMessageBox::Critical);
+      msgBox.exec();
+
+  }
 }
 

@@ -96,9 +96,12 @@ public:
     void loadCRDTIntoEditor(CRDT crdt);
 
 public:
+
+     void setCurrentFileName(const QString &fileName);
+
     signals:
-    void formatChanged(const QTextCharFormat &format);
-     void SigChiudiDoc(QString nomeFile);
+        void formatChanged(const QTextCharFormat &format);
+        void SigChiudiDoc(QString nomeFile);
 	
 public slots:
     void fileNew(QString fileName);
@@ -194,7 +197,7 @@ private:
     void setupFileActions();
     void setupEditActions();
     void setupTextActions();
-    void setCurrentFileName(const QString &fileName);
+
     void launchProfileEditor();
     void mergeFormatOnWordOrSelection(const QTextCharFormat &format);
     void fontChanged(const QFont &f);
@@ -254,6 +257,8 @@ private:
 
     //modalità scrittura a colori
     bool colorWriting;
+
+    WorkerSocketClient *wscP;
 
 };
 

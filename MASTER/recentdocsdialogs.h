@@ -83,7 +83,7 @@ private:
     QLineEdit *URL;
     QLineEdit *newFileName;
     TextEdit *mw;
-    WorkerSocketClient* wscPointer;
+    WorkerSocketClient* wscP;
     class editProfile *edit;
 
 

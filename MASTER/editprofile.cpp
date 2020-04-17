@@ -18,6 +18,7 @@ editProfile::editProfile(QWidget *parent, WorkerSocketClient* wscP)
     }
     setWindowTitle("User Profile editor");
     username = new QLabel(tr("&Username: "));
+    this->wscP = wscP;
     usernameEdit = new QLineEdit();
     usernameEdit->setEnabled(false);
     nickname = new QLabel(tr("&Nickname: "));

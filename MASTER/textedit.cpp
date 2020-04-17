@@ -101,6 +101,8 @@ TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP)
     //inizialmente scrittura normale
     colorWriting = false;
 
+    this->wscP = wscP;
+
     //Creazione dockWidget utenti online/offline
 
     usersTree = new QTreeWidget();
@@ -456,10 +458,10 @@ void TextEdit::setupTextActions()
     connect(comboSize, QOverload<const QString &>::of(&QComboBox::activated), this, &TextEdit::textSize);
 }
 
-void TextEdit::load(const QString &f)
-{
-    emit SigApriDoc(f);
-}
+//void TextEdit::load(const QString &f)
+//{
+//    emit SigApriDoc(f);
+//}
 
 void TextEdit::setCurrentFileName(const QString &fileName)
 {
@@ -476,14 +478,14 @@ void TextEdit::setCurrentFileName(const QString &fileName)
     setWindowModified(false);
 }
 
-void TextEdit::fileNew(QString fileName)
-{
-        disconnect(textEdit->document(),&QTextDocument::contentsChange,this, &TextEdit::CRDTInsertRemove);
-        textEdit->clear();
-        setCurrentFileName(fileName);
-        emit SigCreaDoc(fileName);
-        connect(textEdit->document(),&QTextDocument::contentsChange,this, &TextEdit::CRDTInsertRemove );
-}
+//void TextEdit::fileNew(QString fileName)
+//{
+//        disconnect(textEdit->document(),&QTextDocument::contentsChange,this, &TextEdit::CRDTInsertRemove);
+//        textEdit->clear();
+//        setCurrentFileName(fileName);
+//        emit SigCreaDoc(fileName);
+//        connect(textEdit->document(),&QTextDocument::contentsChange,this, &TextEdit::CRDTInsertRemove );
+//}
 
 void TextEdit::filePrint()
 {

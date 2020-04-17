@@ -69,6 +69,7 @@ private:
     QPushButton *cancelButton;
     QPushButton *newProfileButton;
     newProfileDialog *newProfile;
+    WorkerSocketClient *wscP;
     recentDocsDialogs *recDoc;
 
 };

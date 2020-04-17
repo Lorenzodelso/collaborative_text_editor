@@ -12,6 +12,7 @@ newProfileDialog::newProfileDialog(QWidget *parent, WorkerSocketClient* wscP)
     setParent(parent);
     setWindowFlag(Qt::Window);
     setModal(true);
+    this->wscP = wscP;
     username = new QLabel(tr("Username: "));
     userEdit = new QLineEdit();
     username->setBuddy(userEdit);

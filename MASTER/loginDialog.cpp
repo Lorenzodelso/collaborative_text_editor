@@ -14,6 +14,7 @@ loginDialog::loginDialog(QWidget *parent, WorkerSocketClient* wscP)
 //
 //********************************************************************************************
     setParent(parent);
+    this->wscP = wscP;
     username = new QLabel(tr("Username: "));
     usernameEdit = new QLineEdit;
     password = new QLabel(tr("Password: "));
@@ -131,7 +132,7 @@ void loginDialog::enableLoginButton(){
 //
 //*********************************************************************
 void loginDialog::registerClicked(){
-    newProfile = new newProfileDialog(this);
+    newProfile = new newProfileDialog(this, this->wscP);
     newProfile->show();
     this->hide();
 }
@@ -174,7 +175,7 @@ void loginDialog::esitoLogin(QString esito/*esito*/, QUtente user, QList<QString
         }
         recentDocs.close();
         this->setAttribute(Qt::WA_DeleteOnClose);
-        recDoc = new recentDocsDialogs(0);
+        recDoc = new recentDocsDialogs(0, this->wscP);
         recDoc->show();
         this->close();
     }

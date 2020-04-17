@@ -52,6 +52,7 @@ public slots:
 private:
     const QString rsrc = ":/images/win";
 
+    WorkerSocketClient *wscP;
     QUtente *utente;
     QLabel *username;
     QLabel *password;
