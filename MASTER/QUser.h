@@ -22,6 +22,10 @@ public:
     void setUserName(QString userName);
     bool operator==(QUser user);
 
+    friend QDataStream& operator<<(QDataStream& out,QUser& user);
+    friend QDataStream& operator>>(QDataStream& in, QUser& user);
+
+
 };
 
 

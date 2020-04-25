@@ -4,6 +4,7 @@
 
 #include <QString>
 #include <QObject>
+#include <QDataStream>
 
 class QUtente: public QObject {
     Q_OBJECT
@@ -17,9 +18,13 @@ private:
 
 
 public:
+    QUtente();
     QUtente(quint32 userId, QString userName, QString nickName, QString password, QString nomeImg);
     QUtente(QUtente const &utente);
     QUtente operator=(QUtente const &utente);
+    friend QDataStream& operator<<(QDataStream& out,QUtente& user);
+    friend QDataStream& operator>>(QDataStream& in, QUtente& user);
+
     quint32 getUserId();
     QString getUsername();
     QString getPassword();
@@ -35,6 +40,7 @@ public:
     void setPassword(QString pass);
 
     void setUsername(QString username);
+
 };
 
 #endif // QUTENTE_H

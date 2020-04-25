@@ -29,6 +29,8 @@ private:
 public:
     QString text;
     quint16 counter;
+    CRDT();
+
     CRDT(quint16 id);
     CRDT(quint16 id, QVector<Char> listChar);
     quint16 getSiteID();

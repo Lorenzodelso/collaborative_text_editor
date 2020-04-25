@@ -25,9 +25,12 @@
 
 #ifndef PDS1_WORKERSOCKET_H
 #define PDS1_WORKERSOCKET_H
+#include <QObject>
 
 
 #include <QTcpSocket>
+#include <QDataStream>
+#include <regex>
 #include "QUtente.h"
 #include "CRDT.h"
 #include "QUser.h"
@@ -35,8 +38,11 @@
 class WorkerSocket: public QObject {
     Q_OBJECT
     QTcpSocket* socketConnessoP;
+    QUtente user;
 
 
+public:
+    WorkerSocket();
 
 signals:
 
@@ -48,7 +54,7 @@ void SigModificaProfiloUtente(WorkerSocket* wsP, QUtente userOld, QUtente userNe
 void SigChiusuraConnessioneDaParteDelClient(WorkerSocket* wsP, QUtente user);
 void SigChiusuraConnessioneDaParteDelServer(WorkerSocket* wsP);
 void SigChiusuraDocumentoDaParteDelClient(WorkerSocket* wsP, QUtente user);
-void SigOpDoc(/*rapprensetazione richiesta operazione sul documento*/);
+void SigOpDoc(/*rapprensetazione richiesta operazione sul documento*/DocOperation operation);
 void SigOpChiHaInseritoCosa(WorkerSocket* wsP, QUtente user);
 
 
@@ -168,7 +174,7 @@ public slots:
      *  se l'ha richiesta un altro client allora non faccio niente
      *
      * */
-    void rispondiEsitoOpDoc(/*esito, rappresentazione richiesta operazione sul documento*/);
+    void rispondiEsitoOpDoc(QString esito/*esito, rappresentazione richiesta operazione sul documento*/,DocOperation operation);
 
 
 

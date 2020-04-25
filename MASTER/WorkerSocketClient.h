@@ -8,11 +8,15 @@
 
 #include <QObject>
 #include "QUtente.h"
+#include <QTcpSocket>
 #include "CRDT.h"
 #include "QUser.h"
 
 class WorkerSocketClient : public QObject{
     Q_OBJECT
+
+    QTcpSocket* socketConnesso;
+
 
     signals:
 
@@ -31,9 +35,9 @@ class WorkerSocketClient : public QObject{
 
     void SigEsitoModificaProfiloUtente(QString esito/*esito*/, QUtente userNew);
 
-    void SigOpDocRemota(/*rappresentazione operazione sul documento*/);
+    void SigOpDocRemota( QString msg1/*rappresentazione operazione sul documento*/);
 
-    void SigEsitoOpDocLocale(QString esito/*esito*//*rappresentazione operazione sul documento*/);
+    void SigEsitoOpDocLocale(QString esito, DocOperation operazione/*esito*//*rappresentazione operazione sul documento*/);
 
     void SigQuestoUserHaApertoIlDoc(QUser usr);
 
@@ -182,7 +186,7 @@ public slots:
     /*
      * manda la richiesta dell'operazione sul documento che ho già fatto localmente
      * */
-    void opDocLocale(/*rappresentazione richiesta operazione sul documento*/);
+    void opDocLocale(DocOperation operazione/*rappresentazione richiesta operazione sul documento*/);
 
     /*
      * manda al server la richiesta di ricevere la lista di oggetti QUser dello storico del documento corrente
