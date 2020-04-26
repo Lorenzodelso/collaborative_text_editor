@@ -21,32 +21,32 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    ClickableLabel.cpp \
+    EditProfile.cpp \
+    LoginDialog.cpp \
+    NewProfileDialog.cpp \
+    RecentDocsDialogs.cpp \
+    TextEdit.cpp \
     main.cpp \
     Char.cpp \
-    clickablelabel.cpp \
     CRDT.cpp \
     DocOperation.cpp \
-    editprofile.cpp \
-    loginDialog.cpp \
-    newprofiledialog.cpp \
     QUser.cpp  \
     QUtente.cpp \
-    recentdocsdialogs.cpp \
-    textedit.cpp    \
     WorkerSocketClient.cpp \
 
 HEADERS += \
     Char.h \
-    clickablelabel.h \
     CRDT.h \
+    ClickableLabel.h \
     DocOperation.h \
-    editprofile.h  \
-    loginDialog.h \
-    newprofiledialog.h \
+    EditProfile.h \
+    LoginDialog.h \
+    NewProfileDialog.h \
     QUser.h \
     QUtente.h \
-    recentdocsdialogs.h \
-    textedit.h \
+    RecentDocsDialogs.h \
+    TextEdit.h \
     WorkerSocketClient.h \
 
 RESOURCES += textedit.qrc

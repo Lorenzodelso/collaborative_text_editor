@@ -3,18 +3,18 @@
 
 #include <QDialog>
 #include <QVBoxLayout>
-#include "newprofiledialog.h"
-#include "recentdocsdialogs.h"
+#include "NewProfileDialog.h"
+#include "RecentDocsDialogs.h"
 #include "WorkerSocketClient.h"
 
 class QLabel;
 class QLineEdit;
 class QPushButton;
 
-class loginDialog : public QWidget{
+class LoginDialog : public QWidget{
     Q_OBJECT
 public:
-    loginDialog(QWidget *parent = 0, WorkerSocketClient* wscP = 0);
+    LoginDialog(QWidget *parent = 0, WorkerSocketClient* wscP = 0);
 
 public slots:
 
@@ -68,9 +68,9 @@ private:
     QPushButton *loginButton;
     QPushButton *cancelButton;
     QPushButton *newProfileButton;
-    newProfileDialog *newProfile;
+    NewProfileDialog *newProfile;
     WorkerSocketClient *wscP;
-    recentDocsDialogs *recDoc;
+    RecentDocsDialogs *recDoc;
 
 };
 

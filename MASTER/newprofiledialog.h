@@ -9,10 +9,10 @@
 #include <QFile>
 #include <QStandardPaths>
 #include <QTextStream>
-#include "clickablelabel.h"
+#include "ClickableLabel.h"
 #include "QUtente.h"
 #include "WorkerSocketClient.h"
-#include "recentdocsdialogs.h"
+#include "RecentDocsDialogs.h"
 #include "WorkerSocketClient.h"
 #include <QPixmap>
 
@@ -20,11 +20,11 @@ class QLabel;
 class QLineEdit;
 class QPushButton;
 
-class newProfileDialog:public QDialog
+class NewProfileDialog:public QDialog
 {
     Q_OBJECT
 public:
-    newProfileDialog(QWidget *parent, WorkerSocketClient* wscP);
+    NewProfileDialog(QWidget *parent, WorkerSocketClient* wscP);
 
 signals:
     void SigRegistrazione(QUtente user);
@@ -67,7 +67,7 @@ private:
     QLineEdit *repPassEdit;
     QLineEdit *nickEdit;
     QLabel *err;
-    recentDocsDialogs *docsDialog;
+    RecentDocsDialogs *docsDialog;
 };
 
 #endif // NEWPROFILEDIALOG_H

@@ -1,7 +1,7 @@
-#include "recentdocsdialogs.h"
+#include "RecentDocsDialogs.h"
 
 
-recentDocsDialogs::recentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP):QWidget(parent)
+RecentDocsDialogs::RecentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP):QWidget(parent)
 {
 
 //*********************************************************************
@@ -111,12 +111,12 @@ recentDocsDialogs::recentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP):
     connect(editProfile, SIGNAL(clicked()), this, SLOT(launchEditProfile()));
 
     /*creazione documento*/
-    QObject::connect(this, &recentDocsDialogs::SigCreaDoc, wscP, &WorkerSocketClient::creaDoc);
-    QObject::connect(wscP, &WorkerSocketClient::SigEsitoCreaDoc, this,  &recentDocsDialogs::esitoCreaDoc);
+    QObject::connect(this, &RecentDocsDialogs::SigCreaDoc, wscP, &WorkerSocketClient::creaDoc);
+    QObject::connect(wscP, &WorkerSocketClient::SigEsitoCreaDoc, this,  &RecentDocsDialogs::esitoCreaDoc);
 
     /*apertura documento*/
-    QObject::connect(this, &recentDocsDialogs::SigApriDoc, wscP, &WorkerSocketClient::apriDoc);
-    QObject::connect(wscP, &WorkerSocketClient::SigEsitoApriDoc, this,  &recentDocsDialogs::esitoApriDoc);
+    QObject::connect(this, &RecentDocsDialogs::SigApriDoc, wscP, &WorkerSocketClient::apriDoc);
+    QObject::connect(wscP, &WorkerSocketClient::SigEsitoApriDoc, this,  &RecentDocsDialogs::esitoApriDoc);
 
 
 }
@@ -128,7 +128,7 @@ recentDocsDialogs::recentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP):
 //
 //*********************************************************************
 
-void recentDocsDialogs::openPressed(){
+void RecentDocsDialogs::openPressed(){
     QString selectedDoc = recentDocs->selectedItems().first()->text();
     emit(SigApriDoc(selectedDoc));
 }
@@ -139,7 +139,7 @@ void recentDocsDialogs::openPressed(){
 //
 //*********************************************************************
 
-void recentDocsDialogs::abortPressed(){
+void RecentDocsDialogs::abortPressed(){
     this->close();
 }
 
@@ -150,7 +150,7 @@ void recentDocsDialogs::abortPressed(){
 //da URL
 //
 //*********************************************************************
-void recentDocsDialogs::openUrlPressed(){
+void RecentDocsDialogs::openUrlPressed(){
     QString urlDOC = URL->text();
     emit(SigApriDoc(urlDOC));
 }
@@ -161,7 +161,7 @@ void recentDocsDialogs::openUrlPressed(){
 //di un nuovo file
 //
 //*********************************************************************
-void recentDocsDialogs::newFilePressed(){
+void RecentDocsDialogs::newFilePressed(){
     QString docName = newFileName->text();
     emit(SigCreaDoc(docName));
 }
@@ -172,7 +172,7 @@ void recentDocsDialogs::newFilePressed(){
 //il campo "url" sia pieno o vuoto
 //
 //*********************************************************************
-void recentDocsDialogs::urlChanged(const QString &url){
+void RecentDocsDialogs::urlChanged(const QString &url){
     if(url.isEmpty() || url.isNull()){
         openUrl->setDisabled(true);
     }
@@ -188,7 +188,7 @@ void recentDocsDialogs::urlChanged(const QString &url){
 //il campo "newFileName" sia pieno o vuoto
 //
 //*********************************************************************
-void recentDocsDialogs::newFileChanged(const QString &newFileName){
+void RecentDocsDialogs::newFileChanged(const QString &newFileName){
     if(newFileName.isEmpty() || newFileName.isNull()){
         create->setDisabled(true);
     }else{
@@ -202,7 +202,7 @@ void recentDocsDialogs::newFileChanged(const QString &newFileName){
 //selezionato dalla lista
 //
 //*********************************************************************
-void recentDocsDialogs::listItemSelected(){
+void RecentDocsDialogs::listItemSelected(){
     open->setDisabled(false);
 
 }
@@ -212,8 +212,8 @@ void recentDocsDialogs::listItemSelected(){
 //
 //*********************************************************************
 
-void recentDocsDialogs::launchEditProfile(){
-    edit = new class editProfile(this, this->wscP);
+void RecentDocsDialogs::launchEditProfile(){
+    edit = new class EditProfile(this, this->wscP);
     edit->setWindowFlag(Qt::Window);
     edit->show();
 }
@@ -222,7 +222,7 @@ void recentDocsDialogs::launchEditProfile(){
 //Aggiorna il contenuto del widget
 //
 //*********************************************************************
-void recentDocsDialogs::updateRecDocs(){
+void RecentDocsDialogs::updateRecDocs(){
 
     recentDocs->clear();
     URL->clear();
@@ -265,7 +265,7 @@ int isSuccess(QString esito){
 //
 //*************************************************
 
-void recentDocsDialogs::esitoCreaDoc(QString esito, CRDT doc){
+void RecentDocsDialogs::esitoCreaDoc(QString esito, CRDT doc){
   if (isSuccess(esito)){ //se esito positivo creo un CRDT vuoto perché il documento é stato appena creato
     mw->getStrutturaCRDT()->setSiteID(doc.getSiteID()); //Prendo solamente il siteId corretto da mettere nel CRDT
     QString docName = newFileName->text();
@@ -309,7 +309,7 @@ void recentDocsDialogs::esitoCreaDoc(QString esito, CRDT doc){
 //del problema.
 //
 //******************************************
-void recentDocsDialogs::esitoApriDoc(QString esito, CRDT doc){
+void RecentDocsDialogs::esitoApriDoc(QString esito, CRDT doc){
   if (isSuccess(esito)){
       mw->loadCRDTIntoEditor(doc);
       QString docName = recentDocs->selectedItems().first()->text();

@@ -18,15 +18,15 @@
 #include <QTextStream>
 #include <QMessageBox>
 
-#include "clickablelabel.h"
+#include "ClickableLabel.h"
 #include "WorkerSocketClient.h"
 #include "QUtente.h"
 
-class editProfile:public QWidget
+class EditProfile:public QWidget
 {
     Q_OBJECT
 public:
-    editProfile(QWidget *parent, WorkerSocketClient* wscP);
+    EditProfile(QWidget *parent, WorkerSocketClient* wscP);
 
 signals:
     void SigModificaProfiloUtente(QUtente userNew);

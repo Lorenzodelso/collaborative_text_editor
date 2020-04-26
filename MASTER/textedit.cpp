@@ -84,7 +84,7 @@
 #endif
 #endif
 
-#include "textedit.h"
+#include "TextEdit.h"
 
 
 #ifdef Q_OS_MAC

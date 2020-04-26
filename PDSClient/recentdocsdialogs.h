@@ -15,18 +15,18 @@
 #include <QDialogButtonBox>
 #include <QApplication>
 #include <QDesktopWidget>
-#include "textedit.h"
-#include "editprofile.h"
+#include "TextEdit.h"
+#include "EditProfile.h"
 #include "WorkerSocketClient.h"
 
 
 
 
-class recentDocsDialogs : public QWidget
+class RecentDocsDialogs : public QWidget
 {
     Q_OBJECT
 public:
-    recentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP);
+    RecentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP);
 
 signals:
     void SigDisconnessioneDalServer();
@@ -84,7 +84,7 @@ private:
     QLineEdit *newFileName;
     TextEdit *mw;
     WorkerSocketClient* wscP;
-    class editProfile *edit;
+    class EditProfile *edit;
 
 
 };

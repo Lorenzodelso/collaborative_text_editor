@@ -1,5 +1,5 @@
-#include "newprofiledialog.h"
-#include "loginDialog.h"
+#include "NewProfileDialog.h"
+#include "LoginDialog.h"
 
 //*********************************************************************
 //
@@ -7,7 +7,7 @@
 //
 //*********************************************************************
 
-newProfileDialog::newProfileDialog(QWidget *parent, WorkerSocketClient* wscP)
+NewProfileDialog::NewProfileDialog(QWidget *parent, WorkerSocketClient* wscP)
 {
     setParent(parent);
     setWindowFlag(Qt::Window);
@@ -58,8 +58,8 @@ newProfileDialog::newProfileDialog(QWidget *parent, WorkerSocketClient* wscP)
     connect(userPic, SIGNAL(clicked()), this, SLOT(selectImagePressed()));
 
     /*registrazione*/
-    QObject::connect(this, &newProfileDialog::SigRegistrazione, wscP, &WorkerSocketClient::registrazione);
-    QObject::connect(wscP, &WorkerSocketClient::SigEsitoRegistrazione,this,  &newProfileDialog::esitoRegistrazione);
+    QObject::connect(this, &NewProfileDialog::SigRegistrazione, wscP, &WorkerSocketClient::registrazione);
+    QObject::connect(wscP, &WorkerSocketClient::SigEsitoRegistrazione,this,  &NewProfileDialog::esitoRegistrazione);
 
     layout->addWidget(userPic);
     layout->setAlignment(userPic, Qt::AlignCenter);
@@ -97,7 +97,7 @@ newProfileDialog::newProfileDialog(QWidget *parent, WorkerSocketClient* wscP)
 //
 //*********************************************************************
 
-void newProfileDialog::abortPressed(){
+void NewProfileDialog::abortPressed(){
     parentWidget()->show();
     close();
 }
@@ -111,7 +111,7 @@ void newProfileDialog::abortPressed(){
 //e il campo username non sia vuoto.
 //
 //*********************************************************************
-void newProfileDialog::registerPressed(){
+void NewProfileDialog::registerPressed(){
     QString user = userEdit->text();
     QString pass = passEdit->text();
     QString nick = nickEdit->text();
@@ -139,7 +139,7 @@ void newProfileDialog::registerPressed(){
 //e comparirà un messaggio d'errore.
 //
 //*********************************************************************
-void newProfileDialog::comparePasswords(){
+void NewProfileDialog::comparePasswords(){
     QString pass = passEdit->text();
     QString repPass = repPassEdit->text();
 
@@ -167,7 +167,7 @@ void newProfileDialog::comparePasswords(){
 //toccata dal puntatore del mouse
 //
 //*********************************************************************
-void newProfileDialog::imageHovered(){
+void NewProfileDialog::imageHovered(){
     profilePic->load(rsrc+"/add-profile-image.png");
     userPic->setPixmap(*profilePic);
 }
@@ -180,7 +180,7 @@ void newProfileDialog::imageHovered(){
 //mouse non tocca più l'immagine
 //
 //*********************************************************************
-void newProfileDialog::imageUnhovered(){
+void NewProfileDialog::imageUnhovered(){
 
     if(utente->getNomeImg().isEmpty() || utente->getNomeImg().isNull()){
             profilePic->load(rsrc+"/colored-edit-profile.png");
@@ -200,7 +200,7 @@ void newProfileDialog::imageUnhovered(){
 //oggetto QUtente verrà aggiornato con il nuovo "nomeImg"
 //
 //*********************************************************************
-void newProfileDialog::selectImagePressed(){
+void NewProfileDialog::selectImagePressed(){
     QUrl imageUrl = QFileDialog::getOpenFileUrl(this, tr("Open Image"), QStandardPaths::writableLocation(QStandardPaths::PicturesLocation), tr("Image Files (*.png *.jpg *.bmp)"));
     QString imagePath = imageUrl.path();
     imagePath.remove(0,1);
@@ -222,7 +222,7 @@ void newProfileDialog::selectImagePressed(){
  * se esito = "Success" allora gli altri paramteri sono la deserializzazione di oggetti mandati dal server
  *
  * */
-void newProfileDialog::esitoRegistrazione(QString esito/*esito*/){
+void NewProfileDialog::esitoRegistrazione(QString esito/*esito*/){
     if(esito == "Failed"){
 
         QMessageBox msgBox;

@@ -48,7 +48,7 @@
 **
 ****************************************************************************/
 
-#include "loginDialog.h"
+#include "LoginDialog.h"
 
 #include <QApplication>
 #include <QDesktopWidget>
@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
     WorkerSocketClient* wscP= new WorkerSocketClient();
     wscP->moveToThread(tP);
 
-    loginDialog *ld = new loginDialog(0, wscP);
+    LoginDialog *ld = new LoginDialog(0, wscP);
 
     /*deallocazione oggetto worker socket client se thread corrispondente finisce*/
     QObject::connect(tP, &QThread::finished, wscP, &QObject::deleteLater);

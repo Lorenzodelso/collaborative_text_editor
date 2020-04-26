@@ -1,4 +1,4 @@
-#include "editprofile.h"
+#include "EditProfile.h"
 
 //*********************************************************************
 //
@@ -10,7 +10,7 @@
 //l'atto di modifica del profilo
 //
 //*********************************************************************
-editProfile::editProfile(QWidget *parent, WorkerSocketClient* wscP)
+EditProfile::EditProfile(QWidget *parent, WorkerSocketClient* wscP)
 {
     setParent(parent);
     if(!QDir(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/").exists()){
@@ -90,8 +90,8 @@ editProfile::editProfile(QWidget *parent, WorkerSocketClient* wscP)
     connect(userPic, SIGNAL(unHovered()), this, SLOT(imageUnhovered()));
 
     /*modifica profilo utente*/
-    QObject::connect(this, &editProfile::SigModificaProfiloUtente, wscP, &WorkerSocketClient::modificaProfiloUtente);
-    QObject::connect(wscP, &WorkerSocketClient::SigEsitoModificaProfiloUtente,this,  &editProfile::esitoModificaProfiloUtente);
+    QObject::connect(this, &EditProfile::SigModificaProfiloUtente, wscP, &WorkerSocketClient::modificaProfiloUtente);
+    QObject::connect(wscP, &WorkerSocketClient::SigEsitoModificaProfiloUtente,this,  &EditProfile::esitoModificaProfiloUtente);
 
 
 //    //**********************************************************
@@ -110,7 +110,7 @@ editProfile::editProfile(QWidget *parent, WorkerSocketClient* wscP)
 //campo corrispondente di questo dialog sarà popolato con un placeholder
 //
 //*********************************************************************
-void editProfile::changedNick(const QString &){
+void EditProfile::changedNick(const QString &){
 
    QString nick = nickEdit ->text();
    nickEdit->setStyleSheet("QLineEdit {color: #000000;}");
@@ -124,7 +124,7 @@ void editProfile::changedNick(const QString &){
 //L'oggetto "QUtente" popolato con le eventuali modifiche, viene inviato
 //
 //*********************************************************************
-void editProfile::savePressed(){
+void EditProfile::savePressed(){
 
     emit(SigModificaProfiloUtente(*user));
 }
@@ -140,7 +140,7 @@ void editProfile::savePressed(){
 //sarà chiaro come l'immagine utente verra inviata al client dal server
 //
 //*********************************************************************
-void editProfile::discardPressed(){
+void EditProfile::discardPressed(){
     QFile::remove(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/"+user->getNomeImg());
     close();
 }
@@ -153,7 +153,7 @@ void editProfile::discardPressed(){
 //oggetto QUtente verrà aggiornato con il nuovo "nomeImg"
 //
 //*********************************************************************
-void editProfile::selectImagePressed(){
+void EditProfile::selectImagePressed(){
     QUrl imageUrl = QFileDialog::getOpenFileUrl(this, tr("Open Image"), QStandardPaths::writableLocation(QStandardPaths::PicturesLocation), tr("Image Files (*.png *.jpg *.bmp)"));
     QString imagePath = imageUrl.path();
     imagePath.remove(0,1);
@@ -181,7 +181,7 @@ void editProfile::selectImagePressed(){
 //
 //*********************************************************************
 
-void editProfile::imageHovered(){
+void EditProfile::imageHovered(){
     profilePic->load(rsrc+"/add-profile-image.png");
     userPic->setPixmap(*profilePic);
 }
@@ -194,7 +194,7 @@ void editProfile::imageHovered(){
 //mouse non tocca più l'immagine
 //
 //*********************************************************************
-void editProfile::imageUnhovered(){
+void EditProfile::imageUnhovered(){
 
     if(user->getNomeImg().isEmpty() || user->getNomeImg().isNull() || user->getNomeImg() == ""){
             profilePic->load(rsrc+"/colored-edit-profile.png");
@@ -215,7 +215,7 @@ void editProfile::imageUnhovered(){
  * se esito = "Success" allora gli altri paramteri sono la deserializzazione di oggetti mandati dal server
  *
  * */
-void editProfile::esitoModificaProfiloUtente(QString esito/*esito*/, QUtente userNew){
+void EditProfile::esitoModificaProfiloUtente(QString esito/*esito*/, QUtente userNew){
     if(esito == "Failed"){
         QFile::remove(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/"+user->getNomeImg());
         user = new QUtente(0,"","","","");

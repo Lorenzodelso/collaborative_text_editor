@@ -1,10 +1,10 @@
 #include <QtWidgets>
-#include "loginDialog.h"
-#include "textedit.h"
-#include "recentdocsdialogs.h"
+#include "LoginDialog.h"
+#include "TextEdit.h"
+#include "RecentDocsDialogs.h"
 
 
-loginDialog::loginDialog(QWidget *parent, WorkerSocketClient* wscP)
+LoginDialog::LoginDialog(QWidget *parent, WorkerSocketClient* wscP)
     :QWidget(parent){
     this->setWindowTitle("Login");
 //********************************************************************************************
@@ -45,12 +45,12 @@ loginDialog::loginDialog(QWidget *parent, WorkerSocketClient* wscP)
     connect(newProfileButton, SIGNAL(clicked()), this, SLOT(registerClicked()));
 
     /*settaggio connessione*/
-    QObject::connect(this, &loginDialog::SigConnessioneAlServer, wscP, &WorkerSocketClient::connessioneAlServer);
-    QObject::connect(wscP, &WorkerSocketClient::SigEsitoConnessioneAlServer, this,  &loginDialog::esitoConnessioneAlServer);
+    QObject::connect(this, &LoginDialog::SigConnessioneAlServer, wscP, &WorkerSocketClient::connessioneAlServer);
+    QObject::connect(wscP, &WorkerSocketClient::SigEsitoConnessioneAlServer, this,  &LoginDialog::esitoConnessioneAlServer);
 
     /*login*/
-    QObject::connect(this, &loginDialog::SigLogin, wscP, &WorkerSocketClient::login);
-    QObject::connect(wscP, &WorkerSocketClient::SigEsitoLogin, this,  &loginDialog::esitoLogin);
+    QObject::connect(this, &LoginDialog::SigLogin, wscP, &WorkerSocketClient::login);
+    QObject::connect(wscP, &WorkerSocketClient::SigEsitoLogin, this,  &LoginDialog::esitoLogin);
 
 
     QVBoxLayout *layout = new QVBoxLayout();
@@ -91,7 +91,7 @@ loginDialog::loginDialog(QWidget *parent, WorkerSocketClient* wscP)
 //mediante il segnale SigLogin()
 //
 //*********************************************************************
-void loginDialog::loginClicked(){
+void LoginDialog::loginClicked(){
     QString username = usernameEdit->text();
     QString password = passwordEdit->text();
     QUtente *user = new QUtente(0, username, "", password, "");
@@ -104,7 +104,7 @@ void loginDialog::loginClicked(){
 //Chiusura dell'applicazione
 //
 //*********************************************************************
-void loginDialog::cancelClicked(){
+void LoginDialog::cancelClicked(){
 
     QCoreApplication::quit();
 
@@ -119,7 +119,7 @@ void loginDialog::cancelClicked(){
 //
 //
 //*********************************************************************
-void loginDialog::enableLoginButton(){
+void LoginDialog::enableLoginButton(){
     if(!usernameEdit->text().isEmpty() && !passwordEdit->text().isEmpty())
         loginButton->setEnabled(true);
     else
@@ -131,8 +131,8 @@ void loginDialog::enableLoginButton(){
 //Creazione e avvio del dialog di registrazione di un nuovo profilo
 //
 //*********************************************************************
-void loginDialog::registerClicked(){
-    newProfile = new newProfileDialog(this, this->wscP);
+void LoginDialog::registerClicked(){
+    newProfile = new NewProfileDialog(this, this->wscP);
     newProfile->show();
     this->hide();
 }
@@ -147,7 +147,7 @@ void loginDialog::registerClicked(){
  *
  * */
 
-void loginDialog::esitoLogin(QString esito/*esito*/, QUtente user, QList<QString> nomiFilesEditati){
+void LoginDialog::esitoLogin(QString esito/*esito*/, QUtente user, QList<QString> nomiFilesEditati){
     QUtente *utente;
     if(esito == "Failed"){
         QMessageBox msgBox;
@@ -175,21 +175,21 @@ void loginDialog::esitoLogin(QString esito/*esito*/, QUtente user, QList<QString
         }
         recentDocs.close();
         this->setAttribute(Qt::WA_DeleteOnClose);
-        recDoc = new recentDocsDialogs(0, this->wscP);
+        recDoc = new RecentDocsDialogs(0, this->wscP);
         recDoc->show();
         this->close();
     }
 
 }
 
-void loginDialog::attivaSocket(){
+void LoginDialog::attivaSocket(){
     emit(SigConnessioneAlServer());
 }
 
-void loginDialog::disattivaSocket(){
+void LoginDialog::disattivaSocket(){
     emit(SigDisconnessioneDalServer());
 }
 
-QString loginDialog::esitoConnessioneAlServer(QString esito){
+QString LoginDialog::esitoConnessioneAlServer(QString esito){
     return esito;
 }
