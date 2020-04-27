@@ -7,6 +7,7 @@
 
 
 Server::Server() {
+    qRegisterMetaType<QUtente>();
     currUserId=0;
 
 
@@ -340,6 +341,9 @@ void Server::login(WorkerSocket* wsP, QUtente user) {
 }
 
 void Server::registrazione(WorkerSocket* wsP, QUtente user) {
+    //DEBUG
+    std::cout<<"\nSlot registrazione"<<std::flush;
+    //DEBUG
 
     /*
     * questa connect mi serve solo ora perchè è da this al WorkerSocket

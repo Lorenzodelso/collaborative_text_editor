@@ -21,7 +21,7 @@ void WorkerSocket::WorkerSocketAttivati(quint64 socketDescriptor){
 
     socketConnessoP->setSocketDescriptor(socketDescriptor);
 
-    connect(socketConnessoP, SIGNAL(readyRead()), this, SLOT(leggiMsgApp()), Qt::DirectConnection);
+    connect(socketConnessoP, &QTcpSocket::readyRead, this, &WorkerSocket::leggiMsgApp);
 }
 
 
@@ -30,6 +30,13 @@ void WorkerSocket::leggiMsgApp() {
 
     QDataStream in(this->socketConnessoP);
     QString msg = socketConnessoP->readLine();
+    //char* msg9;
+    //uint prova = 10;
+    //in.readBytes(msg9,prova);
+    //DEBUG
+    std::cout<<"\nRicevuto segnale readyRead - Slot leggiMsgApp"<<std::flush;
+    std::cout<<"\n"+msg.toStdString()<<std::flush;
+    //DEBUG
 
     if (msg.compare("open",Qt::CaseSensitivity::CaseSensitive)==0) {
 
@@ -65,12 +72,15 @@ void WorkerSocket::leggiMsgApp() {
 
     }
 
-    if (msg.compare("register",Qt::CaseSensitivity::CaseSensitive) == 0)
+    if (msg.compare("register\n",Qt::CaseSensitivity::CaseSensitive) == 0)
     {
 
         QUtente user;
 
         in >> user;
+        //DEBUG
+        std::cout<<"\nUser ricevuto: "+user.getUsername().toStdString()<<std::flush;
+        //DEBUG
         QRegExp e("([a-zA-Z0-9\\s_\\\\.\\-\\(\\):])+(.doc|.docx|.pdf|.png)$");
 
         if (user.getUsername() != NULL && user.getPassword() != NULL && e.indexIn(user.getNomeImg())) {

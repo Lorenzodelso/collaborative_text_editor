@@ -3,6 +3,7 @@
 #include "WorkerSocketClient.h"
 #include  <QTcpSocket>
 #include <QHostAddress>
+#include<QThread>
 
 
 
@@ -24,7 +25,7 @@ void WorkerSocketClient::connessioneAlServer() {
         SigEsitoConnessioneAlServer("Failed");
 
 
-    connect(socketConnesso, SIGNAL(readyRead()), this,  SLOT(leggiMsgApp()));
+    connect(socketConnesso, &QTcpSocket::readyRead, this,  &WorkerSocketClient::leggiMsgApp);
 
 
 }
@@ -269,8 +270,8 @@ void WorkerSocketClient::registrazione(QUtente user){
 
 
     QDataStream in(this->socketConnesso);
-
-    in << "register" << "\n";
+    //in << "register\n";
+    socketConnesso->write("register\n");
 
     in << user << "\n";
 
