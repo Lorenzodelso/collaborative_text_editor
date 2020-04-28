@@ -101,14 +101,14 @@ RecentDocsDialogs::RecentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP):
     setLayout(dialogLayout);
     setMinimumSize(250,500);
 
-    connect(URL, SIGNAL(textEdited(const QString &)), this, SLOT(urlChanged(const QString &)));
-    connect(newFileName, SIGNAL(textEdited(const QString &)), this, SLOT(newFileChanged(const QString &)));
-    connect(create, SIGNAL(clicked()), this, SLOT(newFilePressed()));
-    connect(open, SIGNAL(clicked()), this, SLOT(openPressed()));
-    connect(openUrl, SIGNAL(clicked()), this, SLOT(openUrlPressed()));
-    connect(abort, SIGNAL(clicked()), this, SLOT(abortPressed()));
-    connect(recentDocs, SIGNAL(itemSelectionChanged()), this, SLOT(listItemSelected()));
-    connect(editProfile, SIGNAL(clicked()), this, SLOT(launchEditProfile()));
+    connect(URL, &QLineEdit::textEdited, this, &RecentDocsDialogs::urlChanged);
+    connect(newFileName, &QLineEdit::textEdited, this, &RecentDocsDialogs::newFileChanged);
+    connect(create, &QPushButton::clicked, this, &RecentDocsDialogs::newFilePressed);
+    connect(open, &QPushButton::clicked, this, &RecentDocsDialogs::openPressed);
+    connect(openUrl, &QPushButton::clicked, this, &RecentDocsDialogs::openUrlPressed);
+    connect(abort, &QPushButton::clicked, this, &RecentDocsDialogs::abortPressed);
+    connect(recentDocs, &QListWidget::itemSelectionChanged, this, &RecentDocsDialogs::listItemSelected);
+    connect(editProfile, &QPushButton::clicked, this, &RecentDocsDialogs::launchEditProfile);
 
     /*creazione documento*/
     QObject::connect(this, &RecentDocsDialogs::SigCreaDoc, wscP, &WorkerSocketClient::creaDoc);

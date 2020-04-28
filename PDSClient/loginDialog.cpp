@@ -34,15 +34,11 @@ LoginDialog::LoginDialog(QWidget *parent, WorkerSocketClient* wscP)
     buttonBox->addButton(cancelButton, QDialogButtonBox::ActionRole);
     //setModal(true);
 
-    connect(usernameEdit, SIGNAL(textChanged(const QString &)),
-            this, SLOT(enableLoginButton()));
-    connect(passwordEdit, SIGNAL(textChanged(const QString &)),
-            this, SLOT(enableLoginButton()));
-    connect(loginButton, SIGNAL(clicked()),
-            this, SLOT(loginClicked()));
-    connect(cancelButton, SIGNAL(clicked()),
-            this, SLOT(cancelClicked()));
-    connect(newProfileButton, SIGNAL(clicked()), this, SLOT(registerClicked()));
+    connect(usernameEdit, &QLineEdit::textChanged, this, &LoginDialog::enableLoginButton);
+    connect(passwordEdit, &QLineEdit::textChanged, this, &LoginDialog::enableLoginButton);
+    connect(loginButton, &QPushButton::clicked, this, &LoginDialog::loginClicked);
+    connect(cancelButton, &QPushButton::clicked, this, &LoginDialog::cancelClicked);
+    connect(newProfileButton, &QPushButton::clicked, this, &LoginDialog::registerClicked);
 
     /*settaggio connessione*/
     QObject::connect(this, &LoginDialog::SigConnessioneAlServer, wscP, &WorkerSocketClient::connessioneAlServer);
@@ -162,8 +158,7 @@ void LoginDialog::esitoLogin(QString esito/*esito*/, QUtente user, QList<QString
         QTextStream out(&userSettings);
         out << utente->getUserId() << endl
             << utente->getUsername() << endl
-            << utente->getNickName() << endl
-            << utente->getNomeImg() << endl;
+            << utente->getNickName() << endl;
         userSettings.close();
         QFile recentDocs(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/docs.recent");
         recentDocs.open(QIODevice::WriteOnly);

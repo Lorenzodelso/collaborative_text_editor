@@ -188,7 +188,7 @@ void NewProfileDialog::imageUnhovered(){
             profilePic->load(rsrc+"/colored-edit-profile.png");
             userPic->setPixmap(*profilePic);
     }else{
-            profilePic->load(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/"+utente->getNomeImg());
+            profilePic->load(utente->getNomeImg());
             QPixmap scaled = profilePic->scaled(147, 200, Qt::AspectRatioMode::KeepAspectRatio);
             userPic->setPixmap(scaled);
     }
@@ -204,13 +204,15 @@ void NewProfileDialog::imageUnhovered(){
 //*********************************************************************
 void NewProfileDialog::selectImagePressed(){
     QUrl imageUrl = QFileDialog::getOpenFileUrl(this, tr("Open Image"), QStandardPaths::writableLocation(QStandardPaths::PicturesLocation), tr("Image Files (*.png *.jpg *.bmp)"));
-    QString imagePath = imageUrl.path();
-    imagePath.remove(0,1);
-    QString imageName = imageUrl.fileName();
-    utente->setNomeImg(imageName);
-    profilePic->load(imagePath);
-    QPixmap scaled = profilePic->scaled(147, 200, Qt::AspectRatioMode::KeepAspectRatio);
-    userPic->setPixmap(scaled);
+    if(!imageUrl.isEmpty()){
+
+        QString imagePath = imageUrl.path();
+        imagePath.remove(0,1);
+        utente->setNomeImg(imagePath);
+        profilePic->load(imagePath);
+        QPixmap scaled = profilePic->scaled(147, 200, Qt::AspectRatioMode::KeepAspectRatio);
+        userPic->setPixmap(scaled);
+    }
 
 }
 

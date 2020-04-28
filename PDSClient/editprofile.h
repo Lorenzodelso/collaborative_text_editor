@@ -17,6 +17,7 @@
 #include <QDialogButtonBox>
 #include <QTextStream>
 #include <QMessageBox>
+#include <QFileInfo>
 
 #include "ClickableLabel.h"
 #include "WorkerSocketClient.h"

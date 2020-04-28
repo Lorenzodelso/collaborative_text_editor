@@ -39,12 +39,10 @@ EditProfile::EditProfile(QWidget *parent, WorkerSocketClient* wscP)
         quint32 userId = settings.readLine().toUInt();
         QString usernameData = settings.readLine();
         QString nicknameData = settings.readLine();
-        QString proPicName = settings.readLine();
-        proPicName.resize(proPicName.size() - 1);
         usernameData.resize(usernameData.size() - 1);
         nicknameData.resize(nicknameData.size() - 1);
         settings.close();
-        user = new QUtente(userId, usernameData, nicknameData, "", proPicName);
+        user = new QUtente(userId, usernameData, nicknameData, "", usernameData+".png");
         usernameEdit->setText(usernameData);
         usernameEdit->setEnabled(false);
 
@@ -53,11 +51,11 @@ EditProfile::EditProfile(QWidget *parent, WorkerSocketClient* wscP)
         }else{
             nickEdit->setPlaceholderText(tr("(Optional)"));
         }
-        if(proPicName.isEmpty() || proPicName.isNull()){
+        if(!QFileInfo::exists(QDir::currentPath()+user->getNomeImg()) || !QFileInfo(QDir::currentPath()+user->getNomeImg()).isFile()){
                 profilePic->load(rsrc+"/colored-edit-profile.png");
                 userPic->setPixmap(*profilePic);
         }else{
-            profilePic->load(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/"+proPicName);
+            profilePic->load(QDir::currentPath()+user->getNomeImg());
             QPixmap scaled = profilePic->scaled(147, 200, Qt::AspectRatioMode::KeepAspectRatio);
             userPic->setPixmap(scaled);
         }
@@ -82,12 +80,12 @@ EditProfile::EditProfile(QWidget *parent, WorkerSocketClient* wscP)
     setLayout(layout);
     setMinimumSize(200, 300);
 
-    connect(discard, SIGNAL(clicked()), this, SLOT(discardPressed()));
-    connect(save, SIGNAL(clicked()), this, SLOT(savePressed()));
-    connect(userPic, SIGNAL(clicked()), this, SLOT(selectImagePressed()));
-    connect(nickEdit, SIGNAL(textEdited(const QString &)), this, SLOT(changedNick(const QString &)));
-    connect(userPic, SIGNAL(hovered()), this, SLOT(imageHovered()));
-    connect(userPic, SIGNAL(unHovered()), this, SLOT(imageUnhovered()));
+    connect(discard, &QPushButton::clicked, this, &EditProfile::discardPressed);
+    connect(save, &QPushButton::clicked, this, &EditProfile::savePressed);
+    connect(userPic, &ClickableLabel::clicked, this, &EditProfile::selectImagePressed);
+    connect(nickEdit, &QLineEdit::textEdited, this, &EditProfile::changedNick);
+    connect(userPic, &ClickableLabel::hovered, this, &EditProfile::imageHovered);
+    connect(userPic, &ClickableLabel::unHovered, this, &EditProfile::imageUnhovered);
 
     /*modifica profilo utente*/
     QObject::connect(this, &EditProfile::SigModificaProfiloUtente, wscP, &WorkerSocketClient::modificaProfiloUtente);
@@ -141,7 +139,6 @@ void EditProfile::savePressed(){
 //
 //*********************************************************************
 void EditProfile::discardPressed(){
-    QFile::remove(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/"+user->getNomeImg());
     close();
 }
 
@@ -156,18 +153,10 @@ void EditProfile::discardPressed(){
 void EditProfile::selectImagePressed(){
     QUrl imageUrl = QFileDialog::getOpenFileUrl(this, tr("Open Image"), QStandardPaths::writableLocation(QStandardPaths::PicturesLocation), tr("Image Files (*.png *.jpg *.bmp)"));
     QString imagePath = imageUrl.path();
-    imagePath.remove(0,1);
     QString imageName = imageUrl.fileName();
     if(!imagePath.isEmpty() || !imagePath.isNull()){
-        if(QDir(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/").exists()){
-            QFile::copy(imagePath, QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/"+imageName);
-        }else{
-            QDir().mkdir(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/");
-            QFile::copy(imagePath, QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/"+imageName);
-        }
-        user->setNomeImg(imageName);
-
-        profilePic->load(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/"+imageName);
+        user->setNomeImg(imagePath);
+        profilePic->load(imagePath);
         QPixmap scaled = profilePic->scaled(147, 200, Qt::AspectRatioMode::KeepAspectRatio);
         userPic->setPixmap(scaled);
     }
@@ -200,7 +189,7 @@ void EditProfile::imageUnhovered(){
             profilePic->load(rsrc+"/colored-edit-profile.png");
             userPic->setPixmap(*profilePic);
     }else{
-            profilePic->load(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/"+user->getNomeImg());
+            profilePic->load(user->getNomeImg());
             QPixmap scaled = profilePic->scaled(147, 200, Qt::AspectRatioMode::KeepAspectRatio);
             userPic->setPixmap(scaled);
     }
@@ -217,22 +206,18 @@ void EditProfile::imageUnhovered(){
  * */
 void EditProfile::esitoModificaProfiloUtente(QString esito/*esito*/, QUtente userNew){
     if(esito == "Failed"){
-        QFile::remove(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/"+user->getNomeImg());
-        user = new QUtente(0,"","","","");
         QMessageBox msgBox;
         msgBox.setText("Something went wrong. Please, try again");
         msgBox.setIcon(QMessageBox::Critical);
         msgBox.exec();
         return;
     }else{
-        user = new QUtente(userNew.getUserId(), userNew.getUsername(), userNew.getNickName(), userNew.getPassword(), userNew.getNomeImg());
         QFile userSettings (QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/user.settings");
         userSettings.open(QIODevice::WriteOnly);
         QTextStream out(&userSettings);
-        out << user->getUserId() << endl
-            << user->getUsername() << endl
-            << user->getNickName() << endl
-            << user->getNomeImg() << endl;
+        out << userNew.getUserId() << endl
+            << userNew.getUsername() << endl
+            << userNew.getNickName() << endl;
         userSettings.close();
         close();
     }
