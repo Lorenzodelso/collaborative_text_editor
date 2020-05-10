@@ -154,7 +154,7 @@ void Server::apriDoc(QString nomeFile , WorkerSocket* wsP, QUtente user){
         }
         else { /*non ho ancora oggetto QThread per tale documento*/
             tP = new QThread();
-
+            tP->start();
             WorkerDoc *wdP = new WorkerDoc();
             wdP->moveToThread(tP);
 
@@ -185,7 +185,7 @@ void Server::apriDoc(QString nomeFile , WorkerSocket* wsP, QUtente user){
             /*la corrispondente disconnect, necessaria per evitare che il worker doc attivi lo slot indicato in ogni worker socket
              * a cui è collegato, viene fatta dentro a &WorkerDoc::workerDocPrimaAperturaDoc*/
 
-            tP->start();
+
 
             emit SigWorkerDocPrimaAperturaDoc(nomeFile, wsP);
 
@@ -215,10 +215,9 @@ void Server::creaDoc(QString nomeFile , WorkerSocket* wsP, QUtente user) {
     if (!QFile::exists(nomeFile)) {
         /*non esiste già un file con quel nome*/
         QThread *tP = new QThread();
-
+        tP->start();
         WorkerDoc *wdP = new WorkerDoc();
         wdP->moveToThread(tP);
-
         documents.insert(nomeFile, wdP);
         userEdits.insert(user.getUserId(),wdP);
         threadsDoc.insert(wdP,tP);
@@ -248,10 +247,6 @@ void Server::creaDoc(QString nomeFile , WorkerSocket* wsP, QUtente user) {
         QObject::connect(wdP, &WorkerDoc::SigEsitoCreaDoc, wsP, &WorkerSocket::rispondiEsitoCreaDoc);
         /*la corrispondente disconnect, necessaria per evitare che il worker doc attivi lo slot indicato in ogni worker socket
              * a cui è collegato, viene fatta dentro a WorkerDoc::workerDocCreaDoc*/
-
-
-        tP->start();
-
         emit SigWorkerDocCreaDoc(nomeFile, wsP);
 
 
@@ -382,7 +377,7 @@ void Server::registrazione(WorkerSocket* wsP, QUtente user) {
             currUserId++;
 
 
-            QString estensioneImg = user.getNomeImg().split('.', QString::SkipEmptyParts)[1];
+            //QString estensioneImg = user.getNomeImg().split('.', QString::SkipEmptyParts)[1];
 
             QUtenteServer userServerSide;
 
@@ -390,8 +385,8 @@ void Server::registrazione(WorkerSocket* wsP, QUtente user) {
             userServerSide.setUsername(user.getUsername());
             userServerSide.setPassword(user.getPassword());
             userServerSide.setSalt("salt");
-            userServerSide.setNomeImg(QString::number(user.getUserId()).append(estensioneImg));
-
+            //userServerSide.setNomeImg(QString::number(user.getUserId()).append(estensioneImg));
+            userServerSide.setNomeImg("DetoSalato");
 
             users.insert(currUserId, userServerSide);
 
@@ -404,7 +399,7 @@ void Server::registrazione(WorkerSocket* wsP, QUtente user) {
                 std::cerr << "Non sono riuscito ad aprire il file 'utenti.txt'" <<std::flush;
             }
             QTextStream out(&file);
-            out << currUserId << ' ' << userServerSide.getUsername() << ' ' << userServerSide.getPassword() << ' ' << userServerSide.getSalt() << userServerSide.getNomeImg() << '\n';
+            out << currUserId << ' ' << userServerSide.getUsername() << ' ' << userServerSide.getPassword() << ' ' << userServerSide.getSalt()<<' '<< userServerSide.getNomeImg() << '\n';
             file.close();
 
             /*se non trova la chiave detta crea un value di default ovvero una lista senza elementi all'interno*/
@@ -472,7 +467,7 @@ void Server::modificaProfiloUtente(WorkerSocket *wsP, QUtente userOld, QUtente u
         QMap<quint32, QUtenteServer>::iterator i;
         QTextStream out(&file);
         for (i = users.begin(); i != users.end(); ++i) {
-            out << currUserId << ' ' << userServerSide.getUsername() << ' ' << userServerSide.getPassword() << ' ' << userServerSide.getSalt() << userServerSide.getNomeImg() << '\n';
+            out << currUserId << ' ' << userServerSide.getUsername() << ' ' << userServerSide.getPassword() << ' ' << userServerSide.getSalt() << ' '<< userServerSide.getNomeImg() << '\n';
 
         }
         file.close();

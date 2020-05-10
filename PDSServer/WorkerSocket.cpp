@@ -72,10 +72,12 @@ void WorkerSocket::leggiMsgApp() {
 
     if (strcmp(this->msg,"cre")==0) {
 
-
+        std::cout<<"Entro nel caso crea nuovo documento\n"<<std::flush;
         char* msg1;
         uint prova = 3;
-        in.readBytes(msg1,prova);
+        //in.readBytes(msg1,prova);
+        in >> msg1;
+        std::cout<<"Nome del file ricevuto: "<<msg1<<"\n"<<std::flush;
 
         emit SigCreaDoc(msg1, this, this->user);
 
@@ -100,11 +102,12 @@ void WorkerSocket::leggiMsgApp() {
 
         }
 
-        else
+        else{
 
             this->msg="second_read";
+            return;
 
-
+        }
 
 
 
@@ -191,13 +194,14 @@ void WorkerSocket::leggiMsgApp() {
 
         }
 
+        else{
+
+                this->msg="second_read";
+
+            }
     }
 
-    else{
 
-            this->msg="second_read";
-
-        }
 
 
     if(strcmp(this->msg,"c_d")==0)

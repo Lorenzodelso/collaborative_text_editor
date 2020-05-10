@@ -2,7 +2,7 @@
 
 QUser::QUser(quint16 userId, QString userName): userId(userId), userName(userName){}
 
-
+QUser::QUser(){}
 
 
 QDataStream& operator<<(QDataStream& out,const QUser& user){

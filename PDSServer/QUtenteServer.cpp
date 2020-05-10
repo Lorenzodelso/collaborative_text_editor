@@ -5,7 +5,7 @@
 #include "QUtenteServer.h"
 
 #include "QUtente.h"
-QUtenteServer::QUtenteServer(quint32 userId, QString username, QString salt, QString password, QString imgName){
+QUtenteServer::QUtenteServer(quint32 userId, QString username, QString password, QString salt, QString imgName){
     this->userId = userId;
     this->userName = username;
     this->salt = salt;

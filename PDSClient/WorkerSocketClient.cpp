@@ -4,7 +4,6 @@
 #include  <QTcpSocket>
 #include <QHostAddress>
 #include<QThread>
-#include <windows.h>
 #include <QImage>
 #include <QDebug>
 

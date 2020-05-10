@@ -16,6 +16,7 @@ private:
     QString userName;
 
 public:
+    QUser();
     QUser(quint16 userId, QString userName);
     quint16 getUserId();
     void setUserId(quint16 userId);
