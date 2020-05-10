@@ -1,23 +1,30 @@
-
+#include "WorkerSocket.h"
 #include <fstream>
 #include <iostream>
 #include <cstdio>
+#include<string.h>
+#include <QDir>
+
+
 
 
 WorkerSocket::WorkerSocket(){
 
     qRegisterMetaType<QUtente>();
+    qRegisterMetaType<QList<QString>>();
+
     socketConnessoP = new QTcpSocket( this );
     user = *new QUtente();
 
 
 }
 
-void WorkerSocket::WorkerSocketAttivati(quint64 socketDescriptor){
+void WorkerSocket::WorkerSocketAttivati(quintptr socketDescriptor){
 
     //DEBUG
     std::cout << "Ricevuto segnale workerSocketAttivati"<<std::flush;
     //DEBUG
+
 
     socketConnessoP->setSocketDescriptor(socketDescriptor);
 
@@ -28,18 +35,30 @@ void WorkerSocket::WorkerSocketAttivati(quint64 socketDescriptor){
 
 void WorkerSocket::leggiMsgApp() {
 
+    qDebug()<<"inizio lettura";
+
+
     QDataStream in(this->socketConnessoP);
-    //QString msg = socketConnessoP->readLine();
-    char* msg;
-    uint prova = 3;
-    in.readBytes(msg,prova);
+
+    in.startTransaction();
+
+
+    if((strcmp(this->msg,"second_read")!=0)) {
+
+        uint prova = 3;
+        in.readBytes(this->msg, prova);
+    }
+
+
+    qDebug()<<this->msg;
+
 
     //DEBUG
     std::cout<<"\nRicevuto segnale readyRead - Slot leggiMsgApp"<<std::flush;
-    std::cout<<"\n"+msg.toStdString()<<std::flush;
+   // std::cout<<"\n"+msg<<std::flush;
     //DEBUG
 
-    if (msg.compare("ope",Qt::CaseSensitivity::CaseSensitive)==0) {
+    if (strcmp(this->msg,"ope")==0) {
 
         char* msg1;
         uint prova = 3;
@@ -51,9 +70,9 @@ void WorkerSocket::leggiMsgApp() {
 
     }
 
-    if (msg.compare("cre",Qt::CaseSensitivity::CaseSensitive) == 0) {
+    if (strcmp(this->msg,"cre")==0) {
 
-        //QString msg1 = socketConnessoP->readLine();
+
         char* msg1;
         uint prova = 3;
         in.readBytes(msg1,prova);
@@ -64,34 +83,46 @@ void WorkerSocket::leggiMsgApp() {
 
     }
 
-    if (msg.compare("log",Qt::CaseSensitivity::CaseSensitive) == 0) { //ok
+    if (strcmp(this->msg,"log")==0) { //ok
 
         QUtente user;
 
         in >> user ;
 
-        if (user.getUsername() != NULL && user.getPassword() != NULL && user.getNomeImg() == NULL) {
+        if(in.commitTransaction()==true) {
 
-            emit SigLogin(this, user);
-            return;
+
+            if (user.getUsername() != NULL && user.getPassword() != NULL && user.getNomeImg() == NULL) {
+                qDebug()<<"Segnale Log emesso\n";
+                emit SigLogin(this, user);
+                this->msg = "";
+            }
+
         }
+
+        else
+
+            this->msg="second_read";
+
+
+
+
 
     }
 
-    if (msg.compare("reg",Qt::CaseSensitivity::CaseSensitive) == 0) //ok
+    if (strcmp(this->msg,"reg")==0) //ok
     {
 
         QUtente user;
         qint64 dimension;
-        Qbytearray data;
+        QByteArray data;
 
-        in >> dimension
-        in >> dimension
+       // in >> dimension;
 
         //in.readBytes(data,dimension);
-       // img = QImage::fromData(data,"PNG");
+        // img = QImage::fromData(data,"PNG");
 
-        this->image=img;
+       // this->image=img;
 
         in >> user;
 
@@ -100,36 +131,45 @@ void WorkerSocket::leggiMsgApp() {
         //DEBUG
         QRegExp e("([a-zA-Z0-9\\s_\\\\.\\-\\(\\):])+(.doc|.docx|.pdf|.png)$");
 
-        if (user.getUsername() != NULL && user.getPassword() != NULL && e.indexIn(user.getNomeImg())) {
+        if(in.commitTransaction()==true) {
 
-            emit SigRegistrazione(this, user);
 
-            return;
+            if (user.getUsername() != NULL && user.getPassword() != NULL /*&& e.indexIn(user.getNomeImg()*/) {
+
+                emit SigRegistrazione(this, user);
+
+            }
+
+            this->msg = "";
 
         }
-
-
     }
 
-    if (msg.compare("opd",Qt::CaseSensitivity::CaseSensitive) == 0) { //opd
+
+    if(strcmp(this->msg,"opd")==0) { //opd
 
 
         DocOperation operazione;
         in >> operazione;
-        emit SigOpDoc(operazione);
 
-        return;
+        if(in.commitTransaction()==true) {
 
 
+                emit SigOpDoc(operazione);
+
+
+            this->msg = "";
+
+        }
     }
 
-    if (msg.compare("c_i",Qt::CaseSensitivity::CaseSensitive) == 0) { //ok
+    if (strcmp(this->msg,"c_i")==0) { //ok
 
         emit SigOpChiHaInseritoCosa(this,this->user);
         return;
     }
 
-    if (msg.compare("mod",Qt::CaseSensitivity::CaseSensitive) == 0) //ok
+    if(strcmp(this->msg,"mod")==0) //ok
     {
 
         QUtente userOLD,userNEW;
@@ -137,43 +177,63 @@ void WorkerSocket::leggiMsgApp() {
         in >> userOLD;
         in >> userNEW;
 
-        if ( userOLD.getUsername() !=  userNEW.getUsername() &&
-             userOLD.getPassword()    !=  userNEW.getPassword()  &&
-             userNEW.getNomeImg()     ==  userOLD.getNomeImg()){
-            emit SigModificaProfiloUtente(this, userOLD, userNEW);
+        if(in.commitTransaction()==true) {
+
+
+            if ( userOLD.getUsername() !=  userNEW.getUsername() &&
+                 userOLD.getPassword()    !=  userNEW.getPassword()  &&
+                 userNEW.getNomeImg()     ==  userOLD.getNomeImg()){
+
+                emit SigModificaProfiloUtente(this, userOLD, userNEW);
+            }
+
+            this->msg = "";
+
         }
-        return;
 
     }
 
-    if(msg.compare("c_d",Qt::CaseSensitivity::CaseSensitive) == 0)
+    else{
+
+            this->msg="second_read";
+
+        }
+
+
+    if(strcmp(this->msg,"c_d")==0)
     {
         SigChiusuraDocumentoDaParteDelClient(this, this->user);
-        return;
 
     }
 
-    if (msg.compare("c_c",Qt::CaseSensitivity::CaseSensitive) == 0)
+    if (strcmp(this->msg,"c_c")==0)
     {
         SigChiusuraConnessioneDaParteDelClient(this, this->user);
-        return;
     }
 
-    SigChiusuraConnessioneDaParteDelClient(this, this->user);
+   // SigChiusuraConnessioneDaParteDelClient(this, this->user);
 
 }
 
 
 void WorkerSocket::rispondiEsitoLogin(QUtente user, QList<QString> nomiFilesEditati){
 
-    QDataStream os(socketConnessoP);
+    QDataStream in(socketConnessoP);
 
-    socketConnessoP->write("e_l");
+    qDebug()<<"esitologin:\n";
 
+    uint len=3;
+
+    in.writeBytes("e_l",len);
 
     if(nomiFilesEditati.contains("Failed"))
     {
-        socketConnesso->write("fld");
+
+        uint len=3;
+
+        qDebug()<<"fallito\n";
+
+        in.writeBytes("fld",len);
 
         socketConnessoP->disconnect();
         socketConnessoP->disconnectFromHost();
@@ -181,11 +241,14 @@ void WorkerSocket::rispondiEsitoLogin(QUtente user, QList<QString> nomiFilesEdit
 
     else{
 
-        socketConnesso->write("suc");
+
+        uint len=3;
+
+        in.writeBytes("suc",len);
 
         this->user = user;
 
-        os << user << nomiFilesEditati;
+        in << user << nomiFilesEditati;
 
     }
 }
@@ -193,20 +256,28 @@ void WorkerSocket::rispondiEsitoLogin(QUtente user, QList<QString> nomiFilesEdit
 
 void WorkerSocket::rispondiEsitoApriDoc(QString esito/*esito*/, CRDT doc/*rappresentazione del file*/){
 
-    QDataStream os(socketConnessoP);
+    QDataStream in(socketConnessoP);
 
-    socketConnesso->write("ead"); //ok
+
+    uint len=3;
+
+    in.writeBytes("ead",len);
 
     if (esito.compare("success")==0){
 
-        socketConnesso->write("ope");
 
-        os << doc;
+        uint len=3;
+
+        in.writeBytes("ope",len);
+        in << doc;
     }
 
     else{
 
-        socketConnesso->write("fld");
+
+        uint len=3;
+
+        in.writeBytes("dlf",len);
     }
 }
 
@@ -214,34 +285,53 @@ void WorkerSocket::rispondiEsitoApriDoc(QString esito/*esito*/, CRDT doc/*rappre
 void WorkerSocket::rispondiEsitoCreaDoc(QString esito, CRDT doc/*rappresentazione del file*/){
 
 
-    QDataStream os(socketConnessoP);
-    socketConnesso->write("ecd"); // ok
+    QDataStream in(socketConnessoP);
+
+    uint len=3;
+
+    in.writeBytes("ecd",len);
+
     if (esito.compare("success")==0)
     {
-        socketConnesso->write("crt"); //ok
-        os << doc;
+
+        uint len=3;
+
+        in.writeBytes("crt",len);
+
+        in << doc;
     }
     else{
-        socketConnesso->write("fld");
-    }
+
+        uint len=3;
+
+        in.writeBytes("fld",len);    }
 }
 
 
 void WorkerSocket::rispondiEsitoRegistrazione(QString esito, QString nomeImg)
 {
-    QDataStream os(socketConnessoP);
-    socketConnesso->write("e_r"); //ok
+    QDataStream in(socketConnessoP);
+
+    qDebug()<<"esito registrazione\n";
+
+    uint len=3;
+
+    in.writeBytes("e_r",len);
+
     if (esito.compare("OK")==0)
     {
-        socketConnesso->write("r_a");
-        socketConnessoP->disconnect();
+
+        uint len=3;
+
+        in.writeBytes("r_a",len);        socketConnessoP->disconnect();
         socketConnessoP->disconnectFromHost();
     }
     else{
 
-        os << esito<< "\n";
+        in << esito<< "\n";
 
-        this->image.save(QDir::curPath+"/"+nomeImg);
+
+        //this->image.save(QDir::currentPath+"/"+nomeImg);
 
         socketConnessoP->disconnect();
         socketConnessoP->disconnectFromHost();
@@ -252,27 +342,32 @@ void WorkerSocket::rispondiEsitoRegistrazione(QString esito, QString nomeImg)
 void WorkerSocket::rispondiEsitoOpDoc(QString esito, DocOperation operazione)
 {
 
-    QDataStream os(socketConnessoP);
+    QDataStream in(socketConnessoP);
 
-    socketConnesso->write("e_o"); //ok
+
+    uint len=3;
+
+    in.writeBytes("e_o",len);
 
     if (esito.compare("success")==0)
     {
         if(operazione.getSiteId() == this->user.getUserId()) {
 
-            os << esito;
+            in << esito;
         }
 
         else{
-            os << esito << operazione;
+            in << esito << operazione;
         }
     }
 
 
     else if(user.getUserId() == this->user.getUserId()){
 
-        socketConnesso->write("fld");
-    }
+
+        uint len=3;
+
+        in.writeBytes("fld",len);    }
 }
 
 
@@ -281,10 +376,12 @@ void WorkerSocket::rispondiEsitoModificaProfiloUtente(QUtente userNew)
 
     QUtente userOLD = this->user;
 
-    QDataStream os(socketConnessoP);
+    QDataStream in(socketConnessoP);
 
-    socketConnesso->write("mop"); // ok
 
+    uint len=3;
+
+    in.writeBytes("mop",len);
 
     if((userOLD.getUsername() == userNew.getUsername() &&
 
@@ -292,9 +389,11 @@ void WorkerSocket::rispondiEsitoModificaProfiloUtente(QUtente userNew)
 
         userNew.getNomeImg()  == userOLD.getNomeImg())){
 
-        socketConnesso->write("suc");
 
-        os<< userNew;
+        uint len=3;
+
+        in.writeBytes("suc",len);
+        in<< userNew;
 
     }//esito negativo
 
@@ -308,30 +407,42 @@ void WorkerSocket::rispondiEsitoModificaProfiloUtente(QUtente userNew)
 
 
 void WorkerSocket::rispondiEsitoChiusuraDocumentoDaParteDelClient(QString esito/*esito*/){
-    QDataStream os(socketConnessoP);
-    socketConnesso->write("c_d"); //ok
-    os<<esito;
+    QDataStream in(socketConnessoP);
+
+    uint len=3;
+
+    in.writeBytes("c_d",len);    in<<esito;
 }
 
 
 void WorkerSocket::questoUserHaApertoIlDoc(QUser user) {
-    QDataStream os(socketConnessoP);
-    socketConnesso->write("uad");
-    os << user;
+    QDataStream in(socketConnessoP);
+
+    uint len=3;
+
+    in.writeBytes("uad",len);
+    in << user;
 }
 
 
 void WorkerSocket::questoUserHaChiusoIlDoc(QUser user) {
 
-    QDataStream os(socketConnessoP);
-    socketConnesso->write("ucd");
-    os << user;
+    QDataStream in(socketConnessoP);
+
+    uint len=3;
+
+    in.writeBytes("ucd",len);
+    in << user;
 }
 
 
 void WorkerSocket::rispondiChiHaInseritoCosa(QList<QUser> users/*lista degli utenti che hanno editato in passato e/o stanno editando questo doc*/){
 
-    QDataStream os(socketConnessoP);
-    socketConnesso->write("c_i"); //ok
-    os << users;
+    QDataStream in(socketConnessoP);
+
+    uint len=3;
+
+    in.writeBytes("c_i",len);
+
+    in << users;
 }
