@@ -36,5 +36,6 @@ public:
     friend QDataStream& operator>>(QDataStream& in, DocOperation& dopOp);
 
 };
+Q_DECLARE_METATYPE(DocOperation)
 
 #endif // DOCOPERATION_H

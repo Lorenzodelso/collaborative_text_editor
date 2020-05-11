@@ -61,4 +61,7 @@ protected:
 
 };
 
+Q_DECLARE_METATYPE(CRDT)
+
+
 #endif // CRDT_H

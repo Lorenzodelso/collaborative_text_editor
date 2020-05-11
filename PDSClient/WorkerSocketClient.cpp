@@ -14,7 +14,8 @@ void WorkerSocketClient::connessioneAlServer() {
 
     qRegisterMetaType<QUtente>();
     qRegisterMetaType<QList<QString>>();
-
+    qRegisterMetaType<CRDT>();
+    qRegisterMetaType<DocOperation>();
 
     this->socketConnesso = new QTcpSocket( this );
 
@@ -58,204 +59,130 @@ void  WorkerSocketClient::leggiMsgApp(){
 
     qDebug()<<"inizio lettura";
 
+    char* msg;
+
+    char* opt;
 
     QDataStream in(this->socketConnesso);
 
     in.startTransaction();
 
-    if(strcmp(this->msg,"second_read")!=0)  {
+    uint prova = 3;
+    in.readBytes(msg, prova);
 
-        uint prova = 3;
-        in.readBytes(this->msg, prova);
+    if (strcmp(msg,"ead")==0)
+    {
+        in.readBytes(opt, prova);
 
-    }
-
-
-
-    if (strcmp(this->msg,"ead")==0)  { //ok
-
-
-
-        if(strcmp(this->msg,"second_read")==0)  {
-
-            uint prova = 3;
-            in.readBytes(this->opt, prova);
-
-        }
-
-        if (strcmp(this->msg,"opn")==0)  {
-
+        if (strcmp(opt,"ope")==0)
+        {
             CRDT doc;
 
             in >> doc;
 
-            char* msg1;
-            uint prova = 3;
-            in.readBytes(msg1,prova);
+            if(in.commitTransaction()==true)
 
-            if(in.commitTransaction()==true){
+                SigEsitoApriDoc("Success"/*esito*/, doc/*rappresentazione del file*/);
 
-                SigEsitoApriDoc(msg1/*esito*/, doc/*rappresentazione del file*/);
-                this->msg="";
-            }
+             else return;
+         }
 
-            else{
-                this->msg="second_read";
-                this->opt="opn";
-
-                }
-
-        }
-        else{
-
-
+        else
+        {
             CRDT doc=*new CRDT();
 
-            SigEsitoApriDoc(this->opt, doc);
+            SigEsitoApriDoc(opt, doc);
         }
     }
 
+    if (strcmp(msg,"ecd")==0){
 
-    if (strcmp(this->msg,"ecd")==0)  { //ok
+        in.readBytes(opt,prova);
 
-
-        if(strcmp(this->msg,"second_read"))  {
-
-            uint prova = 3;
-            in.readBytes(this->opt, prova);
-
-        }
-
-        if (strcmp(this->msg,"crt")==0)  {
-
+        if (strcmp(opt,"crt")==0)
+        {
             CRDT doc;
 
             in >> doc;
 
-            char* msg1;
-            uint prova = 3;
-            in.readBytes(msg1,prova);
+            if(in.commitTransaction()==true)
 
+                SigEsitoCreaDoc( "Success"/*esito*/,  doc/*rappresentazione del file*/);
 
-            if(in.commitTransaction()==true){
+            else return;
 
-                SigEsitoCreaDoc( msg1/*esito*/,  doc/*rappresentazione del file*/);
-                this->msg="";
-            }
-
-            else{
-                this->msg="second_read";
-                this->opt="opn";
-
-            }
-
-        }
-
-        else{
-
+       }
+       else
+       {
             CRDT doc =*new CRDT(0);
 
-            SigEsitoCreaDoc(this->opt, doc);
-        }
-    }
+            SigEsitoCreaDoc(opt, doc);
 
+    }}
 
-    if(strcmp(this->msg,"e_l")==0) { //ok
+    if(strcmp(msg,"e_l")==0) {
 
+        in.readBytes(opt, prova);
 
-
-        if(strcmp(this->msg,"second_read")!=0)  {
-
-            uint prova = 3;
-            in.readBytes(this->opt, prova);
-
-        }
-
-
-        if(strcmp(this->msg,"suc")==0) {
+        if(strcmp(opt,"suc")==0)
+        {
 
             QList<QString> nomiFilesEditati;
 
             QUtente user = *new QUtente();
 
-
             in >> user;
 
             in >> nomiFilesEditati;
 
+            if(in.commitTransaction()==true)
 
-            if(in.commitTransaction()==true){
+                SigEsitoLogin( opt/*esito*/, user, nomiFilesEditati);
 
-                SigEsitoLogin( this->opt/*esito*/, user, nomiFilesEditati);
-                this->msg="";
-            }
-
-            else{
-                this->msg="second_read";
-                this->opt="opn";
-
-            }
+            else return;
 
         }
 
-        else {
-
+        else
+        {
             QList <QString> nomiFilesEditati;
 
             QUtente user = *new QUtente();
 
-            SigEsitoLogin(this->opt, user, nomiFilesEditati);
+            SigEsitoLogin(opt, user, nomiFilesEditati);
         }
     }
-    if (strcmp(this->msg,"e_o")==0)  { //ok
 
+    if (strcmp(msg,"e_o")==0)
+    {
         DocOperation* docOp = new DocOperation();
 
         SigOpDocRemota(/*esito*/*docOp);
     }
 
-    if (strcmp(this->msg,"e_c")==0)  { //ok
+    if (strcmp(msg,"e_c")==0)
+    {
+        in.readBytes(opt,prova);
 
-        char* msg1;
-        uint prova = 3;
-        in.readBytes(msg1,prova);
-
-        SigEsitoChiudiDoc( msg1/*esito*/);
+        SigEsitoChiudiDoc( opt/*esito*/);
     }
 
 
-    if (strcmp(this->msg,"mop")==0)  { //mop
+    if (strcmp(msg,"mop")==0)  {
 
+        in.readBytes(opt, prova);
 
-        if(strcmp(this->msg,"second_read")==0)  {
-
-            uint prova = 3;
-
-            in.readBytes(this->opt, prova);
-
-
-        }
-
-
-        if (strcmp(this->msg,"suc")==0)  {
-
+        if (strcmp(opt,"suc")==0)
+        {
             QUtente userNew;
 
             in >> userNew;
 
+            if(in.commitTransaction()==true)
 
-            if(in.commitTransaction()==true){
+                SigEsitoModificaProfiloUtente("Success"/*esito*/,userNew);
 
-                SigEsitoModificaProfiloUtente(this->opt/*esito*/,  userNew);
-
-                this->msg="";
-            }
-
-            else{
-                this->msg="second_read";
-                this->opt="opn";
-
-            }
+            else return;
 
         }
 
@@ -263,141 +190,96 @@ void  WorkerSocketClient::leggiMsgApp(){
 
             QUtente user=*new QUtente();
 
-            SigEsitoModificaProfiloUtente(this->opt/*esito*/, user);
+            SigEsitoModificaProfiloUtente("Failed"/*esito*/, user);
         }
     }
 
 
-    if (strcmp(this->msg,"e_o")==0)  { //ok
+    if (strcmp(msg,"e_o")==0)  { //ok
 
-        if(strcmp(this->msg,"second_read")==0)  {
+        in.readBytes(opt, prova);
 
-            uint prova = 3;
-            in.readBytes(this->opt, prova);
-
-        }
-
-
-        if (strcmp(this->msg,"suc")==0)  {
+        if (strcmp(opt,"suc")==0)
+        {
 
             DocOperation operazione;
 
             in >> operazione;
 
+            if(in.commitTransaction()==true)
 
-            if(in.commitTransaction()==true){
+                SigEsitoOpDocLocale("Success",operazione);
 
-                SigEsitoOpDocLocale(this->opt,operazione);
-                this->msg="";
-            }
-
-            else{
-                this->msg="second_read";
-                this->opt="opn";
-
-            }
-
-
+            else return;
         }
 
-        else{
+        else
+        {
 
             DocOperation operazione= *new DocOperation();
 
-            SigEsitoOpDocLocale(this->opt,operazione);
+            SigEsitoOpDocLocale("Failed",operazione);
 
         }
     }
 
 
-    if(strcmp(this->msg,"e_r")==0)  { //ok
+    if(strcmp(msg,"e_r")==0)
+    {
+        if (strcmp(opt,"r_a")==0)
+        {
+            in.readBytes(opt, prova);
 
-        if(strcmp(this->msg,"second_read")==0)  {
-
-            uint prova = 3;
-            in.readBytes(this->opt, prova);
-
+            SigEsitoRegistrazione("Success"/*esito*/);
         }
 
+        else
 
-        if (strcmp(this->msg,"suc")==0)  {
-
-            QList <QString> nomiFilesEditati;
-
-
-            SigEsitoRegistrazione(this->opt/*esito*/);
-
-        } else{
+         SigEsitoRegistrazione("Failed"/*esito*/);
 
 
-            SigEsitoRegistrazione( this->opt/*esito*/);
-        }
     }
 
-    if (strcmp(this->msg,"c_i")==0)  { //ok
+    if (strcmp(msg,"c_i")==0)
+    {
 
         QList <QUser> utenti;
 
         in >> utenti;
 
-        if(in.commitTransaction()==true){
+        if(in.commitTransaction()==true)
 
-            SigEsitoOpChiHaInseritoCosa(utenti);
-            this->msg="";
-        }
+            SigEsitoOpChiHaInseritoCosa(utenti);   
 
-        else{
-            this->msg="second_read";
-            this->opt="opn";
-
-        }
-
-
+        else return;
 
     }
 
-    if (strcmp(this->msg,"ucd")==0)  { //ok
+    if (strcmp(msg,"ucd")==0)  { //ok
 
         QUser utente;
 
         in >> utente;
 
+        if(in.commitTransaction()==true)
 
-        if(in.commitTransaction()==true){
+            SigQuestoUserHaChiusoIlDoc(utente);
 
-            SigQuestoUserHaChiusoIlDoc( utente);
-            this->msg="";
-        }
-
-        else{
-            this->msg="second_read";
-            this->opt="opn";
-
-        }
-
+        else return;
     }
 
-    if (strcmp(this->msg,"uad")==0)  { //ok
+    if (strcmp(msg,"uad")==0)  { //ok
 
         QUser utente;
 
         in >> utente;
 
-
-        if(in.commitTransaction()==true){
+        if(in.commitTransaction()==true)
 
             SigQuestoUserHaApertoIlDoc(utente);
-            this->msg="";
-        }
 
-        else{
-            this->msg="second_read";
-            this->opt="opn";
-
-        }
+        else return;
     }
-
-
 }
 
 void WorkerSocketClient::opDocLocale(DocOperation operazione){
@@ -409,7 +291,7 @@ void WorkerSocketClient::opDocLocale(DocOperation operazione){
 
     in.writeBytes("opd",len);
 
-    in <<operazione<< "\n";
+    in <<operazione;
 
 }
 
@@ -422,7 +304,7 @@ void WorkerSocketClient::apriDoc(QString nomeFile){
 
     in.writeBytes("ope",len);
 
-    in <<nomeFile<< "\n";
+    in <<nomeFile;
 
 }
 
@@ -434,7 +316,7 @@ void WorkerSocketClient::creaDoc(QString nomeFile){
 
     in.writeBytes("cre",len);
 
-    in <<nomeFile<< "\n";
+    in << nomeFile;
 
 }
 
@@ -448,7 +330,7 @@ void WorkerSocketClient::login(QUtente user){
 
     in.writeBytes("log",len);
 
-    in <<user<< "\n";
+    in <<user;
 
 }
 
@@ -457,12 +339,11 @@ void WorkerSocketClient::modificaProfiloUtente(QUtente user1) {
 
     QDataStream in(this->socketConnesso);
 
-
     uint len=3;
 
     in.writeBytes("mod",len);
 
-    in << user1 << "\n";
+    in << user1;
 
 }
 
@@ -492,21 +373,19 @@ void WorkerSocketClient::registrazione(QUtente user){
 
     qDebug()<< "inizio trasmissione";
 
-    in << user << "\n";
+    in << user;
 
 }
 
 void WorkerSocketClient::chiudiDoc(QString nomeFile){
 
-
     QDataStream in(this->socketConnesso);
-
 
     uint len=3;
 
     in.writeBytes("c_d",len);
 
-    in << nomeFile << "\n";
+  //  in << nomeFile;
 
 
 }
@@ -514,7 +393,6 @@ void WorkerSocketClient::chiudiDoc(QString nomeFile){
 void WorkerSocketClient::opChiHaInseritoCosa(){
 
     QDataStream in(this->socketConnesso);
-
 
     uint len=3;
 
