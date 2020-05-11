@@ -37,4 +37,7 @@ public:
 
 };
 
+Q_DECLARE_METATYPE(DocOperation)
+
+
 #endif // DOCOPERATION_H
