@@ -93,11 +93,11 @@ const QString rsrcPath = ":/images/mac";
 const QString rsrcPath = ":/images/win";
 #endif
 
-TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP)
+TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP,quint16 siteId)
     : QMainWindow(parent)
 {
 	//Inserisco inizializzazione del CRDT
-    algoritmoCRDT = new CRDT(DEFAULT_SITEID);
+    algoritmoCRDT = new CRDT(siteId);
     //inizialmente scrittura normale
     colorWriting = false;
 
@@ -213,7 +213,7 @@ CRDT* TextEdit::getStrutturaCRDT(){
 }
 
 void TextEdit::loadCRDTIntoEditor(CRDT crdt){
-  this->algoritmoCRDT->setSiteID(crdt.getSiteID());
+  //this->algoritmoCRDT->setSiteID(crdt.getSiteID());
   //algoritmoCRDT = new CRDT(doc.getSiteID(),doc.getListChar()); //salvo nel CRDT la rappresentazione del file
   // devo andare ad aggiornare il contenuto del QTextEdit tramite l'uso di cursori sulla base di quello che c'� scritto nel CRDT
   int currentIndex = 0;
@@ -698,7 +698,7 @@ Nella DocOperation i parametri che non vengono utilizzati vengono settati a null
 void TextEdit::segnalaMovimentoCursore(QTextCursor cursor){
     DocOperation* docOpCursore = new DocOperation(
                 cursorMoved,Char(),QTextCharFormat(),this->algoritmoCRDT->getSiteID(),cursor.position(),cursor.anchor() );
-    emit opDocRemota(*docOpCursore);
+    emit SigOpDocLocale(*docOpCursore);
 }
 
 void TextEdit::cursorPositionChanged()

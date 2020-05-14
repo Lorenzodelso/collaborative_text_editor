@@ -32,7 +32,7 @@ void WorkerSocketClient::connessioneAlServer() {
         SigEsitoConnessioneAlServer("Failed");
 
 
-    connect(socketConnesso, &QTcpSocket::readyRead, this,  &WorkerSocketClient::leggiMsgApp,Qt::QueuedConnection);
+    connect(socketConnesso, &QTcpSocket::readyRead, this,  &WorkerSocketClient::leggiMsgApp,Qt::DirectConnection);
 
 
 }
@@ -205,6 +205,7 @@ void  WorkerSocketClient::leggiMsgApp(){
             DocOperation operazione;
 
             in >> operazione;
+            std::cout<<"Esito operazione dal server: "<<operazione.character.getValue().toLatin1()<<std::flush;
 
             if(in.commitTransaction()==true)
 
@@ -226,10 +227,9 @@ void  WorkerSocketClient::leggiMsgApp(){
 
     if(strcmp(msg,"e_r")==0)
     {
+        in.readBytes(opt, prova);
         if (strcmp(opt,"r_a")==0)
         {
-            in.readBytes(opt, prova);
-
             SigEsitoRegistrazione("Success"/*esito*/);
         }
 

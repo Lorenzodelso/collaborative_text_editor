@@ -170,7 +170,7 @@ void LoginDialog::esitoLogin(QString esito/*esito*/, QUtente user, QList<QString
         }
         recentDocs.close();
         this->setAttribute(Qt::WA_DeleteOnClose);
-        recDoc = new RecentDocsDialogs(0, this->wscP);
+        recDoc = new RecentDocsDialogs(0, this->wscP,user.getUserId());
         recDoc->show();
         this->close();
     }

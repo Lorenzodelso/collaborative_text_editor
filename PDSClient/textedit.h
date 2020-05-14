@@ -88,7 +88,7 @@ class TextEdit : public QMainWindow
     Q_OBJECT
 
 public:
-    TextEdit(QWidget *parent, WorkerSocketClient *wscP);
+    TextEdit(QWidget *parent, WorkerSocketClient *wscP,quint16 siteId);
 
     void load(const QString &f);
 

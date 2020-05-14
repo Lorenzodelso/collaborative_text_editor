@@ -192,7 +192,7 @@ DocOperation CRDT::localInsert(QChar value, QTextCharFormat format, quint16 inde
     this->listChar.insert(index,Qc);
     this->text.insert(index, QCharacter->getValue());
     //Mi occupo qui di segnalare al WorkerSocket dell'operazione
-    DocOperation* docOp = new DocOperation(0,Qc,QTextCharFormat(),0,0,0);
+    DocOperation* docOp = new DocOperation(0,Qc,QTextCharFormat(),this->siteID,0,0);
     return *docOp;
 }
 
@@ -201,7 +201,7 @@ DocOperation CRDT::localErase(quint16 index) {
     this->listChar.remove(index);
     this->text.remove(index,1);
     //Mi occupo qui di segnalare al WorkerSocket dell'operazione
-    DocOperation* docOp = new DocOperation(1,Qc,QTextCharFormat(),0,0,0);
+    DocOperation* docOp = new DocOperation(1,Qc,QTextCharFormat(),this->siteID,0,0);
     return *docOp;
 }
 
@@ -259,7 +259,7 @@ DocOperation CRDT::localFormatChange(QTextCharFormat format, quint16 index){
     QTextCharFormat oldFormat = listChar[index].getFormat();
     this->listChar[index].setFormat(format);
     //Mi occupo qui di segnalare al WorkerSocket dell'operazione
-    DocOperation* docOp = new DocOperation(2,listChar[index],oldFormat,0,0,0);
+    DocOperation* docOp = new DocOperation(2,listChar[index],oldFormat,this->siteID,0,0);
     return *docOp;
 }
 

@@ -26,7 +26,7 @@ class RecentDocsDialogs : public QWidget
 {
     Q_OBJECT
 public:
-    RecentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP);
+    RecentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP,quint16 siteId);
 
 signals:
     void SigDisconnessioneDalServer();

@@ -1,7 +1,7 @@
 #include "RecentDocsDialogs.h"
 
 
-RecentDocsDialogs::RecentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP):QWidget(parent)
+RecentDocsDialogs::RecentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP,quint16 siteId):QWidget(parent)
 {
 
 //*********************************************************************
@@ -21,7 +21,7 @@ RecentDocsDialogs::RecentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP):
     setParent(parent);
     setAttribute(Qt::WA_DeleteOnClose);
     this->wscP = wscP;
-    mw = new TextEdit(this, wscP);
+    mw = new TextEdit(this, wscP, siteId);
     recentDocs = new QListWidget();
 
     if(!QDir(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/").exists()){
@@ -267,7 +267,6 @@ int isSuccess(QString esito){
 
 void RecentDocsDialogs::esitoCreaDoc(QString esito, CRDT doc){
   if (isSuccess(esito)){ //se esito positivo creo un CRDT vuoto perché il documento é stato appena creato
-    mw->getStrutturaCRDT()->setSiteID(doc.getSiteID()); //Prendo solamente il siteId corretto da mettere nel CRDT
     QString docName = newFileName->text();
     const QRect availableGeometry = QApplication::desktop()->availableGeometry(mw);
     mw->resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);
