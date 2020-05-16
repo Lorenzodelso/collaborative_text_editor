@@ -1,9 +1,7 @@
-
-
 #include "WorkerSocketClient.h"
-#include  <QTcpSocket>
+#include <QTcpSocket>
 #include <QHostAddress>
-#include<QThread>
+#include <QThread>
 #include <QImage>
 #include <QDebug>
 
@@ -25,32 +23,16 @@ void WorkerSocketClient::connessioneAlServer() {
 
       emit SigEsitoConnessioneAlServer("Success");
 
-    else
-
-      emit SigEsitoConnessioneAlServer("Failed");
-
+    else  emit SigEsitoConnessioneAlServer("Failed");
 
     connect(socketConnesso, &QTcpSocket::readyRead, this,  &WorkerSocketClient::leggiMsgApp,Qt::QueuedConnection);
-
-
 }
 
 
-void WorkerSocketClient::disconnessioneDalServer(){
-
+void WorkerSocketClient::disconnessioneDalServer()
+{
     this->socketConnesso->disconnect();
-    this->socketConnesso->disconnectFromHost();
-
-    bool connected = (this->socketConnesso->state() == QTcpSocket::ConnectedState);
-
-    if(connected==false)
-
-        disconnessioneDalServer();
-
-    else
-
-     emit  SigEsitoConnessioneAlServer("Failed");
-
+    this->socketConnesso->disconnectFromHost();    
 }
 
 void  WorkerSocketClient::leggiMsgApp(){
@@ -74,7 +56,7 @@ void  WorkerSocketClient::leggiMsgApp(){
         {
             CRDT doc;
 
-            in >> doc;
+            BlockReader(socketConnesso).stream() >> doc;
 
             emit SigEsitoApriDoc("Success"/*esito*/, doc/*rappresentazione del file*/);
          }
@@ -83,7 +65,7 @@ void  WorkerSocketClient::leggiMsgApp(){
         {
             CRDT doc=*new CRDT();
 
-            emit  SigEsitoApriDoc(opt, doc);
+            emit SigEsitoApriDoc(opt, doc);
         }
     }
 
@@ -95,35 +77,33 @@ void  WorkerSocketClient::leggiMsgApp(){
         {
             CRDT doc;
 
-            in >> doc;
+            BlockReader(socketConnesso).stream() >> doc;
 
-            emit  SigEsitoCreaDoc( "Success"/*esito*/,  doc/*rappresentazione del file*/);
+            emit SigEsitoCreaDoc( "Success", doc);
        }
        else
        {
-            CRDT doc =*new CRDT();
+          CRDT doc =*new CRDT();
 
           emit SigEsitoCreaDoc(opt, doc);
-
        }
     }
 
-    if(strcmp(msg,"e_l")==0) {
-
+    if(strcmp(msg,"e_l")==0)
+    {
         in.readBytes(opt, prova);
 
         if(strcmp(opt,"suc")==0)
         {
-
             QList<QString> nomiFilesEditati;
 
             QUtente user = *new QUtente();
 
-            in >> user;
+            BlockReader(socketConnesso).stream() >> user;
 
-            in >> nomiFilesEditati;
+            BlockReader(socketConnesso).stream() >> nomiFilesEditati;
 
-            emit  SigEsitoLogin( opt/*esito*/, user, nomiFilesEditati);
+            emit SigEsitoLogin( opt/*esito*/, user, nomiFilesEditati);
         }
 
         else
@@ -136,45 +116,43 @@ void  WorkerSocketClient::leggiMsgApp(){
         }
     }
 
-    if (strcmp(msg,"eop")==0)
+    if (strcmp(msg,"eor")==0) // da rivedere, esito operazione remota
     {
-        DocOperation* docOp = new DocOperation();
+        DocOperation operazione;
 
-        emit  SigOpDocRemota(/*esito*/*docOp);
+        BlockReader(socketConnesso).stream() >> operazione;
+
+        emit  SigOpDocRemota(operazione);
     }
 
     if (strcmp(msg,"e_c")==0)
     {
         in.readBytes(opt,prova);
 
-        emit  SigEsitoChiudiDoc( opt/*esito*/);
+        emit  SigEsitoChiudiDoc(opt);
     }
-
-
-    if (strcmp(msg,"mop")==0)  {
-
+    if (strcmp(msg,"mop")==0)
+    {
         in.readBytes(opt, prova);
 
         if (strcmp(opt,"suc")==0)
         {
             QUtente userNew;
 
-            in >> userNew;
+            BlockReader(socketConnesso).stream() >> userNew;
 
-            emit  SigEsitoModificaProfiloUtente("Success"/*esito*/,userNew);
+            emit SigEsitoModificaProfiloUtente("Success"/*esito*/,userNew);
         }
-
-        else{
-
+        else
+        {
             QUtente user=*new QUtente();
 
-            emit SigEsitoModificaProfiloUtente("Failed"/*esito*/, user);
+            emit  SigEsitoModificaProfiloUtente("Failed"/*esito*/, user);
         }
     }
 
-
-    if (strcmp(msg,"e_o")==0)  { //ok
-
+    if (strcmp(msg,"e_o")==0)
+    {
         in.readBytes(opt, prova);
 
         DocOperation operazione;
@@ -182,61 +160,57 @@ void  WorkerSocketClient::leggiMsgApp(){
         qDebug()<<"esito_operazione: "<<opt<<"\n";
         if (strcmp(opt,"suc")==0)
         {
-
             BlockReader(socketConnesso).stream() >> operazione;
+
             qDebug()<<"carattere ricevuto lato client: "<<operazione.character.getValue()<<"Con site id :"<<operazione.getSiteId()<<"\n";
 
             std::cout<<"Esito operazione dal server: "<<operazione.character.getValue().toLatin1()<<std::flush;
 
-            emit SigEsitoOpDocLocale("Success",operazione);
+            emit  SigEsitoOpDocLocale("Success",operazione);
         }
 
         else
         {
             BlockReader(socketConnesso).stream() >> operazione;
+
             qDebug()<<"carattere ricevuto lato client: "<<operazione.character.getValue()<<"Con site id :"<<operazione.getSiteId()<<"\n";
 
-            emit SigEsitoOpDocLocale("Failed",operazione);
+            emit  SigEsitoOpDocLocale("Failed",operazione);
         }
     }
-
 
     if(strcmp(msg,"e_r")==0)
     {
         in.readBytes(opt, prova);
 
-        if (strcmp(opt,"r_a")==0)
+        if (strcmp(opt,"r_a")==0) emit SigEsitoRegistrazione("Success");
 
-          emit SigEsitoRegistrazione("Success"/*esito*/);
-
-        else
-
-         emit SigEsitoRegistrazione("Failed"/*esito*/);
+        else  emit SigEsitoRegistrazione("Failed");
     }
 
     if (strcmp(msg,"c_i")==0)
     {
         QList <QUser> utenti;
 
-        in >> utenti;
+        BlockReader(socketConnesso).stream() >> utenti;
 
-        emit SigEsitoOpChiHaInseritoCosa(utenti);
+        emit  SigEsitoOpChiHaInseritoCosa(utenti);
     }
 
-    if (strcmp(msg,"ucd")==0)  { //ok
+    if (strcmp(msg,"ucd")==0)  {
 
         QUser utente;
 
-        in >> utente;
+        BlockReader(socketConnesso).stream() >> utente;
 
         emit  SigQuestoUserHaChiusoIlDoc(utente);
     }
 
-    if (strcmp(msg,"uad")==0)  { //ok
-
+    if (strcmp(msg,"uad")==0)
+    {
         QUser utente;
 
-        in >> utente;
+        BlockReader(socketConnesso).stream() >> utente;
 
         emit  SigQuestoUserHaApertoIlDoc(utente);
     }
@@ -255,53 +229,50 @@ void WorkerSocketClient::opDocLocale(DocOperation operazione)
 
 void WorkerSocketClient::apriDoc(QString nomeFile)
 {
-
     QDataStream in(this->socketConnesso);
 
     uint len=3;
 
     in.writeBytes("ope",len);
 
-    in <<nomeFile;
+    BlockWriter(socketConnesso).stream() << nomeFile;
 }
 
 void WorkerSocketClient::creaDoc(QString nomeFile)
 {
-
     QDataStream in(this->socketConnesso);
 
     uint len=3;
 
     in.writeBytes("cre",len);
 
-    in << nomeFile;
-
+    BlockWriter(socketConnesso).stream() << nomeFile;
 }
 
-void WorkerSocketClient::login(QUtente user){
-
+void WorkerSocketClient::login(QUtente user)
+{
     QDataStream in(this->socketConnesso);
 
     uint len=3;
 
     in.writeBytes("log",len);
 
-    in <<user;
+    BlockWriter(socketConnesso).stream() << user;
 }
 
-void WorkerSocketClient::modificaProfiloUtente(QUtente user1) {
-
+void WorkerSocketClient::modificaProfiloUtente(QUtente user1)
+{
     QDataStream in(this->socketConnesso);
 
     uint len=3;
 
     in.writeBytes("mod",len);
 
-    in << user1;
+    BlockWriter(socketConnesso).stream() << user1;
 }
 
-void WorkerSocketClient::registrazione(QUtente user){
-
+void WorkerSocketClient::registrazione(QUtente user)
+{
     char fullpath[100];
     char name[100];
 
@@ -326,7 +297,7 @@ void WorkerSocketClient::registrazione(QUtente user){
 
     qDebug()<< "inizio trasmissione";
 
-    in << user;
+    BlockWriter(socketConnesso).stream() << user;
 }
 
 void WorkerSocketClient::chiudiDoc(QString nomeFile)
@@ -338,8 +309,8 @@ void WorkerSocketClient::chiudiDoc(QString nomeFile)
     in.writeBytes("c_d",len);
 }
 
-void WorkerSocketClient::opChiHaInseritoCosa(){
-
+void WorkerSocketClient::opChiHaInseritoCosa()
+{
     QDataStream in(this->socketConnesso);
 
     uint len=3;
