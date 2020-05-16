@@ -140,6 +140,6 @@ void WorkerDoc::opDoc(DocOperation docOp){
 
     std::cout <<"Invio segnale di esito operazione...\n"<<std::flush;
     file->close();
-    emit SigEsitoOpDoc("Failed",docOp);
+    emit SigEsitoOpDoc("Success",docOp);
 }
 

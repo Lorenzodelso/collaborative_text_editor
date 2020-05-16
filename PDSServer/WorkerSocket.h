@@ -41,7 +41,6 @@ class WorkerSocket: public QObject {
     Q_OBJECT
     QTcpSocket* socketConnessoP;
     QUtente user;
-    char* msg="";
     QImage image;
 
 
