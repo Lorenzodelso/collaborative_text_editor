@@ -25,6 +25,8 @@ SOURCES += \
         QUtente.cpp \
         Server.cpp \
         WorkerDoc.cpp \
+        BlockReader.cpp \
+        BlockWriter.cpp \
         WorkerSocket.cpp \
         QTcpServerMio.cpp \
         QUtenteServer.cpp \
