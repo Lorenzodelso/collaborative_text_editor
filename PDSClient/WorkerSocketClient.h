@@ -11,6 +11,8 @@
 #include <QTcpSocket>
 #include "CRDT.h"
 #include "QUser.h"
+#include "blockreader.h"
+#include "blockwriter.h"
 
 class WorkerSocketClient : public QObject{
     Q_OBJECT

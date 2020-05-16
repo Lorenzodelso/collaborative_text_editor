@@ -8,8 +8,6 @@
 #include <QDebug>
 
 
-
-
 void WorkerSocketClient::connessioneAlServer() {
 
     qRegisterMetaType<QUtente>();
@@ -25,14 +23,14 @@ void WorkerSocketClient::connessioneAlServer() {
 
     if(connected==true)
 
-        SigEsitoConnessioneAlServer("Success");
+      emit SigEsitoConnessioneAlServer("Success");
 
     else
 
-        SigEsitoConnessioneAlServer("Failed");
+      emit SigEsitoConnessioneAlServer("Failed");
 
 
-    connect(socketConnesso, &QTcpSocket::readyRead, this,  &WorkerSocketClient::leggiMsgApp,Qt::DirectConnection);
+    connect(socketConnesso, &QTcpSocket::readyRead, this,  &WorkerSocketClient::leggiMsgApp,Qt::QueuedConnection);
 
 
 }
@@ -51,7 +49,7 @@ void WorkerSocketClient::disconnessioneDalServer(){
 
     else
 
-        SigEsitoConnessioneAlServer("Failed");
+     emit  SigEsitoConnessioneAlServer("Failed");
 
 }
 
@@ -64,8 +62,6 @@ void  WorkerSocketClient::leggiMsgApp(){
     char* opt;
 
     QDataStream in(this->socketConnesso);
-
-    in.startTransaction();
 
     uint prova = 3;
     in.readBytes(msg, prova);
@@ -80,18 +76,14 @@ void  WorkerSocketClient::leggiMsgApp(){
 
             in >> doc;
 
-            if(in.commitTransaction()==true)
-
-                SigEsitoApriDoc("Success"/*esito*/, doc/*rappresentazione del file*/);
-
-             else return;
+            emit SigEsitoApriDoc("Success"/*esito*/, doc/*rappresentazione del file*/);
          }
 
         else
         {
             CRDT doc=*new CRDT();
 
-            SigEsitoApriDoc(opt, doc);
+            emit  SigEsitoApriDoc(opt, doc);
         }
     }
 
@@ -105,20 +97,16 @@ void  WorkerSocketClient::leggiMsgApp(){
 
             in >> doc;
 
-            if(in.commitTransaction()==true)
-
-                SigEsitoCreaDoc( "Success"/*esito*/,  doc/*rappresentazione del file*/);
-
-            else return;
-
+            emit  SigEsitoCreaDoc( "Success"/*esito*/,  doc/*rappresentazione del file*/);
        }
        else
        {
-            CRDT doc =*new CRDT(0);
+            CRDT doc =*new CRDT();
 
-            SigEsitoCreaDoc(opt, doc);
+          emit SigEsitoCreaDoc(opt, doc);
 
-    }}
+       }
+    }
 
     if(strcmp(msg,"e_l")==0) {
 
@@ -135,12 +123,7 @@ void  WorkerSocketClient::leggiMsgApp(){
 
             in >> nomiFilesEditati;
 
-            if(in.commitTransaction()==true)
-
-                SigEsitoLogin( opt/*esito*/, user, nomiFilesEditati);
-
-            else return;
-
+            emit  SigEsitoLogin( opt/*esito*/, user, nomiFilesEditati);
         }
 
         else
@@ -149,22 +132,22 @@ void  WorkerSocketClient::leggiMsgApp(){
 
             QUtente user = *new QUtente();
 
-            SigEsitoLogin(opt, user, nomiFilesEditati);
+            emit  SigEsitoLogin(opt, user, nomiFilesEditati);
         }
     }
 
-    if (strcmp(msg,"e_o")==0)
+    if (strcmp(msg,"eop")==0)
     {
         DocOperation* docOp = new DocOperation();
 
-        SigOpDocRemota(/*esito*/*docOp);
+        emit  SigOpDocRemota(/*esito*/*docOp);
     }
 
     if (strcmp(msg,"e_c")==0)
     {
         in.readBytes(opt,prova);
 
-        SigEsitoChiudiDoc( opt/*esito*/);
+        emit  SigEsitoChiudiDoc( opt/*esito*/);
     }
 
 
@@ -178,19 +161,14 @@ void  WorkerSocketClient::leggiMsgApp(){
 
             in >> userNew;
 
-            if(in.commitTransaction()==true)
-
-                SigEsitoModificaProfiloUtente("Success"/*esito*/,userNew);
-
-            else return;
-
+            emit  SigEsitoModificaProfiloUtente("Success"/*esito*/,userNew);
         }
 
         else{
 
             QUtente user=*new QUtente();
 
-            SigEsitoModificaProfiloUtente("Failed"/*esito*/, user);
+            emit SigEsitoModificaProfiloUtente("Failed"/*esito*/, user);
         }
     }
 
@@ -199,28 +177,26 @@ void  WorkerSocketClient::leggiMsgApp(){
 
         in.readBytes(opt, prova);
 
+        DocOperation operazione;
+
+        qDebug()<<"esito_operazione: "<<opt<<"\n";
         if (strcmp(opt,"suc")==0)
         {
 
-            DocOperation operazione;
+            BlockReader(socketConnesso).stream() >> operazione;
+            qDebug()<<"carattere ricevuto lato client: "<<operazione.character.getValue()<<"Con site id :"<<operazione.getSiteId()<<"\n";
 
-            in >> operazione;
             std::cout<<"Esito operazione dal server: "<<operazione.character.getValue().toLatin1()<<std::flush;
 
-            if(in.commitTransaction()==true)
-
-                SigEsitoOpDocLocale("Success",operazione);
-
-            else return;
+            emit SigEsitoOpDocLocale("Success",operazione);
         }
 
         else
         {
+            BlockReader(socketConnesso).stream() >> operazione;
+            qDebug()<<"carattere ricevuto lato client: "<<operazione.character.getValue()<<"Con site id :"<<operazione.getSiteId()<<"\n";
 
-            DocOperation operazione= *new DocOperation();
-
-            SigEsitoOpDocLocale("Failed",operazione);
-
+            emit SigEsitoOpDocLocale("Failed",operazione);
         }
     }
 
@@ -228,31 +204,23 @@ void  WorkerSocketClient::leggiMsgApp(){
     if(strcmp(msg,"e_r")==0)
     {
         in.readBytes(opt, prova);
+
         if (strcmp(opt,"r_a")==0)
-        {
-            SigEsitoRegistrazione("Success"/*esito*/);
-        }
+
+          emit SigEsitoRegistrazione("Success"/*esito*/);
 
         else
 
-         SigEsitoRegistrazione("Failed"/*esito*/);
-
-
+         emit SigEsitoRegistrazione("Failed"/*esito*/);
     }
 
     if (strcmp(msg,"c_i")==0)
     {
-
         QList <QUser> utenti;
 
         in >> utenti;
 
-        if(in.commitTransaction()==true)
-
-            SigEsitoOpChiHaInseritoCosa(utenti);   
-
-        else return;
-
+        emit SigEsitoOpChiHaInseritoCosa(utenti);
     }
 
     if (strcmp(msg,"ucd")==0)  { //ok
@@ -261,11 +229,7 @@ void  WorkerSocketClient::leggiMsgApp(){
 
         in >> utente;
 
-        if(in.commitTransaction()==true)
-
-            SigQuestoUserHaChiusoIlDoc(utente);
-
-        else return;
+        emit  SigQuestoUserHaChiusoIlDoc(utente);
     }
 
     if (strcmp(msg,"uad")==0)  { //ok
@@ -274,41 +238,35 @@ void  WorkerSocketClient::leggiMsgApp(){
 
         in >> utente;
 
-        if(in.commitTransaction()==true)
-
-            SigQuestoUserHaApertoIlDoc(utente);
-
-        else return;
+        emit  SigQuestoUserHaApertoIlDoc(utente);
     }
 }
 
-void WorkerSocketClient::opDocLocale(DocOperation operazione){
-
+void WorkerSocketClient::opDocLocale(DocOperation operazione)
+{
     QDataStream in(this->socketConnesso);
-
 
     uint len=3;
 
     in.writeBytes("opd",len);
 
-    in <<operazione;
-
+    BlockWriter(socketConnesso).stream()<< operazione;
 }
 
-void WorkerSocketClient::apriDoc(QString nomeFile){
+void WorkerSocketClient::apriDoc(QString nomeFile)
+{
 
     QDataStream in(this->socketConnesso);
-
 
     uint len=3;
 
     in.writeBytes("ope",len);
 
     in <<nomeFile;
-
 }
 
-void WorkerSocketClient::creaDoc(QString nomeFile){
+void WorkerSocketClient::creaDoc(QString nomeFile)
+{
 
     QDataStream in(this->socketConnesso);
 
@@ -322,20 +280,16 @@ void WorkerSocketClient::creaDoc(QString nomeFile){
 
 void WorkerSocketClient::login(QUtente user){
 
-
     QDataStream in(this->socketConnesso);
-
 
     uint len=3;
 
     in.writeBytes("log",len);
 
     in <<user;
-
 }
 
 void WorkerSocketClient::modificaProfiloUtente(QUtente user1) {
-
 
     QDataStream in(this->socketConnesso);
 
@@ -344,7 +298,6 @@ void WorkerSocketClient::modificaProfiloUtente(QUtente user1) {
     in.writeBytes("mod",len);
 
     in << user1;
-
 }
 
 void WorkerSocketClient::registrazione(QUtente user){
@@ -374,20 +327,15 @@ void WorkerSocketClient::registrazione(QUtente user){
     qDebug()<< "inizio trasmissione";
 
     in << user;
-
 }
 
-void WorkerSocketClient::chiudiDoc(QString nomeFile){
-
+void WorkerSocketClient::chiudiDoc(QString nomeFile)
+{
     QDataStream in(this->socketConnesso);
 
     uint len=3;
 
     in.writeBytes("c_d",len);
-
-  //  in << nomeFile;
-
-
 }
 
 void WorkerSocketClient::opChiHaInseritoCosa(){
@@ -397,5 +345,4 @@ void WorkerSocketClient::opChiHaInseritoCosa(){
     uint len=3;
 
     in.writeBytes("c_i",len);
-
 }

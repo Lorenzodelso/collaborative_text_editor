@@ -698,7 +698,7 @@ Nella DocOperation i parametri che non vengono utilizzati vengono settati a null
 void TextEdit::segnalaMovimentoCursore(QTextCursor cursor){
     DocOperation* docOpCursore = new DocOperation(
                 cursorMoved,Char(),QTextCharFormat(),this->algoritmoCRDT->getSiteID(),cursor.position(),cursor.anchor() );
-    emit SigOpDocLocale(*docOpCursore);
+  //  emit SigOpDocLocale(*docOpCursore);
 }
 
 void TextEdit::cursorPositionChanged()
@@ -889,6 +889,8 @@ int TextEdit::isSuccess(QString esito){
 
 
 void TextEdit::esitoOpDocLocale(QString esito, DocOperation operation){
+
+  qDebug()<<"esito_textedit: "<<esito<<"\n";
 
   if(!isSuccess(esito)){
     //in caso di esito negativo devo fare UNDO dell'operazione

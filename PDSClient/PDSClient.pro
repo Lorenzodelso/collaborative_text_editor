@@ -42,6 +42,8 @@ HEADERS += \
     DocOperation.h \
     EditProfile.h \
     LoginDialog.h \
+    BlockReader.h \
+    BlockWriter.h \
     NewProfileDialog.h \
     QUser.h \
     QUtente.h \
