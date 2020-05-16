@@ -32,7 +32,7 @@ void WorkerSocketClient::connessioneAlServer() {
 void WorkerSocketClient::disconnessioneDalServer()
 {
     this->socketConnesso->disconnect();
-    this->socketConnesso->disconnectFromHost();    
+    this->socketConnesso->disconnectFromHost();
 }
 
 void  WorkerSocketClient::leggiMsgApp(){
@@ -58,9 +58,8 @@ void  WorkerSocketClient::leggiMsgApp(){
 
             BlockReader(socketConnesso).stream() >> doc;
 
-            emit SigEsitoApriDoc("Success"/*esito*/, doc/*rappresentazione del file*/);
+            emit SigEsitoApriDoc("Success", doc);
          }
-
         else
         {
             CRDT doc=*new CRDT();
@@ -112,7 +111,7 @@ void  WorkerSocketClient::leggiMsgApp(){
 
             QUtente user = *new QUtente();
 
-            emit  SigEsitoLogin("Failed", user, nomiFilesEditati);
+            emit SigEsitoLogin("Failed", user, nomiFilesEditati);
         }
     }
 
@@ -122,17 +121,17 @@ void  WorkerSocketClient::leggiMsgApp(){
 
         BlockReader(socketConnesso).stream() >> operazione;
 
-        emit  SigOpDocRemota(operazione);
+        emit SigOpDocRemota(operazione);
     }
 
     if (strcmp(msg,"e_c")==0)
     {
-    
+
         in.readBytes(opt,prova);
-        
-        if (strcmp(opt,"suc")==0) emit  SigEsitoChiudiDoc("Success");
-        
-        else  emit  SigEsitoChiudiDoc("Failed");
+
+        if (strcmp(opt,"suc")==0) emit SigEsitoChiudiDoc("Success");
+
+        else  emit SigEsitoChiudiDoc("Failed");
 
     }
     if (strcmp(msg,"mop")==0)
@@ -145,13 +144,13 @@ void  WorkerSocketClient::leggiMsgApp(){
 
             BlockReader(socketConnesso).stream() >> userNew;
 
-            emit SigEsitoModificaProfiloUtente("Success"/*esito*/,userNew);
+            emit SigEsitoModificaProfiloUtente("Success",userNew);
         }
         else
         {
             QUtente user=*new QUtente();
 
-            emit  SigEsitoModificaProfiloUtente("Failed"/*esito*/, user);
+            emit  SigEsitoModificaProfiloUtente("Failed", user);
         }
     }
 
@@ -172,7 +171,6 @@ void  WorkerSocketClient::leggiMsgApp(){
 
             emit  SigEsitoOpDocLocale("Success",operazione);
         }
-
         else
         {
             BlockReader(socketConnesso).stream() >> operazione;
@@ -201,8 +199,8 @@ void  WorkerSocketClient::leggiMsgApp(){
         emit  SigEsitoOpChiHaInseritoCosa(utenti);
     }
 
-    if (strcmp(msg,"ucd")==0)  {
-
+    if (strcmp(msg,"ucd")==0)
+    {
         QUser utente;
 
         BlockReader(socketConnesso).stream() >> utente;
@@ -288,15 +286,10 @@ void WorkerSocketClient::registrazione(QUtente user)
 
 /*
     GetFullPathName(user.getNomeImg(), 100, fullpath, nullptr);
-
     QImage image(fullpath);
-
     QBuffer buffer;
-
     image.save(&buffer, "PNG");
-
     in << buffer.size()
-
     in << buffer.data();*/
 
     qDebug()<< "inizio trasmissione";
