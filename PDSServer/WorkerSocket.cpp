@@ -161,9 +161,7 @@ void WorkerSocket::rispondiEsitoLogin(QUtente user, QList<QString> nomiFilesEdit
     if(nomiFilesEditati.contains("Failed"))
     {
         uint len=3;
-
-        this->user=user;
-
+        
         qDebug()<<"fallito\n";
 
         in.writeBytes("fld",len);
@@ -175,7 +173,9 @@ void WorkerSocket::rispondiEsitoLogin(QUtente user, QList<QString> nomiFilesEdit
     else{
 
         uint len=3;
-
+        
+        this->user=user;        
+        
         in.writeBytes("suc",len);
         
         BlockWriter(socketConnessoP).stream() << user;
