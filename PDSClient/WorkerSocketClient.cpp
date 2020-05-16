@@ -65,7 +65,7 @@ void  WorkerSocketClient::leggiMsgApp(){
         {
             CRDT doc=*new CRDT();
 
-            emit SigEsitoApriDoc(opt, doc);
+            emit SigEsitoApriDoc("Failed", doc);
         }
     }
 
@@ -85,7 +85,7 @@ void  WorkerSocketClient::leggiMsgApp(){
        {
           CRDT doc =*new CRDT();
 
-          emit SigEsitoCreaDoc(opt, doc);
+          emit SigEsitoCreaDoc("Failed", doc);
        }
     }
 
@@ -103,7 +103,7 @@ void  WorkerSocketClient::leggiMsgApp(){
 
             BlockReader(socketConnesso).stream() >> nomiFilesEditati;
 
-            emit SigEsitoLogin( opt/*esito*/, user, nomiFilesEditati);
+            emit SigEsitoLogin( "Success"/*esito*/, user, nomiFilesEditati);
         }
 
         else
@@ -112,7 +112,7 @@ void  WorkerSocketClient::leggiMsgApp(){
 
             QUtente user = *new QUtente();
 
-            emit  SigEsitoLogin(opt, user, nomiFilesEditati);
+            emit  SigEsitoLogin("Failed", user, nomiFilesEditati);
         }
     }
 
@@ -127,9 +127,13 @@ void  WorkerSocketClient::leggiMsgApp(){
 
     if (strcmp(msg,"e_c")==0)
     {
+    
         in.readBytes(opt,prova);
+        
+        if (strcmp(opt,"suc")==0) emit  SigEsitoChiudiDoc("Success");
+        
+        else  emit  SigEsitoChiudiDoc("Failed");
 
-        emit  SigEsitoChiudiDoc(opt);
     }
     if (strcmp(msg,"mop")==0)
     {
