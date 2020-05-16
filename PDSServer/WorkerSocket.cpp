@@ -35,7 +35,7 @@ void WorkerSocket::leggiMsgApp() {
 
     QDataStream in(this->socketConnessoP);
 
-    in.startTransaction();
+ //   in.startTransaction();
 
     uint prova = 3;
     in.readBytes(this->msg, prova);
@@ -79,17 +79,17 @@ void WorkerSocket::leggiMsgApp() {
 
         in >> user ;
 
-        if(in.commitTransaction()==true)
-        {
+//        if(in.commitTransaction()==true)
+  //      {
             if (user.getUsername() != NULL && user.getPassword() != NULL && user.getNomeImg() == NULL)
             {
                 qDebug()<<"Segnale Log emesso\n";
                 emit SigLogin(this, user);
             }
 
-        }
+//        }
 
-        else return;
+  //      else return;
 
     }
 
@@ -114,29 +114,32 @@ void WorkerSocket::leggiMsgApp() {
         //DEBUG
         QRegExp e("([a-zA-Z0-9\\s_\\\\.\\-\\(\\):])+(.doc|.docx|.pdf|.png)$");
 
-        if(in.commitTransaction()==true)
-        {
+ //       if(in.commitTransaction()==true)
+ //       {
 
            if (user.getUsername() != NULL && user.getPassword() != NULL /*&& e.indexIn(user.getNomeImg()*/)
 
                 emit SigRegistrazione(this, user);
-        }
+ //       }
 
-        else return;
+ //       else return;
     }
 
 
     if(strcmp(msg,"opd")==0)
     {
         DocOperation operazione;
+        BlockReader(socketConnessoP).stream() >> operazione;
 
-        in >> operazione;
+        //in >> operazione;
 
-        if(in.commitTransaction()==true)
+   //     if(in.commitTransaction()==true)
+               qDebug()<<"carattere ricevuto lato server: "<<operazione.character.getValue()<<"Con site id :"<<operazione.getSiteId()<<"\n";
+
 
                 emit SigOpDoc(operazione);
 
-        else return;
+    //    else return;
     }
 
     if (strcmp(msg,"c_i")==0)
@@ -152,17 +155,17 @@ void WorkerSocket::leggiMsgApp() {
         in >> userOLD;
         in >> userNEW;
 
-        if(in.commitTransaction()==true)
-        {
+   //     if(in.commitTransaction()==true)
+   //     {
 
             if ( userOLD.getUsername() !=  userNEW.getUsername() &&
                  userOLD.getPassword() !=  userNEW.getPassword() &&
                  userNEW.getNomeImg()  ==  userOLD.getNomeImg())
 
                    emit SigModificaProfiloUtente(this, userOLD, userNEW);
-        }
+    //    }
 
-        else return;
+    //    else return;
     }
 
     if(strcmp(this->msg,"c_d")==0)
@@ -303,6 +306,8 @@ void WorkerSocket::rispondiEsitoOpDoc(QString esito, DocOperation operazione)
 
     QDataStream in(socketConnessoP);
 
+    qDebug()<<"rispondiesitoopdoc";
+
     uint len=3;
 
     in.writeBytes("e_o",len);
@@ -314,23 +319,30 @@ void WorkerSocket::rispondiEsitoOpDoc(QString esito, DocOperation operazione)
 
         in.writeBytes("suc",len);
 
-        if(operazione.getSiteId() == this->user.getUserId()) {
+       // if(operazione.getSiteId() == this->user.getUserId()) {
 
-            in << esito;
-        }
+       //     in << esito;
+        BlockWriter(socketConnessoP).stream() << operazione;
 
-        else{
+          //  in << operazione;
 
-            in << esito << operazione;
-        }
+      //  }
+
+      //  else{
+
+         //   in << esito << operazione;
+       // }
     }
 
-    else if(user.getUserId() == this->user.getUserId())
+    else //if(user.getUserId() == this->user.getUserId())
     {
 
         uint len=3;
 
         in.writeBytes("fld",len);
+
+        BlockWriter(socketConnessoP).stream() << operazione;
+
     }
 }
 

@@ -101,11 +101,22 @@ void WorkerDoc::unClientHaChiusoIlDoc(){
 }
 
 void WorkerDoc::opDoc(DocOperation docOp){
+
     //selezione dell'operazione da fare sul documento: per ora solo remote insert o delete
-    //std::cout <<"Ricevuto segnale di operazione...\n"<<std::flush;
+    std::cout <<"Ricevuto segnale di operazione...\n"<<std::flush;
+    std::cout <<docOp.type<<std::flush;
+
+    //openedFile->open(QIODevice::ReadWrite);
+
+    QFile* file=new QFile(this->nomeFile);
+    file->open(QIODevice::ReadWrite);
+    this->openedFile=file;
 
     // salvataggio su file del crdt ogni operazione che si effettua su di esso
     QDataStream outStream(this->openedFile);
+
+    std::cout <<this->nomeFile.toStdString()<<std::flush;
+
 
     switch(docOp.type){
         case remoteDelete:
@@ -114,7 +125,11 @@ void WorkerDoc::opDoc(DocOperation docOp){
             break;
         case remoteInsert:
             this->crdt->remoteInsert(docOp.character);
+
             outStream << *crdt;
+
+            std::cout <<"inserimento terminato\n"<<std::flush;
+
             break;
         case cursorMoved:
             //Aggiorno la mappa dei cursori
@@ -123,7 +138,8 @@ void WorkerDoc::opDoc(DocOperation docOp){
             cursorMap->find(docOp.siteId).value() = *cursor;
     }
 
-    //std::cout <<"Invio segnale di esito operazione...\n"<<std::flush;
-    emit SigEsitoOpDoc("success",docOp);
+    std::cout <<"Invio segnale di esito operazione...\n"<<std::flush;
+    file->close();
+    emit SigEsitoOpDoc("Failed",docOp);
 }
 

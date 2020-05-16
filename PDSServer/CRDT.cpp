@@ -207,8 +207,18 @@ DocOperation CRDT::localErase(quint16 index) {
 
 void CRDT::remoteInsert(Char value) {
     quint16 index = findInsertIndex(value);
+
+    std::cout <<index<<std::flush;
+
     this->listChar.insert(index,value);
+
+    std::cout <<"\ninserimento in listchar eseguito"<<std::flush;
+
     this->text.insert(index, value.getValue());
+
+    std::cout <<"\ninserimento in text eseguito\n"<<std::flush;
+
+
 }
 
 void CRDT::remoteDelete(Char value) {

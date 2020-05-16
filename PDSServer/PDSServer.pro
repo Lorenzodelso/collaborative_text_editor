@@ -32,6 +32,8 @@ SOURCES += \
 HEADERS += \
         Char.h \
         CRDT.h \
+        BlockReader.h \
+        BlockWriter.h \
         DocOperation.h \
         QUser.h \
         QUtente.h \

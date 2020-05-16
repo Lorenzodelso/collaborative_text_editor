@@ -34,6 +34,8 @@
 #include "QUtente.h"
 #include "CRDT.h"
 #include "QUser.h"
+#include "blockreader.h"
+#include "blockwriter.h"
 
 class WorkerSocket: public QObject {
     Q_OBJECT
