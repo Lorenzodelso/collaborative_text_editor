@@ -177,9 +177,7 @@ void WorkerSocket::rispondiEsitoLogin(QUtente user, QList<QString> nomiFilesEdit
         uint len=3;
 
         in.writeBytes("suc",len);
-
-        this->user = user;
-
+        
         BlockWriter(socketConnessoP).stream() << user;
 
         BlockWriter(socketConnessoP).stream() << nomiFilesEditati;
