@@ -28,141 +28,140 @@ void WorkerSocket::WorkerSocketAttivati(quintptr socketDescriptor){
 }
 
 void WorkerSocket::leggiMsgApp() {
+    while(socketConnessoP->bytesAvailable()){
+        qDebug()<<"inizio lettura";
 
-    qDebug()<<"inizio lettura";
+        QDataStream in(this->socketConnessoP);
 
-    QDataStream in(this->socketConnessoP);
+        char* msg;
 
-    char* msg;
+        uint prova = 3;
+        in.readBytes(msg, prova);
 
-    uint prova = 3;
-    in.readBytes(msg, prova);
-
-    qDebug()<<msg;
-
-    //DEBUG
-    std::cout<<"\nRicevuto segnale readyRead - Slot leggiMsgApp"<<std::flush;
-   // std::cout<<"\n"+msg<<std::flush;
-    //DEBUG
-
-    if (strcmp(msg,"ope")==0)
-    {
-        QString msg1;
-        BlockReader(socketConnessoP).stream() >> msg1;
-
-        qDebug()<<"ope: "<<msg1<<"\n";
-
-        emit  SigApriDoc(msg1, this , this->user);
-    }
-
-    if (strcmp(msg,"cre")==0)
-    {
-        std::cout<<"Entro nel caso crea nuovo documento\n"<<std::flush;
-
-        QString msg1;
-        BlockReader(socketConnessoP).stream() >> msg1;
-
-        std::cout<<"Nome del file ricevuto: "<<msg1.toStdString()<<"\n"<<std::flush;
-
-        emit SigCreaDoc(msg1, this, this->user);
-    }
-
-    if (strcmp(msg,"log")==0)
-    {
-        QUtente user;
-
-        BlockReader(socketConnessoP).stream() >> user;
-
-         if (user.getUsername() != NULL && user.getPassword() != NULL /*&& user.getNomeImg() == NULL*/)
-         {
-                qDebug()<<"Segnale Log emesso\n";
-                emit SigLogin(this, user);
-         }
-    }
-
-    if (strcmp(msg,"reg")==0)
-    {
-        QUtente user;
-        qint64 dimension;
-        QByteArray data;
-
-       // in >> dimension;
-
-        //in.readBytes(data,dimension);
-        // img = QImage::fromData(data,"PNG");
-
-       // this->image=img;
-
-        BlockReader(socketConnessoP).stream() >> user;
+        qDebug()<<msg;
 
         //DEBUG
-        std::cout<<"\nUser ricevuto: "+user.getUsername().toStdString()<<std::flush;
+        std::cout<<"\nRicevuto segnale readyRead - Slot leggiMsgApp"<<std::flush;
+       // std::cout<<"\n"+msg<<std::flush;
         //DEBUG
-        QRegExp e("([a-zA-Z0-9\\s_\\\\.\\-\\(\\):])+(.doc|.docx|.pdf|.png)$");
 
-           if (user.getUsername() != NULL && user.getPassword() != NULL /*&& e.indexIn(user.getNomeImg()*/)
+        if (strcmp(msg,"ope")==0)
+        {
+            QString msg1;
+            BlockReader(socketConnessoP).stream() >> msg1;
 
-               emit  SigRegistrazione(this, user);
+            qDebug()<<"ope: "<<msg1<<"\n";
+
+            emit  SigApriDoc(msg1, this , this->user);
+        }
+
+        if (strcmp(msg,"cre")==0)
+        {
+            std::cout<<"Entro nel caso crea nuovo documento\n"<<std::flush;
+
+            QString msg1;
+            BlockReader(socketConnessoP).stream() >> msg1;
+
+            std::cout<<"Nome del file ricevuto: "<<msg1.toStdString()<<"\n"<<std::flush;
+
+            emit SigCreaDoc(msg1, this, this->user);
+        }
+
+        if (strcmp(msg,"log")==0)
+        {
+            QUtente user;
+
+            BlockReader(socketConnessoP).stream() >> user;
+
+             if (user.getUsername() != NULL && user.getPassword() != NULL /*&& user.getNomeImg() == NULL*/)
+             {
+                    qDebug()<<"Segnale Log emesso\n";
+                    emit SigLogin(this, user);
+             }
+        }
+
+        if (strcmp(msg,"reg")==0)
+        {
+            QUtente user;
+            qint64 dimension;
+            QByteArray data;
+
+           // in >> dimension;
+
+            //in.readBytes(data,dimension);
+            // img = QImage::fromData(data,"PNG");
+
+           // this->image=img;
+
+            BlockReader(socketConnessoP).stream() >> user;
+
+            //DEBUG
+            std::cout<<"\nUser ricevuto: "+user.getUsername().toStdString()<<std::flush;
+            //DEBUG
+            QRegExp e("([a-zA-Z0-9\\s_\\\\.\\-\\(\\):])+(.doc|.docx|.pdf|.png)$");
+
+               if (user.getUsername() != NULL && user.getPassword() != NULL /*&& e.indexIn(user.getNomeImg()*/)
+
+                   emit  SigRegistrazione(this, user);
+        }
+
+
+        if(strcmp(msg,"opd")==0)
+        {
+            DocOperation operazione;
+            BlockReader(socketConnessoP).stream() >> operazione;
+
+            qDebug()<<"carattere ricevuto lato server: "<<operazione.character.getValue()<<"Con site id :"<<operazione.getSiteId()<<"\n";
+
+            emit  SigOpDoc(operazione);
+        }
+
+        if (strcmp(msg,"c_i")==0)
+        {
+            emit SigOpChiHaInseritoCosa(this,this->user);
+        }
+
+        if(strcmp(msg,"mod")==0)
+        {
+            QUtente userNEW;
+            QUtente userOLD=this->user;
+
+            BlockReader(socketConnessoP).stream() >> userNEW;
+
+           /* if(userOLD.getUsername() ==  userNEW.getUsername() &&
+               userOLD.getPassword() ==  userNEW.getPassword() &&
+               userNEW.getNomeImg()  !=  userOLD.getNomeImg())               // Gestione immagine
+
+                this->image=
+
+            */
+
+            if ((userOLD.getUsername() !=  userNEW.getUsername() &&
+                 userOLD.getPassword() ==  userNEW.getPassword() &&
+                 userNEW.getNomeImg()  ==  userOLD.getNomeImg()) ||
+
+                (userOLD.getUsername() ==  userNEW.getUsername() &&
+                 userOLD.getPassword() !=  userNEW.getPassword() &&
+                 userNEW.getNomeImg()  ==  userOLD.getNomeImg()) ||
+
+                (userOLD.getUsername() ==  userNEW.getUsername() &&
+                 userOLD.getPassword() ==  userNEW.getPassword() &&
+                 userNEW.getNomeImg()  !=  userOLD.getNomeImg()))
+
+                    emit  SigModificaProfiloUtente(this, userOLD, userNEW);
+        }
+
+        if(strcmp(msg,"c_d")==0)
+        {
+           emit SigChiusuraDocumentoDaParteDelClient(this, this->user);
+        }
+
+        if (strcmp(msg,"c_c")==0)
+        {
+           emit SigChiusuraConnessioneDaParteDelClient(this, this->user);
+        }
     }
-
-
-    if(strcmp(msg,"opd")==0)
-    {
-        DocOperation operazione;
-        BlockReader(socketConnessoP).stream() >> operazione;
-
-        qDebug()<<"carattere ricevuto lato server: "<<operazione.character.getValue()<<"Con site id :"<<operazione.getSiteId()<<"\n";
-
-        emit  SigOpDoc(operazione);
-    }
-
-    if (strcmp(msg,"c_i")==0)
-    {
-        emit SigOpChiHaInseritoCosa(this,this->user);
-    }
-
-    if(strcmp(msg,"mod")==0)
-    {
-        QUtente userNEW;
-        QUtente userOLD=this->user;
-
-        BlockReader(socketConnessoP).stream() >> userNEW;
-
-       /* if(userOLD.getUsername() ==  userNEW.getUsername() &&
-           userOLD.getPassword() ==  userNEW.getPassword() &&
-           userNEW.getNomeImg()  !=  userOLD.getNomeImg())               // Gestione immagine
-
-            this->image=
-
-        */
-
-        if ((userOLD.getUsername() !=  userNEW.getUsername() &&
-             userOLD.getPassword() ==  userNEW.getPassword() &&
-             userNEW.getNomeImg()  ==  userOLD.getNomeImg()) ||
-
-            (userOLD.getUsername() ==  userNEW.getUsername() &&
-             userOLD.getPassword() !=  userNEW.getPassword() &&
-             userNEW.getNomeImg()  ==  userOLD.getNomeImg()) ||
-
-            (userOLD.getUsername() ==  userNEW.getUsername() &&
-             userOLD.getPassword() ==  userNEW.getPassword() &&
-             userNEW.getNomeImg()  !=  userOLD.getNomeImg()))
-
-                emit  SigModificaProfiloUtente(this, userOLD, userNEW);
-    }
-
-    if(strcmp(msg,"c_d")==0)
-    {
-       emit SigChiusuraDocumentoDaParteDelClient(this, this->user);
-    }
-
-    if (strcmp(msg,"c_c")==0)
-    {
-       emit SigChiusuraConnessioneDaParteDelClient(this, this->user);
-    }
-
    //emit  SigChiusuraConnessioneDaParteDelClient(this, this->user);
-
 }
 
 

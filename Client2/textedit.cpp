@@ -889,20 +889,35 @@ int TextEdit::isSuccess(QString esito){
 
 
 void TextEdit::esitoOpDocLocale(QString esito, DocOperation operation){
-
   qDebug()<<"esito_textedit: "<<esito<<"\n";
-
   if(!isSuccess(esito)){
     //in caso di esito negativo devo fare UNDO dell'operazione
     std::cout << "Operazione non andata a buon fine\n" << std::flush;
     switch(operation.type){
     case remoteInsert: //caso in cui avessi inserito un carattere -> lo rimuovo per fare UNDO
-      algoritmoCRDT->remoteDelete(operation.character);
-
-      break;
+        {
+          quint16 index =algoritmoCRDT->remoteDelete(operation.character);
+          disconnect(textEdit->document(),&QTextDocument::contentsChange,
+                     this, &TextEdit::CRDTInsertRemove);
+          QTextCursor cursor = this->textEdit->textCursor();
+          cursor.setPosition(index);
+          cursor.deleteChar();
+          connect(textEdit->document(),&QTextDocument::contentsChange,
+                  this, &TextEdit::CRDTInsertRemove );
+          break;
+        }
     case remoteDelete: //caso in cui avessi rimosso un carattere -> lo inserisco di nuovo per fare UNDO
-      algoritmoCRDT->remoteInsert(operation.character);
-      break;
+        {
+          quint16 index = algoritmoCRDT->remoteInsert(operation.character);
+          disconnect(textEdit->document(),&QTextDocument::contentsChange,
+                     this, &TextEdit::CRDTInsertRemove);
+          QTextCursor cursor = this->textEdit->textCursor();
+          cursor.setPosition(index);
+          cursor.insertText(operation.character.getValue());
+          connect(textEdit->document(),&QTextDocument::contentsChange,
+                  this, &TextEdit::CRDTInsertRemove );
+          break;
+        }
     case changedFormat:// mi salvo il vecchio formato dal CRDT prima di cambiarlo
       Char* character = new Char(operation.character);
       character->setFormat(operation.oldFormat);
@@ -913,9 +928,11 @@ void TextEdit::esitoOpDocLocale(QString esito, DocOperation operation){
 
 }
 
+
 void TextEdit::opDocRemota(DocOperation operation){
    switch(operation.type){
     case remoteInsert:
+    {
        //Se è attiva la modalità di scrittura a colori devo fare un merge sul formato che mi arriva
        //inserendo anche il colore corretto rispetto al siteId del client che l'ha inserito
        if (colorWriting == true){
@@ -924,11 +941,20 @@ void TextEdit::opDocRemota(DocOperation operation){
            coloredFormat.setForeground(QBrush(QColor(colors[operation.character.getSiteId()])));
            operation.character.setFormat(coloredFormat);
        }
-      algoritmoCRDT->remoteInsert(operation.character);
+      quint16 index = algoritmoCRDT->remoteInsert(operation.character);
+      QTextCursor cursor = cursorMap->find(operation.siteId).value();
+      cursor.setPosition(index);
+      cursor.insertText(operation.character.getValue());
       break;
+    }
     case remoteDelete:
-      algoritmoCRDT->remoteDelete(operation.character);
+    {
+      quint16 index =algoritmoCRDT->remoteDelete(operation.character);
+      QTextCursor cursor = cursorMap->find(operation.siteId).value();
+      cursor.setPosition(index);
+      cursor.deleteChar();
       break;
+   }
     case changedFormat:
        if (colorWriting == true){
            auto colors = QColor::colorNames();
@@ -940,7 +966,7 @@ void TextEdit::opDocRemota(DocOperation operation){
       break;
    case cursorMoved:
        //Il QTextCursor si posiziona sempre in mezzo a due caratteri
-       //Supponiamo quindi che per gestire la viasualizzazione del cursore, il carattere '|' si posiziona sempre prima del cursore
+       //Supponiamo quindi che per gestire la visualizzazione del cursore, il carattere '|' si posiziona sempre prima del cursore
        // Esempio: testo di pro|(cursore)va
 
        //Rimuovo carattere | dalla vecchia posizione
@@ -957,8 +983,10 @@ void TextEdit::opDocRemota(DocOperation operation){
 
        //Aggiorno mappa siteId - cursore
        cursorMap->find(operation.siteId).value() = cursor;
+       break;
     }
 }
+
 
 
 void TextEdit::questoUserHaApertoIlDoc(QUser usr){

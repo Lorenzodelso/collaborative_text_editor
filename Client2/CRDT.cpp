@@ -211,16 +211,18 @@ DocOperation CRDT::localErase(quint16 index) {
     return *docOp;
 }
 
-void CRDT::remoteInsert(Char value) {
+quint16 CRDT::remoteInsert(Char value) {
     quint16 index = findInsertIndex(value);
     this->listChar.insert(index,value);
     this->text.insert(index, value.getValue());
+    return index;
 }
 
-void CRDT::remoteDelete(Char value) {
+quint16 CRDT::remoteDelete(Char value) {
     quint16 index = findIndexByPosition(value);
     this->listChar.remove(index);
     this->text.remove(index,1);
+    return index;
 }
 
 QDataStream& operator<<(QDataStream& out,const CRDT& crdt){

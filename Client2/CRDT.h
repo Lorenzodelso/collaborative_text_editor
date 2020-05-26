@@ -40,8 +40,8 @@ public:
     DocOperation localInsert(QChar value,QTextCharFormat format, quint16 index);
     DocOperation localErase(quint16 index);
     DocOperation localFormatChange(QTextCharFormat format, quint16 index);
-    void remoteInsert(Char value);
-    void remoteDelete(Char value);
+    quint16 remoteInsert(Char value);
+    quint16 remoteDelete(Char value);
     void remoteFormatChange(Char ch);
     friend QDataStream& operator<<(QDataStream& out,const CRDT& crdt);
     friend QDataStream& operator>>(QDataStream& in, CRDT& crdt);

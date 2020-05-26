@@ -36,185 +36,186 @@ void WorkerSocketClient::disconnessioneDalServer()
 }
 
 void  WorkerSocketClient::leggiMsgApp(){
+    while(socketConnesso->bytesAvailable()){
+        qDebug()<<"inizio lettura";
 
-    qDebug()<<"inizio lettura";
+        char* msg;
 
-    char* msg;
+        char* opt;
 
-    char* opt;
+        QDataStream in(this->socketConnesso);
 
-    QDataStream in(this->socketConnesso);
+        uint prova = 3;
+        in.readBytes(msg, prova);
 
-    uint prova = 3;
-    in.readBytes(msg, prova);
-
-    if (strcmp(msg,"ead")==0)
-    {
-        in.readBytes(opt, prova);
-
-        if (strcmp(opt,"ope")==0)
+        if (strcmp(msg,"ead")==0)
         {
-            CRDT doc;
+            in.readBytes(opt, prova);
 
-            BlockReader(socketConnesso).stream() >> doc;
+            if (strcmp(opt,"ope")==0)
+            {
+                CRDT doc;
 
-            emit SigEsitoApriDoc("Success", doc);
-         }
-        else
-        {
-            CRDT doc=*new CRDT();
+                BlockReader(socketConnesso).stream() >> doc;
 
-            emit SigEsitoApriDoc("Failed", doc);
-        }
-    }
+                emit SigEsitoApriDoc("Success", doc);
+             }
+            else
+            {
+                CRDT doc=*new CRDT();
 
-    if (strcmp(msg,"ecd")==0){
-
-        in.readBytes(opt,prova);
-
-        if (strcmp(opt,"crt")==0)
-        {
-            CRDT doc;
-
-            BlockReader(socketConnesso).stream() >> doc;
-
-            emit SigEsitoCreaDoc( "Success", doc);
-       }
-       else
-       {
-          CRDT doc =*new CRDT();
-
-          emit SigEsitoCreaDoc("Failed", doc);
-       }
-    }
-
-    if(strcmp(msg,"e_l")==0)
-    {
-        in.readBytes(opt, prova);
-
-        if(strcmp(opt,"suc")==0)
-        {
-            QList<QString> nomiFilesEditati;
-
-            QUtente user = *new QUtente();
-
-            BlockReader(socketConnesso).stream() >> user;
-
-            BlockReader(socketConnesso).stream() >> nomiFilesEditati;
-
-            emit SigEsitoLogin( "Success"/*esito*/, user, nomiFilesEditati);
+                emit SigEsitoApriDoc("Failed", doc);
+            }
         }
 
-        else
-        {
-            QList <QString> nomiFilesEditati;
+        if (strcmp(msg,"ecd")==0){
 
-            QUtente user = *new QUtente();
+            in.readBytes(opt,prova);
 
-            emit SigEsitoLogin("Failed", user, nomiFilesEditati);
+            if (strcmp(opt,"crt")==0)
+            {
+                CRDT doc;
+
+                BlockReader(socketConnesso).stream() >> doc;
+
+                emit SigEsitoCreaDoc( "Success", doc);
+           }
+           else
+           {
+              CRDT doc =*new CRDT();
+
+              emit SigEsitoCreaDoc("Failed", doc);
+           }
         }
-    }
 
-    if (strcmp(msg,"eor")==0) // da rivedere, esito operazione remota
-    {
-        DocOperation operazione;
-
-        BlockReader(socketConnesso).stream() >> operazione;
-
-        emit SigOpDocRemota(operazione);
-    }
-
-    if (strcmp(msg,"e_c")==0)
-    {
-
-        in.readBytes(opt,prova);
-
-        if (strcmp(opt,"suc")==0) emit SigEsitoChiudiDoc("Success");
-
-        else  emit SigEsitoChiudiDoc("Failed");
-
-    }
-    if (strcmp(msg,"mop")==0)
-    {
-        in.readBytes(opt, prova);
-
-        if (strcmp(opt,"suc")==0)
+        if(strcmp(msg,"e_l")==0)
         {
-            QUtente userNew;
+            in.readBytes(opt, prova);
 
-            BlockReader(socketConnesso).stream() >> userNew;
+            if(strcmp(opt,"suc")==0)
+            {
+                QList<QString> nomiFilesEditati;
 
-            emit SigEsitoModificaProfiloUtente("Success",userNew);
+                QUtente user = *new QUtente();
+
+                BlockReader(socketConnesso).stream() >> user;
+
+                BlockReader(socketConnesso).stream() >> nomiFilesEditati;
+
+                emit SigEsitoLogin( "Success"/*esito*/, user, nomiFilesEditati);
+            }
+
+            else
+            {
+                QList <QString> nomiFilesEditati;
+
+                QUtente user = *new QUtente();
+
+                emit SigEsitoLogin("Failed", user, nomiFilesEditati);
+            }
         }
-        else
+
+        if (strcmp(msg,"eor")==0) // da rivedere, esito operazione remota
         {
-            QUtente user=*new QUtente();
+            DocOperation operazione;
 
-            emit  SigEsitoModificaProfiloUtente("Failed", user);
-        }
-    }
-
-    if (strcmp(msg,"e_o")==0)
-    {
-        in.readBytes(opt, prova);
-
-        DocOperation operazione;
-
-        qDebug()<<"esito_operazione: "<<opt<<"\n";
-        if (strcmp(opt,"suc")==0)
-        {
             BlockReader(socketConnesso).stream() >> operazione;
 
-            qDebug()<<"carattere ricevuto lato client: "<<operazione.character.getValue()<<"Con site id :"<<operazione.getSiteId()<<"\n";
-
-            std::cout<<"Esito operazione dal server: "<<operazione.character.getValue().toLatin1()<<std::flush;
-
-            emit  SigEsitoOpDocLocale("Success",operazione);
+            emit SigOpDocRemota(operazione);
         }
-        else
+
+        if (strcmp(msg,"e_c")==0)
         {
-            BlockReader(socketConnesso).stream() >> operazione;
 
-            qDebug()<<"carattere ricevuto lato client: "<<operazione.character.getValue()<<"Con site id :"<<operazione.getSiteId()<<"\n";
+            in.readBytes(opt,prova);
 
-            emit  SigEsitoOpDocLocale("Failed",operazione);
+            if (strcmp(opt,"suc")==0) emit SigEsitoChiudiDoc("Success");
+
+            else  emit SigEsitoChiudiDoc("Failed");
+
         }
-    }
+        if (strcmp(msg,"mop")==0)
+        {
+            in.readBytes(opt, prova);
 
-    if(strcmp(msg,"e_r")==0)
-    {
-        in.readBytes(opt, prova);
+            if (strcmp(opt,"suc")==0)
+            {
+                QUtente userNew;
 
-        if (strcmp(opt,"r_a")==0) emit SigEsitoRegistrazione("Success");
+                BlockReader(socketConnesso).stream() >> userNew;
 
-        else  emit SigEsitoRegistrazione("Failed");
-    }
+                emit SigEsitoModificaProfiloUtente("Success",userNew);
+            }
+            else
+            {
+                QUtente user=*new QUtente();
 
-    if (strcmp(msg,"c_i")==0)
-    {
-        QList <QUser> utenti;
+                emit  SigEsitoModificaProfiloUtente("Failed", user);
+            }
+        }
 
-        BlockReader(socketConnesso).stream() >> utenti;
+        if (strcmp(msg,"e_o")==0)
+        {
+            in.readBytes(opt, prova);
 
-        emit  SigEsitoOpChiHaInseritoCosa(utenti);
-    }
+            DocOperation operazione;
 
-    if (strcmp(msg,"ucd")==0)
-    {
-        QUser utente;
+            qDebug()<<"esito_operazione: "<<opt<<"\n";
+            if (strcmp(opt,"suc")==0)
+            {
+                BlockReader(socketConnesso).stream() >> operazione;
 
-        BlockReader(socketConnesso).stream() >> utente;
+                qDebug()<<"carattere ricevuto lato client: "<<operazione.character.getValue()<<"Con site id :"<<operazione.getSiteId()<<"\n";
 
-        emit  SigQuestoUserHaChiusoIlDoc(utente);
-    }
+                std::cout<<"Esito operazione dal server: "<<operazione.character.getValue().toLatin1()<<std::flush;
 
-    if (strcmp(msg,"uad")==0)
-    {
-        QUser utente;
+                emit  SigEsitoOpDocLocale("Success",operazione);
+            }
+            else
+            {
+                BlockReader(socketConnesso).stream() >> operazione;
 
-        BlockReader(socketConnesso).stream() >> utente;
+                qDebug()<<"carattere ricevuto lato client: "<<operazione.character.getValue()<<"Con site id :"<<operazione.getSiteId()<<"\n";
 
-        emit  SigQuestoUserHaApertoIlDoc(utente);
+                emit  SigEsitoOpDocLocale("Failed",operazione);
+            }
+        }
+
+        if(strcmp(msg,"e_r")==0)
+        {
+            in.readBytes(opt, prova);
+
+            if (strcmp(opt,"r_a")==0) emit SigEsitoRegistrazione("Success");
+
+            else  emit SigEsitoRegistrazione("Failed");
+        }
+
+        if (strcmp(msg,"c_i")==0)
+        {
+            QList <QUser> utenti;
+
+            BlockReader(socketConnesso).stream() >> utenti;
+
+            emit  SigEsitoOpChiHaInseritoCosa(utenti);
+        }
+
+        if (strcmp(msg,"ucd")==0)
+        {
+            QUser utente;
+
+            BlockReader(socketConnesso).stream() >> utente;
+
+            emit  SigQuestoUserHaChiusoIlDoc(utente);
+        }
+
+        if (strcmp(msg,"uad")==0)
+        {
+            QUser utente;
+
+            BlockReader(socketConnesso).stream() >> utente;
+
+            emit  SigQuestoUserHaApertoIlDoc(utente);
+        }
     }
 }
 
