@@ -44,41 +44,49 @@ QDataStream& operator<<(QDataStream& out, DocOperation docOp){
     //font size
     double fontSize = docOp.oldFormat.fontPointSize();
 
-    out << docOp.type << docOp.character<< docOp.siteId << docOp.cursorPos << docOp.cursorAnch << isItalic << fontWeight << isUndelined << fontSize ;
+    out << docOp.type;
+    out<< docOp.character;
+    out<< docOp.siteId;
+    out<< docOp.cursorPos;
+    out<< docOp.cursorAnch;
+    out<<fontFamily;
+    out<< isItalic;
+    out<< fontWeight;
+    out<< isUndelined;
+    out<< fontSize;
     return out;
 }
 
 QDataStream& operator>>(QDataStream& in, DocOperation& docOp){
     quint16 type;
-    Char character;  
+    Char character;
     QTextCharFormat* format = new QTextCharFormat();
-    //in >> type >> character >> siteId >> cursorPos >> cursorAnch>> isItalic>> fontWeight>> isUndelined>> fontSize;
-    //in >> character;
+    in >> type;
+    in >> character;
 
     quint16 siteId;
     quint16 cursorPos;
     quint16 cursorAnch;
 
-    //in >> siteId >> cursorPos >> cursorAnch;
+    in >> siteId >> cursorPos >> cursorAnch;
 
     QString fontFamily;
-    //in >> fontFamily;
+    in >> fontFamily;
     bool isItalic;
-    //in >> isItalic;
+    in >> isItalic;
     quint32 fontWeight;
-    //in >> fontWeight;
+    in >> fontWeight;
     bool isUndelined;
-    //in >> isUndelined;
+    in >> isUndelined;
     double fontSize;
-    //in >> fontSize;
+    in >> fontSize;
 
     format->setFontFamily(fontFamily);
-    format->setFontWeight(int(fontWeight));
     format->setFontItalic(isItalic);
+    format->setFontWeight(int(fontWeight));
     format->setFontUnderline(isUndelined);
     format->setFontPointSize(fontSize);
 
-    in >> type >> character >> siteId >> cursorPos >> cursorAnch>> isItalic>> fontWeight>> isUndelined>> fontSize;
     docOp = *new DocOperation(type,character,*format,siteId,cursorPos,cursorAnch);
     return in;
 }

@@ -7,7 +7,6 @@
 
 
 Server::Server() {
-    qRegisterMetaType<QUtente>();
     currUserId=0;
 
 

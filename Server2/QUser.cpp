@@ -1,6 +1,7 @@
 #include "QUser.h"
 
-QUser::QUser(quint16 userId, QString userName): userId(userId), userName(userName){}
+QUser::QUser(quint16 userId, QString userName): userId(userId), userName(userName){
+}
 
 QUser::QUser(){}
 
