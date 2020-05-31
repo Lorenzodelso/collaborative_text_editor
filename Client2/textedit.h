@@ -249,6 +249,7 @@ private:
 	
 	 //Aggiungo CRDT
     CRDT* algoritmoCRDT;
+
     //Aggiungo una lista di utenti online
     QList<QUser> onlineUsers;
 
