@@ -1,7 +1,7 @@
 #include "RecentDocsDialogs.h"
 
 
-RecentDocsDialogs::RecentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP,quint16 siteId):QWidget(parent)
+RecentDocsDialogs::RecentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP,quint32 siteId, QUtente utente, QList<QString> docList):QWidget(parent)
 {
 
 //*********************************************************************
@@ -10,10 +10,8 @@ RecentDocsDialogs::RecentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP,q
 //di aprire un documento nuovo, inserendo il nome del documento, o
 //tramite un URL, aprire un documento tramite invito. Si eseguono
 //le connessioni tra slot e segnali.
-//Si accede al file "docs.recent", se già esistente (creato in fase di
-//login usando le informazioni ricevute dal server, per inizializzare
-//la lista dei documenti editati dall'utente che ha effettuato il login.
-//Nel caso suddetto file non fosse presente, la lista è vuota.
+//Si inizializza la lista dei documenti recenti coi dati ricevuti dal
+//server in fase di login
 //
 //*********************************************************************
 
@@ -23,23 +21,16 @@ RecentDocsDialogs::RecentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP,q
     this->wscP = wscP;
     mw = new TextEdit(this, wscP, siteId);
     recentDocs = new QListWidget();
+    this->utente = utente;
+    this->docList = docList;
+    QList<QString>::iterator i;
 
-    if(!QDir(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/").exists()){
-            QDir().mkdir(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/");
-        }
-
-    if(QFileInfo::exists(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/docs.recent")){
-         QFile recent(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/docs.recent");
-         recent.open(QIODevice::ReadOnly);
-         QString fileName = recent.readLine();
-         while(!fileName.isNull() || !fileName.isEmpty()){
-             new QListWidgetItem(fileName, recentDocs);
-             fileName = recent.readLine();
-         }
-         recent.close();
-    }else{
+    if(!this->docList.isEmpty())
+         for(i=this->docList.begin(); i!=this->docList.end(); i++)
+             new QListWidgetItem(*i, recentDocs);
+    else
         recentDocs->clear();
-    }
+
 
     recentDocs->setSelectionMode(QAbstractItemView::SingleSelection);
 
@@ -130,7 +121,8 @@ RecentDocsDialogs::RecentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP,q
 
 void RecentDocsDialogs::openPressed(){
     QString selectedDoc = recentDocs->selectedItems().first()->text();
-    emit(SigApriDoc(selectedDoc));
+    if(!selectedDoc.isNull() || !selectedDoc.isEmpty())
+        emit(SigApriDoc(selectedDoc));
 }
 
 //*********************************************************************
@@ -213,7 +205,7 @@ void RecentDocsDialogs::listItemSelected(){
 //*********************************************************************
 
 void RecentDocsDialogs::launchEditProfile(){
-    edit = new class EditProfile(this, this->wscP);
+    edit = new class EditProfile(this, this->wscP, &this->utente);
     edit->setWindowFlag(Qt::Window);
     edit->show();
 }
@@ -230,18 +222,13 @@ void RecentDocsDialogs::updateRecDocs(){
     create->setDisabled(true);
     openUrl->setDisabled(true);
 
-    if(QFileInfo::exists(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/docs.recent")){
-         QFile recent(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/docs.recent");
-         recent.open(QIODevice::ReadOnly);
-         QString fileName = recent.readLine();
-         while(!fileName.isNull() || !fileName.isEmpty()){
-             new QListWidgetItem(fileName, recentDocs);
-             fileName = recent.readLine();
-         }
-         recent.close();
-    }else{
+    QList<QString>::iterator i;
+
+    if(!this->docList.isEmpty())
+         for(i=this->docList.begin(); i!=this->docList.end(); i++)
+             new QListWidgetItem(*i, recentDocs);
+    else
         recentDocs->clear();
-    }
 
 
 }
@@ -273,19 +260,7 @@ void RecentDocsDialogs::esitoCreaDoc(QString esito, CRDT doc){
     mw->move((availableGeometry.width() - mw->width()) / 2,
             (availableGeometry.height() - mw->height()) / 2);
     mw->setCurrentFileName(docName);
-    if(QFileInfo::exists(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/docs.recent")){
-         QFile recent(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/docs.recent");
-         recent.open(QIODevice::WriteOnly | QIODevice::Append);
-         QTextStream out (&recent);
-         out << docName << endl;
-         recent.close();
-     }else{
-        QFile recent(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/docs.recent");
-        recent.open(QIODevice::WriteOnly);
-        QTextStream out (&recent);
-        out << docName << endl;
-        recent.close();
-    }
+    this->docList.append(docName);
     mw->show();
     this->hide();
   }
@@ -317,19 +292,7 @@ void RecentDocsDialogs::esitoApriDoc(QString esito, CRDT doc){
       mw->move((availableGeometry.width() - mw->width()) / 2,
               (availableGeometry.height() - mw->height()) / 2);
       mw->setCurrentFileName(docName);
-      if(QFileInfo::exists(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/docs.recent")){
-           QFile recent(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/docs.recent");
-           recent.open(QIODevice::WriteOnly | QIODevice::Append);
-           QTextStream out (&recent);
-           out << docName << endl;
-           recent.close();
-       }else{
-          QFile recent(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/docs.recent");
-          recent.open(QIODevice::WriteOnly);
-          QTextStream out (&recent);
-          out << docName << endl;
-          recent.close();
-      }
+      this->docList.append(docName);
       mw->show();
       this->hide();
 

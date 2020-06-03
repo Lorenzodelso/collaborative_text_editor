@@ -107,9 +107,9 @@ TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP,quint16 siteId)
 
     usersTree = new QTreeWidget();
     dockUsersTree = new QDockWidget("Users");
-    onlineUsers.append(*new QUser(15, "piero"));
-    onlineUsers.append(*new QUser(12, "gianni"));
-    offlineUsers.append(*new QUser(3, "laura"));
+//    onlineUsers.append(*new QUser(15, "piero"));
+//    onlineUsers.append(*new QUser(12, "gianni"));
+//    offlineUsers.append(*new QUser(3, "laura"));
 
     updateTreeWidget(false);
 

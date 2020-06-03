@@ -27,7 +27,7 @@ class EditProfile:public QWidget
 {
     Q_OBJECT
 public:
-    EditProfile(QWidget *parent, WorkerSocketClient* wscP);
+    EditProfile(QWidget *parent, WorkerSocketClient* wscP, QUtente* utente);
 
 signals:
     void SigModificaProfiloUtente(QUtente userNew);
@@ -63,6 +63,7 @@ private:
     QPushButton *discard;
     QUtente *user;
     WorkerSocketClient* wscP;
+    QUtente *utente;
 
 };
 

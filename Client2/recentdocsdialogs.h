@@ -18,6 +18,7 @@
 #include "TextEdit.h"
 #include "EditProfile.h"
 #include "WorkerSocketClient.h"
+#include "QUtente.h"
 
 
 
@@ -26,7 +27,7 @@ class RecentDocsDialogs : public QWidget
 {
     Q_OBJECT
 public:
-    RecentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP,quint16 siteId);
+    RecentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP,quint32 siteId, QUtente utente, QList<QString> docList);
 
 signals:
     void SigDisconnessioneDalServer();
@@ -85,6 +86,8 @@ private:
     TextEdit *mw;
     WorkerSocketClient* wscP;
     class EditProfile *edit;
+    QUtente utente;
+    QList<QString> docList;
 
 
 };

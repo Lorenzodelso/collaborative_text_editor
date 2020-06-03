@@ -64,10 +64,6 @@ LoginDialog::LoginDialog(QWidget *parent, WorkerSocketClient* wscP)
     setFixedSize(sizeHint());
     setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowTitleHint);
 
-    if(!QDir(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData").exists()){
-            QDir().mkdir(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData");
-    }
-
 //    //**********************************************************
 //    QUtente *utenteTest = new QUtente(1234, "mario", "mariogrdn", "password", "");
 //    QList<QString> *listaTest = new QList<QString>();
@@ -144,33 +140,14 @@ void LoginDialog::registerClicked(){
  * */
 
 void LoginDialog::esitoLogin(QString esito/*esito*/, QUtente user, QList<QString> nomiFilesEditati){
-    QUtente *utente;
     if(esito == "Failed"){
         QMessageBox msgBox;
         msgBox.setText(tr("Username and/or password are wrong. Please, try again"));
         msgBox.setIcon(QMessageBox::Critical);
         msgBox.exec();
     }else{
-        utente = new QUtente(user.getUserId(), user.getUsername(), user.getNickName(), user.getPassword(), user.getNomeImg());
-        QList<QString> editedFiles = nomiFilesEditati;
-        QFile userSettings (QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/user.settings");
-        userSettings.open(QIODevice::WriteOnly);
-        QTextStream out(&userSettings);
-        out << utente->getUserId() << endl
-            << utente->getUsername() << endl
-            << utente->getNickName() << endl;
-        userSettings.close();
-        QFile recentDocs(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/CollaborativeEditor/usrData/docs.recent");
-        recentDocs.open(QIODevice::WriteOnly);
-        QTextStream out2(&recentDocs);
-        QList<QString>::iterator iterator = editedFiles.begin();
-        while(iterator != editedFiles.end()){
-            out2 << *iterator << endl;
-            iterator++;
-        }
-        recentDocs.close();
         this->setAttribute(Qt::WA_DeleteOnClose);
-        recDoc = new RecentDocsDialogs(0, this->wscP,user.getUserId());
+        recDoc = new RecentDocsDialogs(0, this->wscP,user.getUserId(), user, nomiFilesEditati);
         recDoc->show();
         this->close();
     }
