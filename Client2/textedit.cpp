@@ -83,6 +83,7 @@
 #endif
 #endif
 #endif
+#include <QDebug>
 
 #include "TextEdit.h"
 
@@ -213,22 +214,26 @@ CRDT* TextEdit::getStrutturaCRDT(){
 }
 
 void TextEdit::loadCRDTIntoEditor(CRDT crdt){
-  //this->algoritmoCRDT->setSiteID(crdt.getSiteID());
-  //algoritmoCRDT = new CRDT(doc.getSiteID(),doc.getListChar()); //salvo nel CRDT la rappresentazione del file
+  algoritmoCRDT = new CRDT(algoritmoCRDT->getSiteID(),crdt.getListChar()); //salvo nel CRDT la rappresentazione del file
   // devo andare ad aggiornare il contenuto del QTextEdit tramite l'uso di cursori sulla base di quello che c'� scritto nel CRDT
   int currentIndex = 0;
-  *this->cursor = textEdit->textCursor();
+  this->cursor = new QTextCursor(textEdit->textCursor());
   this->cursor->setPosition(currentIndex);
   auto lista = crdt.getListChar();
+  disconnect(textEdit->document(),&QTextDocument::contentsChange,
+          this, &TextEdit::CRDTInsertRemove );
   for (auto richChar = lista.cbegin(); richChar!=lista.cend(); richChar++ ){
     QString str = "";
     Char ch = *richChar;
     str.append(ch.getValue());
+    qDebug()<<str;
     this->cursor->insertText(str,ch.getFormat());
     //Da controllare se il cursore si muove da solo dopo l'inserimento
     //currentIndex++
     //this->cursor->setPosition(currentIndex);
   }
+  connect(textEdit->document(),&QTextDocument::contentsChange,
+          this, &TextEdit::CRDTInsertRemove );
 }
 
 

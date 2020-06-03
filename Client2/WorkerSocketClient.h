@@ -18,6 +18,7 @@ class WorkerSocketClient : public QObject{
     Q_OBJECT
 
     QTcpSocket* socketConnesso;
+    QUtente user;
 
     signals:
 

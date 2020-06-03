@@ -103,6 +103,7 @@ void  WorkerSocketClient::leggiMsgApp(){
                 BlockReader(socketConnesso).stream() >> user;
 
                 BlockReader(socketConnesso).stream() >> nomiFilesEditati;
+                this->user = user;
 
                 emit SigEsitoLogin( "Success"/*esito*/, user, nomiFilesEditati);
             }
@@ -155,7 +156,7 @@ void  WorkerSocketClient::leggiMsgApp(){
             {
                 QUtente user=*new QUtente();
 
-                emit  SigEsitoModificaProfiloUtente("Failed", user);
+                emit SigEsitoModificaProfiloUtente("Failed", user);
             }
         }
 
@@ -173,22 +174,17 @@ void  WorkerSocketClient::leggiMsgApp(){
             qDebug()<<operazione.getSiteId();
             qDebug()<<user.getUserId();
 
-         //  if(this->user.getUserId()!=operazione.getSiteId()){
-
-              // in.writeBytes("opd",len);
-               //  BlockWriter(socketConnesso).stream()<< operazione;
-           //     SigOpDocRemota(operazione);
-         //   }
-          //  else {
-
+           if(this->user.getUserId()!=operazione.getSiteId()){
+               in.writeBytes("opd",len);
+               BlockWriter(socketConnesso).stream()<< operazione;
+               emit SigOpDocRemota(operazione);
+            }
+            else {
                 if (strcmp(opt,"suc")==0)
-
-                    emit  SigEsitoOpDocLocale("Success",operazione);
-
+                    emit SigEsitoOpDocLocale("Success",operazione);
                 else
-
-                    emit  SigEsitoOpDocLocale("Failed",operazione);
-       //     }
+                    emit SigEsitoOpDocLocale("Failed",operazione);
+            }
         }
 
         if(strcmp(msg,"e_r")==0)
@@ -273,8 +269,6 @@ void WorkerSocketClient::login(QUtente user)
     in.writeBytes("log",len);
 
     BlockWriter(socketConnesso).stream() << user;
-
-    this->user=user;
 
 }
 

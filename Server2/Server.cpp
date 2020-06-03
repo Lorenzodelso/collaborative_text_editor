@@ -89,8 +89,9 @@ void Server::apriDoc(QString nomeFile , WorkerSocket* wsP, QUtente user){
             WorkerDoc *wdP =documents.value(nomeFile) ;
 
             userEdits.insert(user.getUserId(),wdP);
-            QList<QString> l=userEdited.value(user.getUserId());
-            l.push_back(nomeFile);
+            if(!userEdited[user.getUserId()].contains(nomeFile)){
+                userEdited[user.getUserId()].push_back(nomeFile);
+            }
 
             /*
              * questa connect mi serve solo ora perchè è da this al WorkerDoc
@@ -160,9 +161,10 @@ void Server::apriDoc(QString nomeFile , WorkerSocket* wsP, QUtente user){
             documents.insert(nomeFile, wdP);
             userEdits.insert(user.getUserId(),wdP);
             threadsDoc.insert(wdP,tP);
+            if(!userEdited[user.getUserId()].contains(nomeFile)){
+                userEdited[user.getUserId()].push_back(nomeFile);
+            }
 
-            QList<QString> l=userEdited.value(user.getUserId());
-            l.push_back(nomeFile);
 
             /*
              * questa connect mi serve solo ora perchè è da this al WorkerDoc
@@ -220,9 +222,10 @@ void Server::creaDoc(QString nomeFile , WorkerSocket* wsP, QUtente user) {
         documents.insert(nomeFile, wdP);
         userEdits.insert(user.getUserId(),wdP);
         threadsDoc.insert(wdP,tP);
+        if(!userEdited[user.getUserId()].contains(nomeFile)){
+            userEdited[user.getUserId()].push_back(nomeFile);
+        }
 
-        QList<QString> l=userEdited.value(user.getUserId());
-        l.push_back(nomeFile);
 
         /*
      * questa connect mi serve solo ora perchè è da this al WorkerDoc

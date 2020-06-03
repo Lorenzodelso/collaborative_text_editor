@@ -122,7 +122,7 @@ RecentDocsDialogs::RecentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP,q
 void RecentDocsDialogs::openPressed(){
     QString selectedDoc = recentDocs->selectedItems().first()->text();
     if(!selectedDoc.isNull() || !selectedDoc.isEmpty())
-        emit(SigApriDoc(selectedDoc));
+        emit(SigApriDoc(selectedDoc.remove('\n')));
 }
 
 //*********************************************************************
