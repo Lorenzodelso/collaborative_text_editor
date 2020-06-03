@@ -32,7 +32,6 @@ void WorkerSocketClient::connessioneAlServer() {
 
 void WorkerSocketClient::disconnessioneDalServer()
 {
-    this->socketConnesso->disconnect();
     this->socketConnesso->disconnectFromHost();
 }
 
@@ -58,6 +57,8 @@ void  WorkerSocketClient::leggiMsgApp(){
                 CRDT doc;
 
                 BlockReader(socketConnesso).stream() >> doc;
+
+                qDebug()<<"emit SigEsitoApriDoc";
 
                 emit SigEsitoApriDoc("Success", doc);
              }
@@ -127,10 +128,13 @@ void  WorkerSocketClient::leggiMsgApp(){
 
         if (strcmp(msg,"e_c")==0)
         {
+            QString esito;
+
+            BlockReader(socketConnesso).stream() >> esito;
 
             in.readBytes(opt,prova);
 
-            if (strcmp(opt,"suc")==0) emit SigEsitoChiudiDoc("Success");
+            if (esito.compare("Success")==0) emit SigEsitoChiudiDoc("Success");
 
             else  emit SigEsitoChiudiDoc("Failed");
 
@@ -155,38 +159,43 @@ void  WorkerSocketClient::leggiMsgApp(){
             }
         }
 
+
         if (strcmp(msg,"e_o")==0)
         {
+            uint len =3;
+
             in.readBytes(opt, prova);
 
             DocOperation operazione;
 
-            qDebug()<<"esito_operazione: "<<opt<<"\n";
-            if (strcmp(opt,"suc")==0)
-            {
-                BlockReader(socketConnesso).stream() >> operazione;
+            BlockReader(socketConnesso).stream() >> operazione;
 
-                qDebug()<<"carattere ricevuto lato client: "<<operazione.character.getValue()<<"Con site id :"<<operazione.getSiteId()<<"\n";
+            qDebug()<<operazione.getSiteId();
+            qDebug()<<user.getUserId();
 
-                std::cout<<"Esito operazione dal server: "<<operazione.character.getValue().toLatin1()<<std::flush;
+         //  if(this->user.getUserId()!=operazione.getSiteId()){
 
-                emit  SigEsitoOpDocLocale("Success",operazione);
-            }
-            else
-            {
-                BlockReader(socketConnesso).stream() >> operazione;
+              // in.writeBytes("opd",len);
+               //  BlockWriter(socketConnesso).stream()<< operazione;
+           //     SigOpDocRemota(operazione);
+         //   }
+          //  else {
 
-                qDebug()<<"carattere ricevuto lato client: "<<operazione.character.getValue()<<"Con site id :"<<operazione.getSiteId()<<"\n";
+                if (strcmp(opt,"suc")==0)
 
-                emit  SigEsitoOpDocLocale("Failed",operazione);
-            }
+                    emit  SigEsitoOpDocLocale("Success",operazione);
+
+                else
+
+                    emit  SigEsitoOpDocLocale("Failed",operazione);
+       //     }
         }
 
         if(strcmp(msg,"e_r")==0)
         {
             in.readBytes(opt, prova);
 
-            if (strcmp(opt,"r_a")==0) emit SigEsitoRegistrazione("Success");
+            if (strcmp(opt,"r_a")==0){ emit SigEsitoRegistrazione("Success");}
 
             else  emit SigEsitoRegistrazione("Failed");
         }
@@ -239,6 +248,8 @@ void WorkerSocketClient::apriDoc(QString nomeFile)
 
     in.writeBytes("ope",len);
 
+    //qDebug()<<nomeFile;
+
     BlockWriter(socketConnesso).stream() << nomeFile;
 }
 
@@ -262,6 +273,9 @@ void WorkerSocketClient::login(QUtente user)
     in.writeBytes("log",len);
 
     BlockWriter(socketConnesso).stream() << user;
+
+    this->user=user;
+
 }
 
 void WorkerSocketClient::modificaProfiloUtente(QUtente user1)
@@ -297,6 +311,7 @@ void WorkerSocketClient::registrazione(QUtente user)
     qDebug()<< "inizio trasmissione";
 
     BlockWriter(socketConnesso).stream() << user;
+
 }
 
 void WorkerSocketClient::chiudiDoc(QString nomeFile)
