@@ -51,7 +51,7 @@ void WorkerSocket::leggiMsgApp() {
             QString msg1;
             BlockReader(socketConnessoP).stream() >> msg1;
 
-            qDebug()<<"ope: "<<msg1<<"\n";
+            qDebug()<<"ope: "<<msg1;
 
             emit  SigApriDoc(msg1, this , this->user);
         }
@@ -176,6 +176,8 @@ void WorkerSocket::rispondiEsitoLogin(QUtente user, QList<QString> nomiFilesEdit
 
     in.writeBytes("e_l",len);
 
+    qDebug()<<nomiFilesEditati;
+
     if(nomiFilesEditati.contains("Failed"))
     {
         uint len=3;
@@ -184,7 +186,6 @@ void WorkerSocket::rispondiEsitoLogin(QUtente user, QList<QString> nomiFilesEdit
 
         in.writeBytes("fld",len);
 
-        socketConnessoP->disconnect();
         socketConnessoP->disconnectFromHost();
     }
 
@@ -261,7 +262,6 @@ void WorkerSocket::rispondiEsitoRegistrazione(QString esito, QString nomeImg)
         in.writeBytes("r_a",len);
 
         //this->image.save(QDir::currentPath+"/"+nomeImg);
-        socketConnessoP->disconnect();
         socketConnessoP->disconnectFromHost();
     }
 
@@ -269,7 +269,6 @@ void WorkerSocket::rispondiEsitoRegistrazione(QString esito, QString nomeImg)
     {
         BlockWriter(socketConnessoP).stream() << esito;
 
-        socketConnessoP->disconnect();
         socketConnessoP->disconnectFromHost();
     }
 }
@@ -285,24 +284,13 @@ void WorkerSocket::rispondiEsitoOpDoc(QString esito, DocOperation operazione)
 
     in.writeBytes("e_o",len);
 
-    if (esito.compare("Success")==0)
+    if (esito.compare("Success")==0)  //operazione esito positivo
     {
         in.writeBytes("suc",len);
 
-       // if(operazione.getSiteId() == this->user.getUserId()) {
-
-       // BlockWriter(socketConnessoP).stream() << esito;
-
         BlockWriter(socketConnessoP).stream() << operazione;
-
-      //  }
-
-      //  else{
-
-         //   in << esito << operazione;
-       // }
     }
-    else //if(user.getUserId() == this->user.getUserId())
+    else // operazione fallita
     {
         in.writeBytes("fld",len);
 
@@ -349,7 +337,8 @@ void WorkerSocket::rispondiEsitoChiusuraDocumentoDaParteDelClient(QString esito)
 
     uint len=3;
 
-    in.writeBytes("c_d",len);
+    in.writeBytes("e_c",len);
+
 
     BlockWriter(socketConnessoP).stream() << esito;
 }
