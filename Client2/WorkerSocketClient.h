@@ -20,6 +20,9 @@ class WorkerSocketClient : public QObject{
     QTcpSocket* socketConnesso;
     QUtente user;
 
+    public:
+    ~WorkerSocketClient();
+
     signals:
 
 
@@ -56,11 +59,6 @@ public slots:
      * emette SigEsitoConnessioneAlServer("Success"/"Failed")
      * */
     void connessioneAlServer();
-
-    /*
-     * chiude la connessione verso il server NB NON manda nessun messaggio applicativo
-     * */
-    void disconnessioneDalServer();
 
     /*
      * sulla base del msg di livello applicazione ricevuto emette

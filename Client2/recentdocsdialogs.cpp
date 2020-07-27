@@ -19,7 +19,7 @@ RecentDocsDialogs::RecentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP,q
     setParent(parent);
     setAttribute(Qt::WA_DeleteOnClose);
     this->wscP = wscP;
-    mw = new TextEdit(this, wscP, siteId);
+    this->siteId = siteId;
     recentDocs = new QListWidget();
     this->utente = utente;
     this->docList = docList;
@@ -108,6 +108,9 @@ RecentDocsDialogs::RecentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP,q
     /*apertura documento*/
     QObject::connect(this, &RecentDocsDialogs::SigApriDoc, wscP, &WorkerSocketClient::apriDoc);
     QObject::connect(wscP, &WorkerSocketClient::SigEsitoApriDoc, this,  &RecentDocsDialogs::esitoApriDoc);
+
+    /*Chiusura documento*/
+    QObject::connect(wscP, &WorkerSocketClient::SigEsitoChiudiDoc, this,  &RecentDocsDialogs::esitoChiudiDoc);
 
 
 }
@@ -255,6 +258,7 @@ int isSuccess(QString esito){
 void RecentDocsDialogs::esitoCreaDoc(QString esito, CRDT doc){
   if (isSuccess(esito)){ //se esito positivo creo un CRDT vuoto perché il documento é stato appena creato
     QString docName = newFileName->text();
+    mw = new TextEdit(this,this->wscP,this->siteId);
     const QRect availableGeometry = QApplication::desktop()->availableGeometry(mw);
     mw->resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);
     mw->move((availableGeometry.width() - mw->width()) / 2,
@@ -285,6 +289,8 @@ void RecentDocsDialogs::esitoCreaDoc(QString esito, CRDT doc){
 //******************************************
 void RecentDocsDialogs::esitoApriDoc(QString esito, CRDT doc){
   if (isSuccess(esito)){
+      qDebug() << "CRDT ricevuto dal server"<< doc.text;
+      mw = new TextEdit(this,this->wscP,this->siteId);
       mw->loadCRDTIntoEditor(doc);
       QString docName = recentDocs->selectedItems().first()->text();
       const QRect availableGeometry = QApplication::desktop()->availableGeometry(mw);
@@ -292,7 +298,6 @@ void RecentDocsDialogs::esitoApriDoc(QString esito, CRDT doc){
       mw->move((availableGeometry.width() - mw->width()) / 2,
               (availableGeometry.height() - mw->height()) / 2);
       mw->setCurrentFileName(docName);
-      this->docList.append(docName);
       mw->show();
       this->hide();
 
@@ -306,4 +311,19 @@ void RecentDocsDialogs::esitoApriDoc(QString esito, CRDT doc){
 
   }
 }
+
+void RecentDocsDialogs::esitoChiudiDoc(QString esito){
+  //Per ora stampo solo l'esito ricevuto dal server
+  //Per evitare la chiusura del file nel caso in cui si ricevesse un esito negativo devo mantenere l'informazione riguardante
+  //il QCloseEvent scatenante il messaggio di chiusura
+  std::cout << esito.toStdString()<< "\n" << std::flush;
+  if (isSuccess(esito)){
+      delete mw;
+      mw = nullptr;
+  }
+  else
+      //Qui dovrebbe apparire una finestra in cui si indica l'errore, per far sapere all'utente che qualcosa è andato storto
+      std::cout << "Non ho chiuso il documento perchè il server ha risposto esito negativo\n"<<std::flush;
+}
+
 

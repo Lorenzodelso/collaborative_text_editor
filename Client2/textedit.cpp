@@ -67,7 +67,6 @@
 #include <QTextCursor>
 #include <QTextDocumentWriter>
 #include <QTextList>
-#include <QtDebug>
 #include <QCloseEvent>
 #include <QMessageBox>
 #include <QMimeData>
@@ -159,7 +158,6 @@ TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP,quint16 siteId)
 
     /*chiusura documento*/
     QObject::connect(this, &TextEdit::SigChiudiDoc, wscP, &WorkerSocketClient::chiudiDoc);
-    QObject::connect(wscP, &WorkerSocketClient::SigEsitoChiudiDoc, this,  &TextEdit::esitoChiudiDoc);
 
     /*operazione locale sul documento*/
     QObject::connect(this, &TextEdit::SigOpDocLocale, wscP, &WorkerSocketClient::opDocLocale);
@@ -206,6 +204,11 @@ TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP,quint16 siteId)
 #endif
 }
 
+TextEdit::~TextEdit(){
+    delete this->textEdit;
+    delete this->algoritmoCRDT;
+}
+
 //Le prossime due funzioni vengono usate nel RecentDocDialog per caricare il file
 // (cioè la struttura CRDT) nell'editor. Viene fatto dentro il textEditor per non far uscire il CRDT e i cursori
 
@@ -244,7 +247,6 @@ void TextEdit::closeEvent(QCloseEvent *e)
         emit(SigChiudiDoc(this->fileName));
         emit(updateRecDocs());
         parentWidget()->show();
-        e->accept();
    }
    else
        e->ignore();
@@ -1089,22 +1091,6 @@ void TextEdit::pressedButtonTrigger(bool checked){
         quittingColorMode();
     }
 }
-
-
-void TextEdit::esitoChiudiDoc(QString esito){
-  //Per ora stampo solo l'esito ricevuto dal server
-  //Per evitare la chiusura del file nel caso in cui si ricevesse un esito negativo devo mantenere l'informazione riguardante
-  //il QCloseEvent scatenante il messaggio di chiusura
-  std::cout << esito.toStdString()<< "\n" << std::flush;
-  if (isSuccess(esito)){
-     textEdit->close();
-  }
-  else
-      //Qui dovrebbe apparire una finestra in cui si indica l'errore, per far sapere all'utente che qualcosa è andato storto
-      std::cout << "Non ho chiuso il documento perchè il server ha risposto esito negativo\n"<<std::flush;
-}
-
-
 
 //***********************************
 //

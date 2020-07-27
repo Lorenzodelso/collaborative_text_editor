@@ -21,10 +21,6 @@ public slots:
     /*emette il segnale SigConnessioneAlServer*/
     void attivaSocket();
 
-    /*emette il segnale SigDisconnessione al server*/
-    void disattivaSocket();
-
-
 private slots:
     void loginClicked();
     void cancelClicked();
@@ -54,11 +50,6 @@ signals:
     void SigLogin(QUtente user);
 
     void SigConnessioneAlServer();
-
-    void SigDisconnessioneDalServer();
-
-
-
 
 private:
     QLabel *username;

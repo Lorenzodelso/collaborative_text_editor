@@ -71,7 +71,6 @@ int main(int argc, char *argv[])
     /*deallocazione oggetto worker socket client se thread corrispondente finisce*/
     QObject::connect(tP, &QThread::finished, wscP, &QObject::deleteLater);
 
-
     tP->start();
     //if((ld->attivaSocket()).compare("Failed")==0){
     ld->attivaSocket();
@@ -96,7 +95,7 @@ int main(int argc, char *argv[])
     qint32 ris = a.exec();
     a.quit();
 
-    ld->disattivaSocket();
+    //ld->disattivaSocket();
     /*dealloco thread socket*/
     tP->quit();
     tP->wait();

@@ -155,11 +155,7 @@ void LoginDialog::esitoLogin(QString esito/*esito*/, QUtente user, QList<QString
 }
 
 void LoginDialog::attivaSocket(){
-    emit(SigConnessioneAlServer());
-}
-
-void LoginDialog::disattivaSocket(){
-    emit(SigDisconnessioneDalServer());
+    emit SigConnessioneAlServer();
 }
 
 QString LoginDialog::esitoConnessioneAlServer(QString esito){

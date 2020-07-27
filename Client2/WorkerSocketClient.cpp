@@ -29,9 +29,7 @@ void WorkerSocketClient::connessioneAlServer() {
     connect(socketConnesso, &QTcpSocket::readyRead, this,  &WorkerSocketClient::leggiMsgApp,Qt::QueuedConnection);
 }
 
-
-void WorkerSocketClient::disconnessioneDalServer()
-{
+WorkerSocketClient::~WorkerSocketClient(){
     this->socketConnesso->disconnectFromHost();
 }
 

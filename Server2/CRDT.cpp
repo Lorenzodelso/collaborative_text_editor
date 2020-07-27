@@ -77,7 +77,8 @@ quint16 CRDT::generateIdBetween(quint16 id1, quint16 id2, quint16 strategy) {
     }
     //return floor(random()%(id2-id1))+id1;
     QRandomGenerator* rand = new QRandomGenerator();
-    return quint16( rand->bounded(difference) )+id1;
+    quint16 num = quint16( rand->bounded(id1,id2) );
+    return num;
 }
 
 
