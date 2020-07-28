@@ -568,11 +568,11 @@ void Server::chiusuraDocumentoDaParteDelClient(WorkerSocket* wsP, QUtente user){
 void Server::nessunClientStaEditando(QString nomeFile) {
 
     QThread* qtdP = threadsDoc.value(documents.value(nomeFile));
-    documents.remove(nomeFile);
     qtdP->quit();
     qtdP->wait();
     delete qtdP;
     threadsDoc.remove(documents.value(nomeFile));
+    documents.remove(nomeFile);
 
 }
 

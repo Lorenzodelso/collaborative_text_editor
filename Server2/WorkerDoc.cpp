@@ -29,7 +29,7 @@ void WorkerDoc::workerDocCreaDoc(QString nomeFile, WorkerSocket* wsP){
     else{
         esito="Success";
         openedFile = &newFile;
-        numClients = 0; //ancora nessun client connesso, viene solo richiesto di creare il file
+        numClients = 1; //ancora nessun client connesso, viene solo richiesto di creare il file
         this->nomeFile = nomeFile;
     }
     emit SigEsitoCreaDoc(esito,*crdt /* passo il CRDT come copia, quindi non il puntatore*/);
@@ -57,7 +57,9 @@ void WorkerDoc::workerDocPrimaAperturaDoc(QString nomeFile, WorkerSocket* wsP){
     else{
         esito="Success";
         fileStream >> *crdt; //deserializzo il CRDT interno al file
-        numClients++;
+        qDebug() <<"CRDT in WorkerDoc"<< crdt->text;
+        this->nomeFile = nomeFile;
+        numClients = 1;
     }
     emit SigEsitoApriDoc(esito,*crdt /* passo il CRDT come copia, quindi non il puntatore*/);
     QObject::disconnect(this, &WorkerDoc::SigEsitoApriDoc, wsP, &WorkerSocket::rispondiEsitoApriDoc);
