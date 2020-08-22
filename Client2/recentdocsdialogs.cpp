@@ -289,7 +289,6 @@ void RecentDocsDialogs::esitoCreaDoc(QString esito, CRDT doc){
 //******************************************
 void RecentDocsDialogs::esitoApriDoc(QString esito, CRDT doc){
   if (isSuccess(esito)){
-      qDebug() << "CRDT ricevuto dal server"<< doc.text;
       mw = new TextEdit(this,this->wscP,this->siteId);
       mw->loadCRDTIntoEditor(doc);
       QString docName = recentDocs->selectedItems().first()->text();
@@ -316,7 +315,6 @@ void RecentDocsDialogs::esitoChiudiDoc(QString esito){
   //Per ora stampo solo l'esito ricevuto dal server
   //Per evitare la chiusura del file nel caso in cui si ricevesse un esito negativo devo mantenere l'informazione riguardante
   //il QCloseEvent scatenante il messaggio di chiusura
-  std::cout << esito.toStdString()<< "\n" << std::flush;
   if (isSuccess(esito)){
       delete mw;
       mw = nullptr;

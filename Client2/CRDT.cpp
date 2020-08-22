@@ -134,11 +134,11 @@ Char* CRDT::generateChar(QChar value,QTextCharFormat format,quint16 index){
     return new Char(this->siteID,this->counter++,newPos1,value,format);
 }
 
-quint16 CRDT::findInsertIndex(Char ch) {
+int CRDT::findInsertIndex(Char ch) {
     quint16 left = 0;
     quint16 right = this->listChar.size()-1;
     quint16 mid;
-    quint16 compareNum;
+    int compareNum;
 
     if((this->listChar.size()==0) || (ch.compareTo(this->listChar[left]) == -1)){
         return left;
@@ -162,10 +162,11 @@ quint16 CRDT::findInsertIndex(Char ch) {
     return ch.compareTo(this->listChar[left]) == 0 ? left : right;
 }
 
-quint16 CRDT::findIndexByPosition(Char ch) {
+int CRDT::findIndexByPosition(Char ch) {
     quint16 left = 0;
     quint16 right = this->listChar.size() - 1;
-    quint16 mid, compareNum;
+    quint16 mid;
+    int compareNum;
 
     if (this->listChar.size()==0) {
         std::cout<<"Character does not exist in CRDT";
@@ -274,7 +275,6 @@ void CRDT::readCRDTfromFile(QString nomeFile){
 DocOperation CRDT::localFormatChange(QTextCharFormat format, quint16 index){
     QTextCharFormat oldFormat = listChar[index].getFormat();
     this->listChar[index].setFormat(format);
-    //Mi occupo qui di segnalare al WorkerSocket dell'operazione
     DocOperation* docOp = new DocOperation(2,listChar[index],oldFormat,this->siteID,0,0);
     return *docOp;
 }

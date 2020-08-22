@@ -204,7 +204,7 @@ private:
 	
 	void comunicaCRDTInserimentoLocale(QTextEdit* txe,QTextCursor* cursor, int pos, int numInserted,CRDT* algCRDT);
     void comunicaCRDTRimozioneLocale(int pos, int numRemoved,CRDT* algCRDT);
-    void comunicaCRDTCambioFormat(QTextCursor* cursor, int pos, int numCar,CRDT* algCRDT);
+    void comunicaCRDTCambioFormat(QTextCharFormat format, int pos, int numCar,CRDT* algCRDT);
 
     //entrata e uscita dalla color mode
     void enteringColorMode();
@@ -253,6 +253,9 @@ private:
 
     //modalità scrittura a colori
     bool colorWriting;
+
+    //Default format
+    QTextCharFormat defaultFmt;
 
     WorkerSocketClient *wscP;
 
