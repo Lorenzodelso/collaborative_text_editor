@@ -291,12 +291,12 @@ void RecentDocsDialogs::esitoApriDoc(QString esito, CRDT doc){
   if (isSuccess(esito)){
       mw = new TextEdit(this,this->wscP,this->siteId);
       mw->loadCRDTIntoEditor(doc);
-      QString docName = recentDocs->selectedItems().first()->text();
+      //QString docName = recentDocs->selectedItems().first()->text();
       const QRect availableGeometry = QApplication::desktop()->availableGeometry(mw);
       mw->resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);
       mw->move((availableGeometry.width() - mw->width()) / 2,
               (availableGeometry.height() - mw->height()) / 2);
-      mw->setCurrentFileName(docName);
+      //mw->setCurrentFileName(docName);
       mw->show();
       this->hide();
 

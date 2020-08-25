@@ -952,7 +952,8 @@ void TextEdit::opDocRemota(DocOperation operation){
            operation.character.setFormat(coloredFormat);
        }
       quint16 index = algoritmoCRDT->remoteInsert(operation.character);
-      QTextCursor cursor = cursorMap->find(operation.siteId).value();
+      //QTextCursor cursor = cursorMap->find(operation.siteId).value();
+      QTextCursor cursor = textEdit->textCursor();   //MODIFICA TEMPORANEA CURSORE
       cursor.setPosition(index);
       cursor.insertText(operation.character.getValue());
       break;
