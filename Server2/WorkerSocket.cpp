@@ -54,18 +54,17 @@ void WorkerSocket::leggiMsgApp() {
             QUtente user;
             qint64 dimension;
             QByteArray data;
-
-           // in >> dimension;
-
-            //in.readBytes(data,dimension);
-            // img = QImage::fromData(data,"PNG");
-
-           // this->image=img;
+          //qDebug() << "Debug Message";    // CAN BE REMOVED AT COMPILE TIME!
+          //std::cout << "ok";
             BlockReader(socketConnessoP).stream() >> user;
+            BlockReader(socketConnessoP).stream() >> dimension;
+            BlockReader(socketConnessoP).stream() >> data;
+            this->image.loadFromData(data,user.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
             QRegExp e("([a-zA-Z0-9\\s_\\\\.\\-\\(\\):])+(.doc|.docx|.pdf|.png)$");
-
-               if (user.getUsername() != NULL && user.getPassword() != NULL /*&& e.indexIn(user.getNomeImg()*/)
-                   emit  SigRegistrazione(this, user);
+            if(user.getUsername() != NULL && user.getPassword() != NULL && e.indexIn(user.getNomeImg()))
+            {
+               emit  SigRegistrazione(this, user);
+            }
         }
         if(strcmp(msg,"opd")==0)
         {
@@ -172,10 +171,12 @@ void WorkerSocket::rispondiEsitoRegistrazione(QString esito, QString nomeImg)
     QDataStream in(socketConnessoP);
     uint len=3;
     in.writeBytes("e_r",len);
+    QString val= QString("/");
     if (esito.compare("OK")==0)
     {
         in.writeBytes("r_a",len);
-        //this->image.save(QDir::currentPath+"/"+nomeImg);
+        qDebug() << QDir::currentPath() + val + nomeImg;
+        qDebug() << this->image.save(QDir::currentPath()+val+nomeImg);
         socketConnessoP->disconnectFromHost();
     }
     else

@@ -231,22 +231,18 @@ void WorkerSocketClient::registrazione(QUtente user)
     char name[100];
 
     QDataStream in(this->socketConnesso);
-
     uint len=3;
-
     in.writeBytes("reg",len);
-
-/*
-    GetFullPathName(user.getNomeImg(), 100, fullpath, nullptr);
-    QImage image(fullpath);
-    QBuffer buffer;
-    image.save(&buffer, "PNG");
-    in << buffer.size()
-    in << buffer.data();*/
+    QImage* image=new QImage();
+    image->load(user.getNomeImg());
+    QByteArray arr;
+    QBuffer buffer(&arr);
+    buffer.open(QIODevice::WriteOnly);
+    image->save(&buffer, user.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
     BlockWriter(socketConnesso).stream() << user;
-
+    BlockWriter(socketConnesso).stream() << static_cast<qint64>(arr.size());
+    BlockWriter(socketConnesso).stream() << arr;
 }
-
 void WorkerSocketClient::chiudiDoc(QString nomeFile)
 {
     QDataStream in(this->socketConnesso);

@@ -379,7 +379,7 @@ void Server::registrazione(WorkerSocket* wsP, QUtente user) {
             currUserId++;
 
 
-            //QString estensioneImg = user.getNomeImg().split('.', QString::SkipEmptyParts)[1];
+            QString estensioneImg = user.getNomeImg().split('.', QString::SkipEmptyParts)[1];
 
             QUtenteServer userServerSide;
 
@@ -387,8 +387,7 @@ void Server::registrazione(WorkerSocket* wsP, QUtente user) {
             userServerSide.setUsername(user.getUsername());
             userServerSide.setPassword(user.getPassword());
             userServerSide.setSalt("salt");
-            //userServerSide.setNomeImg(QString::number(user.getUserId()).append(estensioneImg));
-            userServerSide.setNomeImg("DetoSalato");
+            userServerSide.setNomeImg(QString::number(user.getUserId()).append('.').append(estensioneImg));
 
             users.insert(currUserId, userServerSide);
 
