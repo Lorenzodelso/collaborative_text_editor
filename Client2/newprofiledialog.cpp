@@ -118,6 +118,9 @@ void NewProfileDialog::registerPressed(){
     QString pass = passEdit->text();
     QString nick = nickEdit->text();
 
+    if(utente->getNomeImg().isNull() || utente->getNomeImg().isEmpty())
+        utente->setNomeImg("null");
+
     if(user.isNull() || user.isEmpty()){
         err->setText("Username cannot be empty");
         err->setStyleSheet("QLabel {color: #FF0000}");
