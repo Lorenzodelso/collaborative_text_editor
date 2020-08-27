@@ -19,6 +19,8 @@ class WorkerSocketClient : public QObject{
 
     QTcpSocket* socketConnesso;
     QUtente user;
+    QImage* currentImg;
+    QImage* temporaryImg;
 
     public:
     ~WorkerSocketClient();

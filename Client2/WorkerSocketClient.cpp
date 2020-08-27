@@ -4,7 +4,7 @@
 #include <QThread>
 #include <QImage>
 #include <QDebug>
-
+#include <QDir>
 
 void WorkerSocketClient::connessioneAlServer() {
 
@@ -76,7 +76,22 @@ void  WorkerSocketClient::leggiMsgApp(){
             {
                 QList<QString> nomiFilesEditati;
                 QUtente user = *new QUtente();
+                qint64 dimension;
+                QByteArray data;
+                QImage* image = new QImage();
+                QString val= QString("/");
+
                 BlockReader(socketConnesso).stream() >> user;
+                BlockReader(socketConnesso).stream() >> dimension;
+                BlockReader(socketConnesso).stream() >> data;
+                std::cout<< "dentro";
+                if(user.getNomeImg() != NULL){
+                      image->loadFromData(data,user.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
+                      std::cout<< QDir::currentPath().toStdString()+val.toStdString()+user.getNomeImg().toStdString();
+                      std::cout<<image->save(QDir::currentPath()+val+user.getNomeImg());
+                      this->currentImg=image;
+                }
+
                 BlockReader(socketConnesso).stream() >> nomiFilesEditati;
                 this->user = user;
                 emit SigEsitoLogin( "Success"/*esito*/, user, nomiFilesEditati);
@@ -108,11 +123,27 @@ void  WorkerSocketClient::leggiMsgApp(){
         }
         if (strcmp(msg,"mop")==0)
         {
+
             in.readBytes(opt, prova);
+            QString val= QString("/");
             if (strcmp(opt,"suc")==0)
             {
                 QUtente userNew;
+                qint64 dimension;
+                QByteArray data;
+                QImage* image = new QImage();
+                QString val= QString("/");
+
                 BlockReader(socketConnesso).stream() >> userNew;
+                BlockReader(socketConnesso).stream() >> dimension;
+                BlockReader(socketConnesso).stream() >> data;
+
+                this->user=userNew;
+
+                image->loadFromData(data,this->user.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
+                image->save(QDir::currentPath()+val+user.getNomeImg());
+                this->currentImg=image;
+
                 emit SigEsitoModificaProfiloUtente("Success",userNew);
             }
             else
@@ -128,9 +159,8 @@ void  WorkerSocketClient::leggiMsgApp(){
             DocOperation operazione;
             BlockReader(socketConnesso).stream() >> operazione;
            if(this->user.getUserId()!=operazione.getSiteId()){
-               //GRAZIE DETO
-               //in.writeBytes("opd",len);
-               //BlockWriter(socketConnesso).stream()<< operazione;
+               in.writeBytes("opd",len);
+               BlockWriter(socketConnesso).stream()<< operazione;
                emit SigOpDocRemota(operazione);
             }
             else {
@@ -223,23 +253,56 @@ void WorkerSocketClient::modificaProfiloUtente(QUtente user1)
 
     in.writeBytes("mod",len);
 
+
+    QByteArray arr;
+    QByteArray arr1;
+
+    QBuffer buffer(&arr);
+    QBuffer buffer1(&arr1);
+    QString val= QString("/");
+
+    QImage* image1=new QImage();
+
+    image1->load(QDir::currentPath()+val+user1.getNomeImg());
+
+    buffer.open(QIODevice::WriteOnly);
+    image1->save(&buffer1, user1.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
+
+    buffer.open(QIODevice::WriteOnly);
+    this->currentImg->save(&buffer,this->user.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
+
+    if(arr.compare(arr1)==0){
+
+         arr1= QByteArray();
+
+    }
+
     BlockWriter(socketConnesso).stream() << user1;
+    BlockWriter(socketConnesso).stream() << static_cast<qint64>(arr1.size());
+    BlockWriter(socketConnesso).stream() << arr1;
+
+
+
 }
 
 void WorkerSocketClient::registrazione(QUtente user)
 {
-    char fullpath[100];
-    char name[100];
+
 
     QDataStream in(this->socketConnesso);
+    QByteArray arr;
+    QBuffer buffer(&arr);
     uint len=3;
     in.writeBytes("reg",len);
     QImage* image=new QImage();
-    image->load(user.getNomeImg());
-    QByteArray arr;
-    QBuffer buffer(&arr);
-    buffer.open(QIODevice::WriteOnly);
-    image->save(&buffer, user.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
+
+    if(user.getNomeImg()!=NULL)
+    {
+        image->load(user.getNomeImg());
+        buffer.open(QIODevice::WriteOnly);
+        image->save(&buffer, user.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
+     }
+
     BlockWriter(socketConnesso).stream() << user;
     BlockWriter(socketConnesso).stream() << static_cast<qint64>(arr.size());
     BlockWriter(socketConnesso).stream() << arr;
