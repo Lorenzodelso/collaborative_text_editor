@@ -159,8 +159,8 @@ void  WorkerSocketClient::leggiMsgApp(){
             DocOperation operazione;
             BlockReader(socketConnesso).stream() >> operazione;
            if(this->user.getUserId()!=operazione.getSiteId()){
-               in.writeBytes("opd",len);
-               BlockWriter(socketConnesso).stream()<< operazione;
+               //in.writeBytes("opd",len);
+               //BlockWriter(socketConnesso).stream()<< operazione;
                emit SigOpDocRemota(operazione);
             }
             else {
