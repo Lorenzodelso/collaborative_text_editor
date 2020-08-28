@@ -94,7 +94,7 @@ void WorkerSocket::leggiMsgApp() {
             if(dimension>0){
 
                      this->temporaryImage.loadFromData(data,userNEW.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
-                     userNEW.setNomeImg(var+userNEW.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
+                     userNEW.setNomeImg(var+"."+userNEW.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
             }
             if ((userOLD.getUsername() !=  userNEW.getUsername() &&
                  userOLD.getPassword() ==  userNEW.getPassword() &&

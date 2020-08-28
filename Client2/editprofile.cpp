@@ -15,10 +15,10 @@ EditProfile::EditProfile(QWidget *parent, WorkerSocketClient* wscP, QUtente* ute
     setParent(parent);
     setWindowTitle("User Profile editor");
     username = new QLabel(tr("&Username: "));
-    this->utente = utente;
+    utenteLocale = new QUtente(*utente);
     this->wscP = wscP;
     usernameEdit = new QLineEdit();
-    usernameEdit->setEnabled(false);
+    //usernameEdit->setEnabled(false);
     nickname = new QLabel(tr("&Nickname: "));
     nickEdit = new QLineEdit();
     userPic = new ClickableLabel();
@@ -31,24 +31,21 @@ EditProfile::EditProfile(QWidget *parent, WorkerSocketClient* wscP, QUtente* ute
     nickname->setBuddy(nickEdit);
     setGeometry(575,300,400,200);
 
-        quint32 userId = utente->getUserId();
-        QString usernameData = utente->getUsername();
-        QString nicknameData = utente->getNickName();
 
-        user = new QUtente(userId, usernameData, nicknameData, "", usernameData+".png");
-        usernameEdit->setText(usernameData);
+        usernameEdit->setText(utente->getUsername());
         usernameEdit->setEnabled(false);
 
-        if(!nicknameData.isEmpty()){
-            nickEdit->setText(nicknameData);
+        if(!utente->getNickName().isEmpty()){
+            nickEdit->setText(utente->getNickName());
         }else{
             nickEdit->setPlaceholderText(tr("(Optional)"));
         }
-        if(!QFileInfo::exists(QDir::currentPath()+user->getNomeImg()) || !QFileInfo(QDir::currentPath()+user->getNomeImg()).isFile()){
+        qDebug()<< QDir::currentPath()+"/"+utente->getNomeImg();
+        if(!QFileInfo::exists(QDir::currentPath()+"/"+utente->getNomeImg()) || !QFileInfo(QDir::currentPath()+"/"+utente->getNomeImg()).isFile()){
                 profilePic->load(rsrc+"/colored-edit-profile.png");
                 userPic->setPixmap(*profilePic);
         }else{
-            profilePic->load(QDir::currentPath()+user->getNomeImg());
+            profilePic->load(QDir::currentPath()+"/"+utente->getNomeImg());
             QPixmap scaled = profilePic->scaled(147, 200, Qt::AspectRatioMode::KeepAspectRatio);
             userPic->setPixmap(scaled);
         }
@@ -77,6 +74,7 @@ EditProfile::EditProfile(QWidget *parent, WorkerSocketClient* wscP, QUtente* ute
     connect(save, &QPushButton::clicked, this, &EditProfile::savePressed);
     connect(userPic, &ClickableLabel::clicked, this, &EditProfile::selectImagePressed);
     connect(nickEdit, &QLineEdit::textEdited, this, &EditProfile::changedNick);
+    connect(usernameEdit, &QLineEdit::textEdited, this, &EditProfile::changedUsername);
     connect(userPic, &ClickableLabel::hovered, this, &EditProfile::imageHovered);
     connect(userPic, &ClickableLabel::unHovered, this, &EditProfile::imageUnhovered);
 
@@ -105,7 +103,16 @@ void EditProfile::changedNick(const QString &){
    QString nick = nickEdit ->text();
    nickEdit->setStyleSheet("QLineEdit {color: #000000;}");
    if(!nick.isEmpty()){
-       user->setNickName(nick);
+       utenteLocale->setNickName(nick);
+    }
+}
+
+void EditProfile::changedUsername(const QString &){
+
+   QString username = usernameEdit ->text();
+   usernameEdit->setStyleSheet("QLineEdit {color: #000000;}");
+   if(!username.isEmpty()){
+       utenteLocale->setUsername(username);
     }
 }
 
@@ -116,7 +123,7 @@ void EditProfile::changedNick(const QString &){
 //*********************************************************************
 void EditProfile::savePressed(){
 
-    emit(SigModificaProfiloUtente(*user));
+    emit(SigModificaProfiloUtente(*utenteLocale));
 }
 
 //*********************************************************************
@@ -138,9 +145,12 @@ void EditProfile::discardPressed(){
 void EditProfile::selectImagePressed(){
     QUrl imageUrl = QFileDialog::getOpenFileUrl(this, tr("Open Image"), QStandardPaths::writableLocation(QStandardPaths::PicturesLocation), tr("Image Files (*.png *.jpg *.bmp)"));
     QString imagePath = imageUrl.path();
+    #ifndef Q_OS_MAC
+    imagePath.remove(0,1);
+    #endif
     QString imageName = imageUrl.fileName();
     if(!imagePath.isEmpty() || !imagePath.isNull()){
-        user->setNomeImg(imagePath);
+        utenteLocale->setNomeImg(imagePath);
         profilePic->load(imagePath);
         QPixmap scaled = profilePic->scaled(147, 200, Qt::AspectRatioMode::KeepAspectRatio);
         userPic->setPixmap(scaled);
@@ -170,11 +180,11 @@ void EditProfile::imageHovered(){
 //*********************************************************************
 void EditProfile::imageUnhovered(){
 
-    if(!QFileInfo::exists(user->getNomeImg()+".png")){
+    if(!QFileInfo::exists(utenteLocale->getNomeImg())){
             profilePic->load(rsrc+"/colored-edit-profile.png");
             userPic->setPixmap(*profilePic);
     }else{
-            profilePic->load(user->getNomeImg());
+            profilePic->load(utenteLocale->getNomeImg());
             QPixmap scaled = profilePic->scaled(147, 200, Qt::AspectRatioMode::KeepAspectRatio);
             userPic->setPixmap(scaled);
     }
@@ -197,9 +207,9 @@ void EditProfile::esitoModificaProfiloUtente(QString esito/*esito*/, QUtente use
         msgBox.exec();
         return;
     }else{
-        utente->setUserId(userNew.getUserId());
-        utente->setUsername(userNew.getUsername());
-        utente->setNickName(userNew.getNickName());
+        utenteLocale->setUserId(userNew.getUserId());
+        utenteLocale->setUsername(userNew.getUsername());
+        utenteLocale->setNickName(userNew.getNickName());
         close();
     }
 

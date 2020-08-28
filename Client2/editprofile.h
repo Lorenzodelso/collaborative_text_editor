@@ -37,6 +37,7 @@ private slots:
     void discardPressed();
     void selectImagePressed();
     void changedNick(const QString &);
+    void changedUsername(const QString &);
     void imageHovered();
     void imageUnhovered();
 
@@ -61,9 +62,8 @@ private:
     QLineEdit *nickEdit;
     QPushButton *save;
     QPushButton *discard;
-    QUtente *user;
     WorkerSocketClient* wscP;
-    QUtente *utente;
+    QUtente *utenteLocale;
 
 };
 

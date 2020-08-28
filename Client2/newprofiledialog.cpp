@@ -10,7 +10,6 @@
 NewProfileDialog::NewProfileDialog(QWidget *parent, WorkerSocketClient* wscP)
 {
     qRegisterMetaType<QUtente>();
-
     setParent(parent);
     setWindowFlag(Qt::Window);
     setModal(true);
@@ -119,7 +118,7 @@ void NewProfileDialog::registerPressed(){
     QString nick = nickEdit->text();
 
     if(utente->getNomeImg().isNull() || utente->getNomeImg().isEmpty())
-        utente->setNomeImg("null");
+        utente->setNomeImg(nullptr);
 
     if(user.isNull() || user.isEmpty()){
         err->setText("Username cannot be empty");

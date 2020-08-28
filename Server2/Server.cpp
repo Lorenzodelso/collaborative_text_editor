@@ -394,7 +394,7 @@ void Server::registrazione(WorkerSocket* wsP, QUtente user) {
             userServerSide.setSalt("salt");
 
             if(user.getNomeImg()==NULL){
-                userServerSide.setNomeImg("NULL");
+                userServerSide.setNomeImg(nullptr);
             }
             else{
                 QString estensioneImg = user.getNomeImg().split('.', QString::SkipEmptyParts)[1];
@@ -450,7 +450,7 @@ void Server::modificaProfiloUtente(WorkerSocket *wsP, QUtente userOld, QUtente u
             /*setto il nome dell'immagine nuova in userNew*/
 
             QString estensioneImgNuova = userNew.getNomeImg().split('.', QString::SkipEmptyParts)[1];
-            userNew.setNomeImg(QString::number(userNew.getUserId()).append(estensioneImgNuova));
+            userNew.setNomeImg(QString::number(userNew.getUserId()).append(".").append(estensioneImgNuova));
 
             /*elimino immagine vecchia da disco*/
             QFile::remove(userOld.getNomeImg());
