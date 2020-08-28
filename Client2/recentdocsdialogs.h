@@ -92,6 +92,7 @@ private:
     class EditProfile *edit;
     QUtente utente;
     QList<QString> docList;
+    QString fileName;
 
 
 };
