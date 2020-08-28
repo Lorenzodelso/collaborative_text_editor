@@ -210,7 +210,9 @@ void NewProfileDialog::selectImagePressed(){
     if(!imageUrl.isEmpty()){
 
         QString imagePath = imageUrl.path();
+        #ifndef Q_OS_MAC
         imagePath.remove(0,1);
+        #endif
         utente->setNomeImg(imagePath);
         profilePic->load(imagePath);
         QPixmap scaled = profilePic->scaled(147, 200, Qt::AspectRatioMode::KeepAspectRatio);
