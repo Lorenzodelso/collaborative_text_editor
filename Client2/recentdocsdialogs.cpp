@@ -120,15 +120,11 @@ RecentDocsDialogs::RecentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP,q
 //*********************************************************************
 
 void RecentDocsDialogs::openPressed(){
-<<<<<<< Updated upstream
-    QString selectedDoc = recentDocs->selectedItems().first()->text();
-    if(!selectedDoc.isNull() || !selectedDoc.isEmpty())
-        emit(SigApriDoc(selectedDoc));
-=======
+
     fileName = recentDocs->selectedItems().first()->text();
     if(!fileName.isNull() || !fileName.isEmpty())
         emit(SigApriDoc(fileName.remove('\n')));
->>>>>>> Stashed changes
+
 }
 
 //*********************************************************************
@@ -260,11 +256,7 @@ int isSuccess(QString esito){
 
 void RecentDocsDialogs::esitoCreaDoc(QString esito, CRDT doc){
   if (isSuccess(esito)){ //se esito positivo creo un CRDT vuoto perché il documento é stato appena creato
-<<<<<<< Updated upstream
-    QString docName = newFileName->text();
-=======
     mw = new TextEdit(this,this->wscP,this->siteId);
->>>>>>> Stashed changes
     const QRect availableGeometry = QApplication::desktop()->availableGeometry(mw);
     mw->resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);
     mw->move((availableGeometry.width() - mw->width()) / 2,
@@ -296,20 +288,11 @@ void RecentDocsDialogs::esitoCreaDoc(QString esito, CRDT doc){
 void RecentDocsDialogs::esitoApriDoc(QString esito, CRDT doc){
   if (isSuccess(esito)){
       mw->loadCRDTIntoEditor(doc);
-<<<<<<< Updated upstream
-      QString docName = recentDocs->selectedItems().first()->text();
-=======
->>>>>>> Stashed changes
       const QRect availableGeometry = QApplication::desktop()->availableGeometry(mw);
       mw->resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);
       mw->move((availableGeometry.width() - mw->width()) / 2,
               (availableGeometry.height() - mw->height()) / 2);
-<<<<<<< Updated upstream
-      mw->setCurrentFileName(docName);
-      this->docList.append(docName);
-=======
       mw->setCurrentFileName(fileName);
->>>>>>> Stashed changes
       mw->show();
       this->hide();
 

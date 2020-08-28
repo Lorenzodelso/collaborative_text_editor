@@ -1,10 +1,5 @@
-<<<<<<< Updated upstream
-build-PDSClient-Desktop_Qt_5_12_5_MSVC2017_32bit-Debug
-build-PdsServer-Desktop_Qt_5_12_5_MSVC2017_32bit-Debug
-=======
 build-PdsServer-Desktop_Qt_5_12_5_MinGW_32_bit-Debug
 build-PdsClient-Desktop_Qt_5_12_5_MinGW_32_bit-Debug
->>>>>>> Stashed changes
 Server2/PdsServer.pro.user.ae2f2ae
 Server2/PdsServer.pro.user
 Server2/PdsServer.pro.user
