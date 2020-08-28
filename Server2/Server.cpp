@@ -22,7 +22,14 @@ Server::Server() {
     while (!in.atEnd()) {
         QString line = in.readLine();
         QStringList words = line.split(" ", QString::SkipEmptyParts);
-        users.insert((qint32)words[0].toInt(),QUtenteServer((qint32)words[0].toInt(),words[1],words[2], words[3], words[4]));
+        QString nomeImg;
+        if(words[4].compare("NULL")==0){
+            nomeImg=nullptr;
+        }
+        else{
+            nomeImg=words[4];
+        }
+        users.insert((qint32)words[0].toInt(),QUtenteServer((qint32)words[0].toInt(),words[1],words[2], words[3], nomeImg));
         currUserId=(qint32)words[0].toInt(); /*eventuale aggiornamento currUserId (non capita mai perchè non eseguirò mai più questo costruttore)*/
     }
 
@@ -298,7 +305,8 @@ void Server::login(WorkerSocket* wsP, QUtente user) {
             /*salt*/
             /*stessa password*/
 
-            user.setUserId(found->getUserId());
+            user.setUserId(found.value().getUserId());
+            user.setNomeImg(found.value().getNomeImg());
             userConnections.insert(user.getUserId(), wsP);
 
             emit SigEsitoLogin(user, userEdited.value(user.getUserId()));
@@ -378,16 +386,20 @@ void Server::registrazione(WorkerSocket* wsP, QUtente user) {
 
             currUserId++;
 
-
-            QString estensioneImg = user.getNomeImg().split('.', QString::SkipEmptyParts)[1];
-
             QUtenteServer userServerSide;
 
             userServerSide.setUserId(currUserId);
             userServerSide.setUsername(user.getUsername());
             userServerSide.setPassword(user.getPassword());
             userServerSide.setSalt("salt");
-            userServerSide.setNomeImg(QString::number(user.getUserId()).append('.').append(estensioneImg));
+
+            if(user.getNomeImg()==NULL){
+                userServerSide.setNomeImg("NULL");
+            }
+            else{
+                QString estensioneImg = user.getNomeImg().split('.', QString::SkipEmptyParts)[1];
+                userServerSide.setNomeImg(QString::number(userServerSide.getUserId()).append('.').append(estensioneImg));
+            }
 
             users.insert(currUserId, userServerSide);
 
@@ -408,14 +420,13 @@ void Server::registrazione(WorkerSocket* wsP, QUtente user) {
 
         }
 
-
     /*infatti qui la disattivo*/
     QObject::disconnect(this, &Server::SigEsitoRegistrazione, wsP, &WorkerSocket::rispondiEsitoRegistrazione);
 
 }
 
 void Server::modificaProfiloUtente(WorkerSocket *wsP, QUtente userOld, QUtente userNew) {
-
+    bool immagineModificata=false;
     /*
        * questa connect mi serve solo ora perchè è da this al WorkerSocket
        * quindi se la mantenessi sempre attiva emettendo il segnale
@@ -427,7 +438,7 @@ void Server::modificaProfiloUtente(WorkerSocket *wsP, QUtente userOld, QUtente u
 
     if(!users.contains(userOld.getUserId())){
         /*non esiste tale utente */
-        emit SigEsitoModificaProfiloUtente(userOld);
+        emit SigEsitoModificaProfiloUtente(userOld,immagineModificata);
     }
     else {
         /*esiste tale utente*/
@@ -435,7 +446,9 @@ void Server::modificaProfiloUtente(WorkerSocket *wsP, QUtente userOld, QUtente u
         /*se la modifica consiste nel cambio immagine profilo*/
         if (userOld.getNomeImg().compare(userNew.getNomeImg())) {
 
+            immagineModificata=true;
             /*setto il nome dell'immagine nuova in userNew*/
+
             QString estensioneImgNuova = userNew.getNomeImg().split('.', QString::SkipEmptyParts)[1];
             userNew.setNomeImg(QString::number(userNew.getUserId()).append(estensioneImgNuova));
 
@@ -473,7 +486,7 @@ void Server::modificaProfiloUtente(WorkerSocket *wsP, QUtente userOld, QUtente u
         }
         file.close();
 
-        emit SigEsitoModificaProfiloUtente(userNew);
+        emit SigEsitoModificaProfiloUtente(userNew,immagineModificata);
     }
     /*infatti qui la disattivo*/
     QObject::disconnect(this, &Server::SigEsitoModificaProfiloUtente, wsP, &WorkerSocket::rispondiEsitoModificaProfiloUtente);

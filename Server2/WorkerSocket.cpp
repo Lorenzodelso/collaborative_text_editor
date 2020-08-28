@@ -21,7 +21,6 @@ void WorkerSocket::WorkerSocketAttivati(quintptr socketDescriptor){
     socketConnessoP->setSocketDescriptor(socketDescriptor);
     connect(socketConnessoP, &QTcpSocket::readyRead, this, &WorkerSocket::leggiMsgApp);
 }
-
 void WorkerSocket::leggiMsgApp() {
     while(socketConnessoP->bytesAvailable()){
         QDataStream in(this->socketConnessoP);
@@ -59,7 +58,10 @@ void WorkerSocket::leggiMsgApp() {
             BlockReader(socketConnessoP).stream() >> user;
             BlockReader(socketConnessoP).stream() >> dimension;
             BlockReader(socketConnessoP).stream() >> data;
-            this->image.loadFromData(data,user.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
+
+            if(user.getNomeImg() != NULL)
+                  this->image.loadFromData(data,user.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
+
             QRegExp e("([a-zA-Z0-9\\s_\\\\.\\-\\(\\):])+(.doc|.docx|.pdf|.png)$");
             if(user.getUsername() != NULL && user.getPassword() != NULL && e.indexIn(user.getNomeImg()))
             {
@@ -79,16 +81,21 @@ void WorkerSocket::leggiMsgApp() {
         if(strcmp(msg,"mod")==0)
         {
             QUtente userNEW;
-            QUtente userOLD=this->user;
+            qint64 dimension;
+            QByteArray data;
+
             BlockReader(socketConnessoP).stream() >> userNEW;
+            BlockReader(socketConnessoP).stream() >> dimension;
+            BlockReader(socketConnessoP).stream() >> data;
 
-           /* if(userOLD.getUsername() ==  userNEW.getUsername() &&
-               userOLD.getPassword() ==  userNEW.getPassword() &&
-               userNEW.getNomeImg()  !=  userOLD.getNomeImg())               // Gestione immagine
+            QUtente userOLD=this->user;
+            QString var=QString("NULL");
 
-                this->image=
+            if(dimension>0){
 
-            */
+                     this->temporaryImage.loadFromData(data,userNEW.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
+                     userNEW.setNomeImg(var+userNEW.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
+            }
             if ((userOLD.getUsername() !=  userNEW.getUsername() &&
                  userOLD.getPassword() ==  userNEW.getPassword() &&
                  userNEW.getNomeImg()  ==  userOLD.getNomeImg()) ||
@@ -128,10 +135,29 @@ void WorkerSocket::rispondiEsitoLogin(QUtente user, QList<QString> nomiFilesEdit
         socketConnessoP->disconnectFromHost();
     }
     else{
+
         uint len=3;
         in.writeBytes("suc",len);
+
+        QByteArray arr;
+        QBuffer buffer(&arr);
+        QImage* image=new QImage();
+        QString val=QString("/");
+
         this->user=user;
+
+        if(user.getNomeImg()!=NULL)
+        {
+            image->load(QDir::currentPath()+val+user.getNomeImg());
+            qDebug()<<QDir::currentPath();
+            buffer.open(QIODevice::WriteOnly);
+            image->save(&buffer, user.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
+         }
+
         BlockWriter(socketConnessoP).stream() << user;
+        BlockWriter(socketConnessoP).stream() << static_cast<qint64>(arr.size());
+        BlockWriter(socketConnessoP).stream() << arr;
+
         BlockWriter(socketConnessoP).stream() << nomiFilesEditati;
     }
 }
@@ -175,8 +201,9 @@ void WorkerSocket::rispondiEsitoRegistrazione(QString esito, QString nomeImg)
     if (esito.compare("OK")==0)
     {
         in.writeBytes("r_a",len);
-        qDebug() << QDir::currentPath() + val + nomeImg;
-        qDebug() << this->image.save(QDir::currentPath()+val+nomeImg);
+        if(nomeImg!=NULL){
+            this->image.save(QDir::currentPath()+val+nomeImg);
+        }
         socketConnessoP->disconnectFromHost();
     }
     else
@@ -205,26 +232,47 @@ void WorkerSocket::rispondiEsitoOpDoc(QString esito, DocOperation operazione)
 }
 
 
-void WorkerSocket::rispondiEsitoModificaProfiloUtente(QUtente userNew)
+void WorkerSocket::rispondiEsitoModificaProfiloUtente(QUtente userNew,bool immagineModificata)
 {
     QUtente userOLD = this->user;
     QDataStream in(socketConnessoP);
     uint len=3;
+    QByteArray arr;
+    QBuffer buffer(&arr);
+    QString val= QString("/");
     in.writeBytes("mop",len);
-    if((userOLD.getUsername() == userNew.getUsername() &&
-        userOLD.getPassword() == userNew.getPassword() &&
-        userNew.getNomeImg()  == userOLD.getNomeImg())){
-        in.writeBytes("fld",len);
-        BlockWriter(socketConnessoP).stream() << userNew;
-
-    }//esito negativo
-    else if(userOLD.getUsername() == userNew.getUsername() &&
-            userOLD.getPassword() == userNew.getPassword() &&
-            userNew.getNomeImg()  != userOLD.getNomeImg()){
-         //rename(userOLD.getNomeImg(),  userNew.getNomeImg() )
-         //TO DO: Stesso riname di prima
-    }
     this->user=userNew;
+
+    if(userOLD.getUsername() == userNew.getUsername() &&
+        userOLD.getPassword() == userNew.getPassword() &&
+        immagineModificata==false){
+
+        in.writeBytes("fld",len);
+
+    }
+
+    else{
+
+        in.writeBytes("suc",len);
+
+        if(immagineModificata){
+
+            this->temporaryImage.save(QDir::currentPath()+val+userNew.getNomeImg());
+            this->image=this->temporaryImage;
+
+        }
+
+
+        buffer.open(QIODevice::WriteOnly);
+        this->image.save(&buffer, userNew.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
+
+
+        BlockWriter(socketConnessoP).stream() << this->user;
+        BlockWriter(socketConnessoP).stream() << static_cast<qint64>(arr.size());
+        BlockWriter(socketConnessoP).stream() << arr;
+
+
+    }
 }
 
 

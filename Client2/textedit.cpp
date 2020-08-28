@@ -952,31 +952,18 @@ void TextEdit::opDocRemota(DocOperation operation){
            operation.character.setFormat(coloredFormat);
        }
       quint16 index = algoritmoCRDT->remoteInsert(operation.character);
-
-      //Operazioni su textedit disconnettendo il segnale di contents changed
-      disconnect(textEdit->document(),&QTextDocument::contentsChange,
-              this, &TextEdit::CRDTInsertRemove );
-      QTextCursor cursor = textEdit->textCursor();
+      //QTextCursor cursor = cursorMap->find(operation.siteId).value();
+      QTextCursor cursor = textEdit->textCursor();   //MODIFICA TEMPORANEA CURSORE
       cursor.setPosition(index);
       cursor.insertText(operation.character.getValue());
-      //Riconnetto segnale di contentsChanged
-      connect(textEdit->document(),&QTextDocument::contentsChange,
-              this, &TextEdit::CRDTInsertRemove );
-
       break;
     }
     case remoteDelete:
     {
       quint16 index =algoritmoCRDT->remoteDelete(operation.character);
-      //Operazioni su textedit disconnettendo il segnale di contents changed
-      disconnect(textEdit->document(),&QTextDocument::contentsChange,
-              this, &TextEdit::CRDTInsertRemove );
-      QTextCursor cursor = textEdit->textCursor();
+      QTextCursor cursor = cursorMap->find(operation.siteId).value();
       cursor.setPosition(index);
       cursor.deleteChar();
-      //Riconnetto segnale di contentsChanged
-      connect(textEdit->document(),&QTextDocument::contentsChange,
-              this, &TextEdit::CRDTInsertRemove );
       break;
    }
     case changedFormat:

@@ -109,7 +109,7 @@ void SigEsitoChiusuraDocumentoDaParteDelClient(QString esito/*esito*/);
 
 void SigEsitoLogin(QUtente user, QList<QString> nomiFilesEditati);
 void SigEsitoRegistrazione(QString esito, QString nomeImg);
-void SigEsitoModificaProfiloUtente(QUtente userNew);
+void SigEsitoModificaProfiloUtente(QUtente userNew,bool immagineModificata);
 void SigChiHaInseritoCosa(QList<QUser> users/*lista degli utenti che hanno editato in passato e/o stanno editando questo doc*/);
 void SigQuestoUserHaApertoIlDoc(QUser user);
 void SigQuestoUserHaChiusoIlDoc(QUser user);

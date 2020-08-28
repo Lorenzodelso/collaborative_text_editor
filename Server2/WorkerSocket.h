@@ -42,8 +42,7 @@ class WorkerSocket: public QObject {
     QTcpSocket* socketConnessoP;
     QUtente user;
     QImage image;
-
-
+    QImage temporaryImage;
 public:
     WorkerSocket();
 
@@ -201,7 +200,7 @@ public slots:
      * indipendentemente dalla operazine specifica che ha avuto successo sostituisce l'oggetto interno QUtente con userNew
      *
      * */
-    void rispondiEsitoModificaProfiloUtente(QUtente userNew);
+    void rispondiEsitoModificaProfiloUtente(QUtente userNew,bool immagineModificata);
 
     /*
      * risponde al client dandogli l'esito della sua richiesta di chiusura documento
