@@ -72,7 +72,10 @@ private slots:
     void esitoApriDoc(QString esito/*esito*/, CRDT doc/*rappresentazione del file*/);
 
 
-
+    /*
+    * fa la cosa opportuna sulla base dell'esito ricevuto
+    * */
+    void esitoChiudiDoc(QString esito/*esito*/);
 
 private:
     QListWidget *recentDocs;
@@ -84,6 +87,7 @@ private:
     QLineEdit *URL;
     QLineEdit *newFileName;
     TextEdit *mw;
+    quint16 siteId;
     WorkerSocketClient* wscP;
     class EditProfile *edit;
     QUtente utente;

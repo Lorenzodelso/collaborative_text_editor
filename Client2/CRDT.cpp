@@ -64,7 +64,7 @@ quint16 CRDT::retrieveStrategy(quint16 level) {
 }
 
 quint16 CRDT::generateIdBetween(quint16 id1, quint16 id2, quint16 strategy) {
-    auto difference =id2-id1 > 0 ? id2-id1 : id1-id2;
+    auto difference =id2-id1;
     if ((difference) < this->boundary) {
         id1 = id1 + 1;
     } else {
@@ -77,7 +77,8 @@ quint16 CRDT::generateIdBetween(quint16 id1, quint16 id2, quint16 strategy) {
     }
     //return floor(random()%(id2-id1))+id1;
     QRandomGenerator* rand = new QRandomGenerator();
-    return quint16( rand->bounded(difference) )+id1;
+    quint16 num = quint16( rand->bounded(id1,id2) );
+    return num;
 }
 
 
@@ -97,7 +98,7 @@ QVector<quint16> CRDT::generatePosBetween(QVector<quint16> pos1, QVector<quint16
     }else{
         id2 = base;
     }
-    auto difference = id2 - id1 > 0 ? id2-id1 : id1-id2;
+    auto difference = id2 - id1;
 
     if (difference > 1){
         quint16 newDigit = generateIdBetween(id1,id2,strategy);
@@ -109,10 +110,17 @@ QVector<quint16> CRDT::generatePosBetween(QVector<quint16> pos1, QVector<quint16
         pos2.clear();
         return this->generatePosBetween(pos1, pos2, newPos,level+1);
     }else if(difference == 0){
-        newPos.push_back(id1);
-        pos1.remove(0);
-        pos2.remove(0);
-        return this->generatePosBetween(pos1, pos2, newPos,level+1);
+        if(id1 < id2){
+            newPos.push_back(id1);
+            pos1.remove(0);
+            pos2.clear();
+            return this->generatePosBetween(pos1, pos2, newPos,level+1);
+        }else if (id1 == id2){
+            newPos.push_back(id1);
+            pos1.remove(0);
+            pos2.remove(0);
+            return this->generatePosBetween(pos1,pos2,newPos,level+1);
+        }
     }
 }
 
@@ -126,11 +134,11 @@ Char* CRDT::generateChar(QChar value,QTextCharFormat format,quint16 index){
     return new Char(this->siteID,this->counter++,newPos1,value,format);
 }
 
-quint16 CRDT::findInsertIndex(Char ch) {
+int CRDT::findInsertIndex(Char ch) {
     quint16 left = 0;
     quint16 right = this->listChar.size()-1;
     quint16 mid;
-    quint16 compareNum;
+    int compareNum;
 
     if((this->listChar.size()==0) || (ch.compareTo(this->listChar[left]) == -1)){
         return left;
@@ -154,10 +162,11 @@ quint16 CRDT::findInsertIndex(Char ch) {
     return ch.compareTo(this->listChar[left]) == 0 ? left : right;
 }
 
-quint16 CRDT::findIndexByPosition(Char ch) {
+int CRDT::findIndexByPosition(Char ch) {
     quint16 left = 0;
     quint16 right = this->listChar.size() - 1;
-    quint16 mid, compareNum;
+    quint16 mid;
+    int compareNum;
 
     if (this->listChar.size()==0) {
         std::cout<<"Character does not exist in CRDT";
@@ -266,7 +275,6 @@ void CRDT::readCRDTfromFile(QString nomeFile){
 DocOperation CRDT::localFormatChange(QTextCharFormat format, quint16 index){
     QTextCharFormat oldFormat = listChar[index].getFormat();
     this->listChar[index].setFormat(format);
-    //Mi occupo qui di segnalare al WorkerSocket dell'operazione
     DocOperation* docOp = new DocOperation(2,listChar[index],oldFormat,this->siteID,0,0);
     return *docOp;
 }

@@ -77,7 +77,8 @@ quint16 CRDT::generateIdBetween(quint16 id1, quint16 id2, quint16 strategy) {
     }
     //return floor(random()%(id2-id1))+id1;
     QRandomGenerator* rand = new QRandomGenerator();
-    return quint16( rand->bounded(difference) )+id1;
+    quint16 num = quint16( rand->bounded(id1,id2) );
+    return num;
 }
 
 
@@ -126,11 +127,11 @@ Char* CRDT::generateChar(QChar value,QTextCharFormat format,quint16 index){
     return new Char(this->siteID,this->counter++,newPos1,value,format);
 }
 
-quint16 CRDT::findInsertIndex(Char ch) {
+int CRDT::findInsertIndex(Char ch) {
     quint16 left = 0;
     quint16 right = this->listChar.size()-1;
     quint16 mid;
-    quint16 compareNum;
+    int compareNum;
 
     if((this->listChar.size()==0) || (ch.compareTo(this->listChar[left]) == -1)){
         return left;
@@ -154,10 +155,11 @@ quint16 CRDT::findInsertIndex(Char ch) {
     return ch.compareTo(this->listChar[left]) == 0 ? left : right;
 }
 
-quint16 CRDT::findIndexByPosition(Char ch) {
+int CRDT::findIndexByPosition(Char ch) {
     quint16 left = 0;
     quint16 right = this->listChar.size() - 1;
-    quint16 mid, compareNum;
+    quint16 mid;
+    int compareNum;
 
     if (this->listChar.size()==0) {
         std::cout<<"Character does not exist in CRDT";
@@ -207,18 +209,8 @@ DocOperation CRDT::localErase(quint16 index) {
 
 void CRDT::remoteInsert(Char value) {
     quint16 index = findInsertIndex(value);
-
-    std::cout <<index<<std::flush;
-
     this->listChar.insert(index,value);
-
-    std::cout <<"\ninserimento in listchar eseguito"<<std::flush;
-
     this->text.insert(index, value.getValue());
-
-    std::cout <<"\ninserimento in text eseguito\n"<<std::flush;
-
-
 }
 
 void CRDT::remoteDelete(Char value) {
@@ -274,7 +266,7 @@ DocOperation CRDT::localFormatChange(QTextCharFormat format, quint16 index){
 }
 
 void CRDT::remoteFormatChange(Char ch){
-    quint16 index = findInsertIndex(ch);
+    quint16 index = findIndexByPosition(ch);
     this->listChar[index].setFormat(ch.getFormat());
 }
 

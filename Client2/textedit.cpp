@@ -67,7 +67,6 @@
 #include <QTextCursor>
 #include <QTextDocumentWriter>
 #include <QTextList>
-#include <QtDebug>
 #include <QCloseEvent>
 #include <QMessageBox>
 #include <QMimeData>
@@ -83,6 +82,7 @@
 #endif
 #endif
 #endif
+#include <QDebug>
 
 #include "TextEdit.h"
 
@@ -112,13 +112,6 @@ TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP,quint16 siteId)
 //    offlineUsers.append(*new QUser(3, "laura"));
 
     updateTreeWidget(false);
-
-    //connetto signal e slot che mi servono
-    connect(this,&TextEdit::formatChanged,this, &TextEdit::format);
-
-
-
-
     setParent(parent);
 #ifdef Q_OS_OSX
     setUnifiedTitleAndToolBarOnMac(true);
@@ -146,6 +139,8 @@ TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP,quint16 siteId)
     fontChanged(textEdit->font());
     colorChanged(textEdit->textColor());
     alignmentChanged(textEdit->alignment());
+    defaultFmt.setFont(textEdit->font());
+    defaultFmt.setForeground(textEdit->textColor());
 
     connect(textEdit->document(), &QTextDocument::undoAvailable,
             actionUndo, &QAction::setEnabled);
@@ -158,7 +153,6 @@ TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP,quint16 siteId)
 
     /*chiusura documento*/
     QObject::connect(this, &TextEdit::SigChiudiDoc, wscP, &WorkerSocketClient::chiudiDoc);
-    QObject::connect(wscP, &WorkerSocketClient::SigEsitoChiudiDoc, this,  &TextEdit::esitoChiudiDoc);
 
     /*operazione locale sul documento*/
     QObject::connect(this, &TextEdit::SigOpDocLocale, wscP, &WorkerSocketClient::opDocLocale);
@@ -205,6 +199,11 @@ TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP,quint16 siteId)
 #endif
 }
 
+TextEdit::~TextEdit(){
+    delete this->textEdit;
+    delete this->algoritmoCRDT;
+}
+
 //Le prossime due funzioni vengono usate nel RecentDocDialog per caricare il file
 // (cioè la struttura CRDT) nell'editor. Viene fatto dentro il textEditor per non far uscire il CRDT e i cursori
 
@@ -213,13 +212,14 @@ CRDT* TextEdit::getStrutturaCRDT(){
 }
 
 void TextEdit::loadCRDTIntoEditor(CRDT crdt){
-  //this->algoritmoCRDT->setSiteID(crdt.getSiteID());
-  //algoritmoCRDT = new CRDT(doc.getSiteID(),doc.getListChar()); //salvo nel CRDT la rappresentazione del file
+  algoritmoCRDT = new CRDT(algoritmoCRDT->getSiteID(),crdt.getListChar()); //salvo nel CRDT la rappresentazione del file
   // devo andare ad aggiornare il contenuto del QTextEdit tramite l'uso di cursori sulla base di quello che c'� scritto nel CRDT
   int currentIndex = 0;
-  *this->cursor = textEdit->textCursor();
+  this->cursor = new QTextCursor(textEdit->textCursor());
   this->cursor->setPosition(currentIndex);
   auto lista = crdt.getListChar();
+  disconnect(textEdit->document(),&QTextDocument::contentsChange,
+          this, &TextEdit::CRDTInsertRemove );
   for (auto richChar = lista.cbegin(); richChar!=lista.cend(); richChar++ ){
     QString str = "";
     Char ch = *richChar;
@@ -229,6 +229,8 @@ void TextEdit::loadCRDTIntoEditor(CRDT crdt){
     //currentIndex++
     //this->cursor->setPosition(currentIndex);
   }
+  connect(textEdit->document(),&QTextDocument::contentsChange,
+          this, &TextEdit::CRDTInsertRemove );
 }
 
 
@@ -239,7 +241,6 @@ void TextEdit::closeEvent(QCloseEvent *e)
         emit(SigChiudiDoc(this->fileName));
         emit(updateRecDocs());
         parentWidget()->show();
-        e->accept();
    }
    else
        e->ignore();
@@ -570,7 +571,8 @@ void TextEdit::textItalic()
 }
 
 void TextEdit::textFamily(const QString &f)
-{QTextCharFormat fmt;
+{
+    QTextCharFormat fmt;
     disconnect(textEdit->document(),&QTextDocument::contentsChange,this, &TextEdit::CRDTInsertRemove);
     fmt.setFontFamily(f);
     mergeFormatOnWordOrSelection(fmt);
@@ -756,9 +758,18 @@ void TextEdit::clipboardDataChanged()
 void TextEdit::mergeFormatOnWordOrSelection(const QTextCharFormat &format)
 {
     QTextCursor cursor = textEdit->textCursor();
+
     if (!cursor.hasSelection())
         cursor.select(QTextCursor::WordUnderCursor);
+
     cursor.mergeCharFormat(format);
+
+    //Comunico al CRDT il cambio di formato
+    int posCursor = cursor.position();
+    int posAnchor = cursor.anchor();
+    int changed = abs(cursor.anchor() - cursor.position());
+    comunicaCRDTCambioFormat(format,posCursor<posAnchor ? posCursor:posAnchor,changed,algoritmoCRDT);
+
     textEdit->mergeCurrentCharFormat(format);
 }
 
@@ -796,30 +807,32 @@ void TextEdit::comunicaCRDTInserimentoLocale(QTextEdit* txe,QTextCursor* cursor,
     auto inserted = txe->document()->toPlainText().mid(pos,numInserted);
     cursor->setPosition(pos,QTextCursor::MoveAnchor);
     for (int i=0;i<numInserted;i++){
-        QTextCharFormat format = cursor->charFormat();
+        QTextCharFormat format = textEdit->currentCharFormat();
+        if (format.isEmpty()){
+            format = defaultFmt;
+        }else{
+            if(format.fontFamily().isEmpty())
+                format.setFontFamily(defaultFmt.fontFamily());
+            if(format.fontPointSize()<=0)
+                format.setFontPointSize(defaultFmt.fontPointSize());
+        }
         if (colorWriting){
             format.setForeground(QBrush(QColor("black")));
         }
         QChar ch = inserted[i];
-        std::cout<<"Comunico al CRDT inserimento del carattere: "<<ch.toLatin1()<<" all'indice locale: "<<pos+i<<"\n"<<std::flush;
         DocOperation docOp = algCRDT->localInsert(ch,format,pos+i);
-        std::cout<<algCRDT->text.toStdString()<<"\n"<<std::flush;
         emit SigOpDocLocale(docOp);
     }
 }
 
 void TextEdit::comunicaCRDTRimozioneLocale(int pos, int numRemoved,CRDT* algCRDT){
     for(int i=0;i<numRemoved;i++){
-        std::cout<<"Comunico al CRDT rimozione all'indice: "<<pos<<"\n"<<std::flush;
         DocOperation docOp = algCRDT->localErase(pos);
-        std::cout<<algCRDT->text.toStdString()<<"\n"<<std::flush;
         emit SigOpDocLocale(docOp);
     }
 }
 
-void TextEdit::comunicaCRDTCambioFormat(QTextCursor* cursor, int pos, int numCar,CRDT* algCRDT){
-    auto format = cursor->charFormat();
-    std::cout<<"Comunico al CRDT la modifica del format di "<<numCar<<" a partire dall'indice "<<pos<<"\n"<<std::flush;
+void TextEdit::comunicaCRDTCambioFormat(QTextCharFormat format, int pos, int numCar,CRDT* algCRDT){
     if (colorWriting){
         format.setForeground(QBrush(QColor("black")));
     }
@@ -830,7 +843,6 @@ void TextEdit::comunicaCRDTCambioFormat(QTextCursor* cursor, int pos, int numCar
 }
 
 void TextEdit::CRDTInsertRemove(int pos, int rem, int add){
-    std::cerr << "removed: "<<rem <<" added: "<<add<<" pos: "<<pos<< "\n";
     QTextCursor cursor = textEdit->textCursor();
     if(rem==0 && add>0){
         //AGGIUNTA DI UNO O PIU' CARATTERI
@@ -870,12 +882,11 @@ void TextEdit::CRDTInsertRemove(int pos, int rem, int add){
 }
 
 void TextEdit::format(const QTextCharFormat &format){
-    std::cerr<<"Arrivato segnale di modifica del formato!\n"<<std::flush;
-    QTextCursor cursor = textEdit->textCursor();
+    /*QTextCursor cursor = textEdit->textCursor();
     int posCursor = cursor.position();
     int posAnchor = cursor.anchor();
     int changed = abs(cursor.anchor() - cursor.position());
-    comunicaCRDTCambioFormat(&cursor,posCursor<posAnchor ? posCursor:posAnchor,changed,algoritmoCRDT);
+    comunicaCRDTCambioFormat(&cursor,posCursor<posAnchor ? posCursor:posAnchor,changed,algoritmoCRDT);*/
 }
 
 int TextEdit::isSuccess(QString esito){
@@ -889,8 +900,7 @@ int TextEdit::isSuccess(QString esito){
 
 
 void TextEdit::esitoOpDocLocale(QString esito, DocOperation operation){
-  qDebug()<<"esito_textedit: "<<esito<<"\n";
-  if(!isSuccess(esito)){
+    if(!isSuccess(esito)){
     //in caso di esito negativo devo fare UNDO dell'operazione
     std::cout << "Operazione non andata a buon fine\n" << std::flush;
     switch(operation.type){
@@ -942,17 +952,31 @@ void TextEdit::opDocRemota(DocOperation operation){
            operation.character.setFormat(coloredFormat);
        }
       quint16 index = algoritmoCRDT->remoteInsert(operation.character);
-      QTextCursor cursor = cursorMap->find(operation.siteId).value();
+
+      //Operazioni su textedit disconnettendo il segnale di contents changed
+      disconnect(textEdit->document(),&QTextDocument::contentsChange,
+              this, &TextEdit::CRDTInsertRemove );
+      QTextCursor cursor = textEdit->textCursor();
       cursor.setPosition(index);
       cursor.insertText(operation.character.getValue());
+      //Riconnetto segnale di contentsChanged
+      connect(textEdit->document(),&QTextDocument::contentsChange,
+              this, &TextEdit::CRDTInsertRemove );
+
       break;
     }
     case remoteDelete:
     {
       quint16 index =algoritmoCRDT->remoteDelete(operation.character);
-      QTextCursor cursor = cursorMap->find(operation.siteId).value();
+      //Operazioni su textedit disconnettendo il segnale di contents changed
+      disconnect(textEdit->document(),&QTextDocument::contentsChange,
+              this, &TextEdit::CRDTInsertRemove );
+      QTextCursor cursor = textEdit->textCursor();
       cursor.setPosition(index);
       cursor.deleteChar();
+      //Riconnetto segnale di contentsChanged
+      connect(textEdit->document(),&QTextDocument::contentsChange,
+              this, &TextEdit::CRDTInsertRemove );
       break;
    }
     case changedFormat:
@@ -1084,22 +1108,6 @@ void TextEdit::pressedButtonTrigger(bool checked){
         quittingColorMode();
     }
 }
-
-
-void TextEdit::esitoChiudiDoc(QString esito){
-  //Per ora stampo solo l'esito ricevuto dal server
-  //Per evitare la chiusura del file nel caso in cui si ricevesse un esito negativo devo mantenere l'informazione riguardante
-  //il QCloseEvent scatenante il messaggio di chiusura
-  std::cout << esito.toStdString()<< "\n" << std::flush;
-  if (isSuccess(esito)){
-     textEdit->close();
-  }
-  else
-      //Qui dovrebbe apparire una finestra in cui si indica l'errore, per far sapere all'utente che qualcosa è andato storto
-      std::cout << "Non ho chiuso il documento perchè il server ha risposto esito negativo\n"<<std::flush;
-}
-
-
 
 //***********************************
 //

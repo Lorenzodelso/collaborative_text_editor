@@ -55,8 +55,8 @@ protected:
     QVector<quint16> generatePosBetween(QVector<quint16> pos1, QVector<quint16> pos2,QVector<quint16>& newPos,quint16 level);
     quint16 generateIdBetween(quint16 id1, quint16 id2, quint16 strategy);
     quint16 retrieveStrategy(quint16 level);
-    quint16 findInsertIndex(Char ch);
-    quint16 findIndexByPosition(Char ch);
+    int findInsertIndex(Char ch);
+    int findIndexByPosition(Char ch);
 
 
 };

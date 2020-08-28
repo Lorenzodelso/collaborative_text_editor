@@ -48,7 +48,7 @@ QChar Char::getValue() {
 }
 
 void Char::setFormat(QTextCharFormat format){
-    this->format = format;
+    this->format.merge(format);
 }
 
 QTextCharFormat Char::getFormat(){

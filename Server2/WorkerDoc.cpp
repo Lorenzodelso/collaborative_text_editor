@@ -29,7 +29,7 @@ void WorkerDoc::workerDocCreaDoc(QString nomeFile, WorkerSocket* wsP){
     else{
         esito="Success";
         openedFile = &newFile;
-        numClients = 0; //ancora nessun client connesso, viene solo richiesto di creare il file
+        numClients = 1; //ancora nessun client connesso, viene solo richiesto di creare il file
         this->nomeFile = nomeFile;
     }
     emit SigEsitoCreaDoc(esito,*crdt /* passo il CRDT come copia, quindi non il puntatore*/);
@@ -57,7 +57,8 @@ void WorkerDoc::workerDocPrimaAperturaDoc(QString nomeFile, WorkerSocket* wsP){
     else{
         esito="Success";
         fileStream >> *crdt; //deserializzo il CRDT interno al file
-        numClients++;
+        this->nomeFile = nomeFile;
+        numClients = 1;
     }
     emit SigEsitoApriDoc(esito,*crdt /* passo il CRDT come copia, quindi non il puntatore*/);
     QObject::disconnect(this, &WorkerDoc::SigEsitoApriDoc, wsP, &WorkerSocket::rispondiEsitoApriDoc);
@@ -101,23 +102,12 @@ void WorkerDoc::unClientHaChiusoIlDoc(){
 }
 
 void WorkerDoc::opDoc(DocOperation docOp){
-
-    //selezione dell'operazione da fare sul documento: per ora solo remote insert o delete
-    std::cout <<"Ricevuto segnale di operazione...\n"<<std::flush;
-    std::cout <<docOp.type<<std::flush;
-
-    //openedFile->open(QIODevice::ReadWrite);
-
     QFile* file=new QFile(this->nomeFile);
     file->open(QIODevice::ReadWrite);
     this->openedFile=file;
 
     // salvataggio su file del crdt ogni operazione che si effettua su di esso
     QDataStream outStream(this->openedFile);
-
-    std::cout <<this->nomeFile.toStdString()<<std::flush;
-
-
     switch(docOp.type){
         case remoteDelete:
             this->crdt->remoteDelete(docOp.character);
@@ -125,20 +115,19 @@ void WorkerDoc::opDoc(DocOperation docOp){
             break;
         case remoteInsert:
             this->crdt->remoteInsert(docOp.character);
-
             outStream << *crdt;
-
-            std::cout <<"inserimento terminato\n"<<std::flush;
-
+            break;
+        case changedFormat:
+            this->crdt->remoteFormatChange(docOp.character);
+            outStream << *crdt;
             break;
         case cursorMoved:
             //Aggiorno la mappa dei cursori
             QTextCursor* cursor = new QTextCursor();
             cursor->setPosition(docOp.cursorPos,QTextCursor::MoveAnchor);
             cursorMap->find(docOp.siteId).value() = *cursor;
+            break;
     }
-
-    std::cout <<"Invio segnale di esito operazione...\n"<<std::flush;
     file->close();
     emit SigEsitoOpDoc("Success",docOp);
 }

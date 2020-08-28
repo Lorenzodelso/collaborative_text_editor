@@ -98,6 +98,7 @@ public:
 public:
 
      void setCurrentFileName(const QString &fileName);
+     ~TextEdit();
 
     signals:
         void formatChanged(const QTextCharFormat &format);
@@ -187,12 +188,6 @@ private slots:
     //slot che riceve segnale premuto bottone di Color Mode
     void pressedButtonTrigger(bool checked);
 
-    /*
-    * fa la cosa opportuna sulla base dell'esito ricevuto
-    * */
-    void esitoChiudiDoc(QString esito/*esito*/);
-
-
 private:
     void setupFileActions();
     void setupEditActions();
@@ -209,7 +204,7 @@ private:
 	
 	void comunicaCRDTInserimentoLocale(QTextEdit* txe,QTextCursor* cursor, int pos, int numInserted,CRDT* algCRDT);
     void comunicaCRDTRimozioneLocale(int pos, int numRemoved,CRDT* algCRDT);
-    void comunicaCRDTCambioFormat(QTextCursor* cursor, int pos, int numCar,CRDT* algCRDT);
+    void comunicaCRDTCambioFormat(QTextCharFormat format, int pos, int numCar,CRDT* algCRDT);
 
     //entrata e uscita dalla color mode
     void enteringColorMode();
@@ -258,6 +253,9 @@ private:
 
     //modalità scrittura a colori
     bool colorWriting;
+
+    //Default format
+    QTextCharFormat defaultFmt;
 
     WorkerSocketClient *wscP;
 

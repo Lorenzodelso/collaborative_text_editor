@@ -89,8 +89,9 @@ void Server::apriDoc(QString nomeFile , WorkerSocket* wsP, QUtente user){
             WorkerDoc *wdP =documents.value(nomeFile) ;
 
             userEdits.insert(user.getUserId(),wdP);
-            QList<QString> l=userEdited.value(user.getUserId());
-            l.push_back(nomeFile);
+            if(!userEdited[user.getUserId()].contains(nomeFile)){
+                userEdited[user.getUserId()].push_back(nomeFile);
+            }
 
             /*
              * questa connect mi serve solo ora perchè è da this al WorkerDoc
@@ -160,9 +161,10 @@ void Server::apriDoc(QString nomeFile , WorkerSocket* wsP, QUtente user){
             documents.insert(nomeFile, wdP);
             userEdits.insert(user.getUserId(),wdP);
             threadsDoc.insert(wdP,tP);
+            if(!userEdited[user.getUserId()].contains(nomeFile)){
+                userEdited[user.getUserId()].push_back(nomeFile);
+            }
 
-            QList<QString> l=userEdited.value(user.getUserId());
-            l.push_back(nomeFile);
 
             /*
              * questa connect mi serve solo ora perchè è da this al WorkerDoc
@@ -220,9 +222,10 @@ void Server::creaDoc(QString nomeFile , WorkerSocket* wsP, QUtente user) {
         documents.insert(nomeFile, wdP);
         userEdits.insert(user.getUserId(),wdP);
         threadsDoc.insert(wdP,tP);
+        if(!userEdited[user.getUserId()].contains(nomeFile)){
+            userEdited[user.getUserId()].push_back(nomeFile);
+        }
 
-        QList<QString> l=userEdited.value(user.getUserId());
-        l.push_back(nomeFile);
 
         /*
      * questa connect mi serve solo ora perchè è da this al WorkerDoc
@@ -376,7 +379,7 @@ void Server::registrazione(WorkerSocket* wsP, QUtente user) {
             currUserId++;
 
 
-            //QString estensioneImg = user.getNomeImg().split('.', QString::SkipEmptyParts)[1];
+            QString estensioneImg = user.getNomeImg().split('.', QString::SkipEmptyParts)[1];
 
             QUtenteServer userServerSide;
 
@@ -384,8 +387,7 @@ void Server::registrazione(WorkerSocket* wsP, QUtente user) {
             userServerSide.setUsername(user.getUsername());
             userServerSide.setPassword(user.getPassword());
             userServerSide.setSalt("salt");
-            //userServerSide.setNomeImg(QString::number(user.getUserId()).append(estensioneImg));
-            userServerSide.setNomeImg("DetoSalato");
+            userServerSide.setNomeImg(QString::number(user.getUserId()).append('.').append(estensioneImg));
 
             users.insert(currUserId, userServerSide);
 
@@ -565,11 +567,11 @@ void Server::chiusuraDocumentoDaParteDelClient(WorkerSocket* wsP, QUtente user){
 void Server::nessunClientStaEditando(QString nomeFile) {
 
     QThread* qtdP = threadsDoc.value(documents.value(nomeFile));
-    documents.remove(nomeFile);
     qtdP->quit();
     qtdP->wait();
     delete qtdP;
     threadsDoc.remove(documents.value(nomeFile));
+    documents.remove(nomeFile);
 
 }
 
