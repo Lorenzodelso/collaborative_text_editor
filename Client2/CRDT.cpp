@@ -54,8 +54,12 @@ quint16 CRDT::retrieveStrategy(quint16 level) {
     quint16 returnStrategy;
     switch (this->strategy){
         case RANDOM_STRATEGY:
-            returnStrategy = round(std::rand())==0 ? PLUS_STRATEGY : MINUS_STRATEGY;
+        {
+            QRandomGenerator* rand = new QRandomGenerator();
+            quint16 num = quint16( rand->bounded(0,1) );
+            returnStrategy = num==0 ? PLUS_STRATEGY : MINUS_STRATEGY;
             break;
+        }
         default:
             returnStrategy = this->strategy;
             break;
@@ -88,12 +92,12 @@ QVector<quint16> CRDT::generatePosBetween(QVector<quint16> pos1, QVector<quint16
     quint16 id2;
     auto base = pow(2, level)*this->base;
 
-    if (pos1.size()!=0) {
+    if (!pos1.isEmpty()) {
         id1 = pos1[0];
     }else{
         id1 = 0;
     }
-    if (pos2.size()!=0) {
+    if (!pos2.isEmpty()) {
         id2 = pos2[0];
     }else{
         id2 = base;
@@ -106,21 +110,14 @@ QVector<quint16> CRDT::generatePosBetween(QVector<quint16> pos1, QVector<quint16
         return newPos;
     } else if (difference == 1){
         newPos.push_back(id1);
-        pos1.remove(0);
+        pos1.pop_front();
         pos2.clear();
         return this->generatePosBetween(pos1, pos2, newPos,level+1);
     }else if(difference == 0){
-        if(id1 < id2){
-            newPos.push_back(id1);
-            pos1.remove(0);
-            pos2.clear();
-            return this->generatePosBetween(pos1, pos2, newPos,level+1);
-        }else if (id1 == id2){
-            newPos.push_back(id1);
-            pos1.remove(0);
-            pos2.remove(0);
-            return this->generatePosBetween(pos1,pos2,newPos,level+1);
-        }
+        newPos.push_back(id1);
+        pos1.pop_front();
+        pos2.pop_front();
+        return this->generatePosBetween(pos1, pos2, newPos,level+1);
     }
 }
 
@@ -279,9 +276,10 @@ DocOperation CRDT::localFormatChange(QTextCharFormat format, quint16 index){
     return *docOp;
 }
 
-void CRDT::remoteFormatChange(Char ch){
+quint16 CRDT::remoteFormatChange(Char ch){
     quint16 index = findInsertIndex(ch);
     this->listChar[index].setFormat(ch.getFormat());
+    return index;
 }
 
 

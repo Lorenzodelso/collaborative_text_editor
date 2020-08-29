@@ -42,7 +42,7 @@ public:
     DocOperation localFormatChange(QTextCharFormat format, quint16 index);
     quint16 remoteInsert(Char value);
     quint16 remoteDelete(Char value);
-    void remoteFormatChange(Char ch);
+    quint16 remoteFormatChange(Char ch);
     friend QDataStream& operator<<(QDataStream& out,const CRDT& crdt);
     friend QDataStream& operator>>(QDataStream& in, CRDT& crdt);
     void saveCRDTonFile(QString nomeFile);

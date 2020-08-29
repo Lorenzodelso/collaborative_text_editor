@@ -975,14 +975,24 @@ void TextEdit::opDocRemota(DocOperation operation){
       break;
    }
     case changedFormat:
+   {
        if (colorWriting == true){
            auto colors = QColor::colorNames();
            QTextCharFormat coloredFormat(operation.character.getFormat());
            coloredFormat.setForeground(QBrush(QColor(colors[operation.character.getSiteId()])));
            operation.character.setFormat(coloredFormat);
        }
-      algoritmoCRDT->remoteFormatChange(operation.character);
+      quint16 index = algoritmoCRDT->remoteFormatChange(operation.character);
+      disconnect(textEdit->document(),&QTextDocument::contentsChange,
+                     this, &TextEdit::CRDTInsertRemove );
+      QTextCursor cursor = textEdit->textCursor();
+      cursor.setPosition(index);
+      cursor.setPosition(index+1,QTextCursor::KeepAnchor);
+      cursor.mergeCharFormat(operation.character.getFormat());
+      connect(textEdit->document(),&QTextDocument::contentsChange,
+                     this, &TextEdit::CRDTInsertRemove );
       break;
+   }
    case cursorMoved:
        //Il QTextCursor si posiziona sempre in mezzo a due caratteri
        //Supponiamo quindi che per gestire la visualizzazione del cursore, il carattere '|' si posiziona sempre prima del cursore
@@ -999,7 +1009,6 @@ void TextEdit::opDocRemota(DocOperation operation){
        formatoCursoreColore->setForeground(QBrush(QColor(colors[operation.siteId])));
        cursor.setPosition(operation.cursorPos, QTextCursor::MoveAnchor);
        cursor.insertText("|",*formatoCursoreColore);
-
        //Aggiorno mappa siteId - cursore
        cursorMap->find(operation.siteId).value() = cursor;
        break;
