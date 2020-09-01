@@ -412,7 +412,12 @@ void Server::registrazione(WorkerSocket* wsP, QUtente user) {
                 std::cerr << "Non sono riuscito ad aprire il file 'utenti.txt'" <<std::flush;
             }
             QTextStream out(&file);
-            out << currUserId << ' ' << userServerSide.getUsername() << ' ' << userServerSide.getPassword() << ' ' << userServerSide.getSalt()<<' '<< userServerSide.getNomeImg() << '\n';
+            if(userServerSide.getNomeImg() == nullptr){
+                out << currUserId << ' ' << userServerSide.getUsername() << ' ' << userServerSide.getPassword() << ' ' << userServerSide.getSalt()<<' '<< "NULL" << '\n';
+
+            }else{
+                out << currUserId << ' ' << userServerSide.getUsername() << ' ' << userServerSide.getPassword() << ' ' << userServerSide.getSalt()<<' '<< userServerSide.getNomeImg() << '\n';
+            }
             file.close();
 
             /*se non trova la chiave detta crea un value di default ovvero una lista senza elementi all'interno*/

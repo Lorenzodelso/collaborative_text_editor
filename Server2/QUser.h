@@ -32,5 +32,3 @@ public:
 
 Q_DECLARE_METATYPE(QUser);
 #endif //PDS1_QUSER_H
-
-
