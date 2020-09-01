@@ -14,6 +14,7 @@ EditProfile::EditProfile(QWidget *parent, WorkerSocketClient* wscP, QUtente* ute
 {
     setParent(parent);
     setWindowTitle("User Profile editor");
+    recDocsUtente = utente;
     username = new QLabel(tr("&Username: "));
     utenteLocale = new QUtente(*utente);
     this->wscP = wscP;
@@ -207,9 +208,10 @@ void EditProfile::esitoModificaProfiloUtente(QString esito/*esito*/, QUtente use
         msgBox.exec();
         return;
     }else{
-        utenteLocale->setUserId(userNew.getUserId());
-        utenteLocale->setUsername(userNew.getUsername());
-        utenteLocale->setNickName(userNew.getNickName());
+        recDocsUtente->setUserId(userNew.getUserId());
+        recDocsUtente->setUsername(userNew.getUsername());
+        recDocsUtente->setNickName(userNew.getNickName());
+        recDocsUtente->setNomeImg(userNew.getNomeImg());
         close();
     }
 

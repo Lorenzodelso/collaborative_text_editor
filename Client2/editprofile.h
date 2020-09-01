@@ -64,6 +64,7 @@ private:
     QPushButton *discard;
     WorkerSocketClient* wscP;
     QUtente *utenteLocale;
+    QUtente *recDocsUtente;
 
 };
 
