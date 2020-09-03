@@ -40,8 +40,9 @@ NewProfileDialog::NewProfileDialog(QWidget *parent, WorkerSocketClient* wscP)
     profilePic = new QPixmap();
     profilePic->load(rsrc+"/colored-edit-profile.png");
     userPic->setPixmap(*profilePic);
-
-    err = new QLabel("");
+    userErr = new QLabel("");
+    passErr = new QLabel("");
+    nickErr = new QLabel("");
 
     QDialogButtonBox *buttonBox = new QDialogButtonBox();
     buttonBox->addButton(registerUser, QDialogButtonBox::ActionRole);
@@ -53,6 +54,8 @@ NewProfileDialog::NewProfileDialog(QWidget *parent, WorkerSocketClient* wscP)
     connect(registerUser, &QPushButton::clicked, this, &NewProfileDialog::registerPressed);
     connect(abort, &QPushButton::clicked, this, &NewProfileDialog::abortPressed);
     connect(passEdit, &QLineEdit::textEdited, this, &NewProfileDialog::comparePasswords);
+    connect(userEdit, &QLineEdit::textEdited, this, &NewProfileDialog::userWhitespaces);
+    connect(nickEdit, &QLineEdit::textEdited, this, &NewProfileDialog::nickWhitespaces);
     connect(repPassEdit, &QLineEdit::textEdited, this, &NewProfileDialog::comparePasswords);
     connect(userPic, &ClickableLabel::hovered, this, &NewProfileDialog::imageHovered);
     connect(userPic, &ClickableLabel::unHovered, this, &NewProfileDialog::imageUnhovered);
@@ -66,19 +69,20 @@ NewProfileDialog::NewProfileDialog(QWidget *parent, WorkerSocketClient* wscP)
     layout->setAlignment(userPic, Qt::AlignCenter);
     layout->addSpacing(15);
     formLayout->addRow(username, userEdit);
-    formLayout->setSpacing(15);
+    formLayout->addRow(userErr);
+    formLayout->setSpacing(5);
     formLayout->addRow(nickname, nickEdit);
-    formLayout->setSpacing(15);
+    formLayout->addRow(nickErr);
+    formLayout->setSpacing(5);
     formLayout->addRow(password, passEdit);
-    formLayout->setSpacing(15);
+    formLayout->setSpacing(5);
     formLayout->addRow(repeatPassword, repPassEdit);
+    formLayout->addRow(passErr);
     layout->addItem(formLayout);
     layout->addSpacing(5);
-    layout->addWidget(err);
-    layout->setSpacing(10);
     layout->addWidget(buttonBox);
     setLayout(layout);
-    setFixedSize(sizeHint());
+    setFixedSize(300,450);
     utente = new QUtente(0,"","","","");
 
 //    //**********************************************************
@@ -103,6 +107,43 @@ void NewProfileDialog::abortPressed(){
     close();
 }
 
+void NewProfileDialog::userWhitespaces(){
+    QString tempUsername = userEdit->text();
+    if(checkString(tempUsername)){
+        userErr->setText("");
+        this->repaint();
+        userFlag = 1;
+    }else{
+        userErr->setText("Username must contain no whitespaces");
+        userErr->setStyleSheet("QLabel {color: #FF0000}");
+        this->repaint();
+        userFlag = 0;
+        registerUser->setEnabled(false);
+    }
+
+    if(userFlag == 1 && passFlag == 1 && nickFlag == 1)
+        registerUser->setEnabled(true);
+}
+
+void NewProfileDialog::nickWhitespaces(){
+    QString tempNick = nickEdit->text();
+    if(checkString(tempNick)){
+        nickErr->setText("");
+        this->repaint();
+        nickFlag = 1;
+    }else{
+        nickErr->setText("Nickname must contain no whitespaces");
+        nickErr->setStyleSheet("QLabel {color: #FF0000}");
+        this->repaint();
+        nickFlag = 0;
+        registerUser->setEnabled(false);
+    }
+
+    if(userFlag == 1 && passFlag == 1 && nickFlag == 1)
+        registerUser->setEnabled(true);
+
+}
+
 
 //*********************************************************************
 //
@@ -121,8 +162,8 @@ void NewProfileDialog::registerPressed(){
         utente->setNomeImg(nullptr);
 
     if(user.isNull() || user.isEmpty()){
-        err->setText("Username cannot be empty");
-        err->setStyleSheet("QLabel {color: #FF0000}");
+        userErr->setText("Username cannot be empty");
+        userErr->setStyleSheet("QLabel {color: #FF0000}");
         return;
     }else{
         utente->setUserId(0);
@@ -151,15 +192,24 @@ void NewProfileDialog::comparePasswords(){
         return;
     else{
         if(pass.compare(repPass)!= 0){
-            err->setText("Passwords must match");
-            err->setStyleSheet("QLabel {color: #FF0000}");
+            passErr->setText("Passwords must match");
+            passErr->setStyleSheet("QLabel {color: #FF0000}");
+            registerUser->setEnabled(false);
+            passFlag = 0;
             this->repaint();
         }
         else{
-            err->setText("");
+            passErr->setText("");
             this->repaint();
-            registerUser->setEnabled(true);
+            passFlag = 1;
         }
+        if(!checkString(pass) || !checkString(repPass)){
+            passErr->setText("Password cannot contain whitespaces");
+            passErr->setStyleSheet("QLabel {color: #FF0000}");
+          }
+
+        if(passFlag == 1 && nickFlag == 1 && userFlag == 1 && checkString(pass) && checkString(repPass))
+            registerUser->setEnabled(true);
     }
 
 }
@@ -249,5 +299,16 @@ void NewProfileDialog::esitoRegistrazione(QString esito/*esito*/){
 
     }
 
+}
+
+bool NewProfileDialog::checkString(QString arg){
+    auto it = arg.begin();
+    while(it != arg.end()){
+        if(it->isSpace())
+            return false;
+        it++;
+    }
+
+    return true;
 }
 

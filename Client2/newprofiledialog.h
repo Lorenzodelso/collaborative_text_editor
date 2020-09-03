@@ -25,6 +25,7 @@ class NewProfileDialog:public QDialog
     Q_OBJECT
 public:
     NewProfileDialog(QWidget *parent, WorkerSocketClient* wscP);
+    bool checkString (QString arg);
 
 signals:
     void SigRegistrazione(const QUtente user);
@@ -36,6 +37,8 @@ public slots:
     void imageHovered();
     void imageUnhovered();
     void selectImagePressed();
+    void userWhitespaces();
+    void nickWhitespaces();
 
    /*
     * fa la cosa opportuna sulla base dell'esito ricevuto
@@ -66,8 +69,11 @@ private:
     QLineEdit *passEdit;
     QLineEdit *repPassEdit;
     QLineEdit *nickEdit;
-    QLabel *err;
+    QLabel *userErr;
+    QLabel *nickErr;
+    QLabel *passErr;
     RecentDocsDialogs *docsDialog;
+    int userFlag = 0, passFlag = 0, nickFlag = 0;
 };
 
 #endif // NEWPROFILEDIALOG_H

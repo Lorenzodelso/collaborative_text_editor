@@ -14,27 +14,36 @@ EditProfile::EditProfile(QWidget *parent, WorkerSocketClient* wscP, QUtente* ute
 {
     setParent(parent);
     setWindowTitle("User Profile editor");
+    setWindowFlag(Qt::Window);
     recDocsUtente = utente;
     username = new QLabel(tr("&Username: "));
     utenteLocale = new QUtente(*utente);
     this->wscP = wscP;
     usernameEdit = new QLineEdit();
-    //usernameEdit->setEnabled(false);
     nickname = new QLabel(tr("&Nickname: "));
     nickEdit = new QLineEdit();
+    newPass = new QLabel(tr("New Password"));
+    newPassEdit = new QLineEdit();
+    newPassEdit->setEchoMode(QLineEdit::Password);
+    newRepPass = new QLabel(tr("Repeat New Password"));
+    newRepPassEdit = new QLineEdit();
+    newRepPassEdit->setEchoMode(QLineEdit::Password);
     userPic = new ClickableLabel();
     userPic->setBackgroundRole(QPalette::Dark);
     userPic->setScaledContents(false);
     profilePic = new QPixmap();
-
+    userErr = new QLabel("");
+    nickErr = new QLabel("");
+    passErr = new QLabel("");
     userPic->setPixmap(*profilePic);
     username->setBuddy(usernameEdit);
     nickname->setBuddy(nickEdit);
-    setGeometry(575,300,400,200);
+    newPass->setBuddy(newPassEdit);
+    newRepPass->setBuddy(newRepPassEdit);
 
 
         usernameEdit->setText(utente->getUsername());
-        usernameEdit->setEnabled(false);
+        usernameEdit->setEnabled(true);
 
         if(!utente->getNickName().isEmpty()){
             nickEdit->setText(utente->getNickName());
@@ -57,27 +66,39 @@ EditProfile::EditProfile(QWidget *parent, WorkerSocketClient* wscP, QUtente* ute
     QDialogButtonBox *buttonBox = new QDialogButtonBox(Qt::Horizontal);
     buttonBox->addButton(save, QDialogButtonBox::ApplyRole);
     buttonBox->addButton(discard, QDialogButtonBox::RejectRole);
-    //setModal(true);
     QVBoxLayout *layout = new QVBoxLayout();
+    userPic->setFixedHeight(200);
     layout->addWidget(userPic);
-    layout->setAlignment(userPic,Qt::AlignCenter);
-    layout->setSpacing(15);
+    layout->setAlignment(userPic, Qt::AlignCenter);
+    layout->addSpacing(15);
     QFormLayout *formLayout = new QFormLayout();
     formLayout->addRow(username, usernameEdit);
+    formLayout->addRow(userErr);
+    formLayout->setSpacing(5);
     formLayout->addRow(nickname, nickEdit);
-    layout->addLayout(formLayout);
+    formLayout->addRow(nickErr);
+    formLayout->setSpacing(5);
+    formLayout->addRow(newPass, newPassEdit);
+    formLayout->setSpacing(5);
+    formLayout->addRow(newRepPass, newRepPassEdit);
+    formLayout->addRow(passErr);
+    layout->addItem(formLayout);
+    layout->addSpacing(5);
     layout->addWidget(buttonBox);
     layout->setAlignment(buttonBox, Qt::AlignCenter);
     setLayout(layout);
-    setMinimumSize(200, 300);
+    setFixedSize(300,450);
+
 
     connect(discard, &QPushButton::clicked, this, &EditProfile::discardPressed);
     connect(save, &QPushButton::clicked, this, &EditProfile::savePressed);
     connect(userPic, &ClickableLabel::clicked, this, &EditProfile::selectImagePressed);
-    connect(nickEdit, &QLineEdit::textEdited, this, &EditProfile::changedNick);
-    connect(usernameEdit, &QLineEdit::textEdited, this, &EditProfile::changedUsername);
     connect(userPic, &ClickableLabel::hovered, this, &EditProfile::imageHovered);
     connect(userPic, &ClickableLabel::unHovered, this, &EditProfile::imageUnhovered);
+    connect(newPassEdit, &QLineEdit::textEdited, this, &EditProfile::comparePasswords);
+    connect(usernameEdit, &QLineEdit::textEdited, this, &EditProfile::userWhitespaces);
+    connect(nickEdit, &QLineEdit::textEdited, this, &EditProfile::nickWhitespaces);
+    connect(newRepPassEdit, &QLineEdit::textEdited, this, &EditProfile::comparePasswords);
 
     /*modifica profilo utente*/
     QObject::connect(this, &EditProfile::SigModificaProfiloUtente, wscP, &WorkerSocketClient::modificaProfiloUtente);
@@ -92,30 +113,73 @@ EditProfile::EditProfile(QWidget *parent, WorkerSocketClient* wscP, QUtente* ute
 
 }
 
-
-//*********************************************************************
+//**************************************************
 //
-//Questo slot modifica il campo nickName dell'oggetto "QUtente"
-//ogni qualvolta il lineEdit corrispondete viene modificato
+//Checks whether the username has spaces in it.
+//If it doesn't, the flag is set to 1 and saves
+//the new value in a local QUtente. If all
+//the other flags are set to 1, it enables the
+//save button
 //
-//*********************************************************************
-void EditProfile::changedNick(const QString &){
+//**************************************************
 
-   QString nick = nickEdit ->text();
-   nickEdit->setStyleSheet("QLineEdit {color: #000000;}");
-   if(!nick.isEmpty()){
-       utenteLocale->setNickName(nick);
+void EditProfile::userWhitespaces(){
+    QString tempUsername = usernameEdit->text();
+    if(tempUsername.isEmpty() || tempUsername.isNull()){
+        userErr->setText("Username cannot be empty");
+        userErr->setStyleSheet("QLabel {color: #FF0000}");
+        save->setEnabled(false);
+        userFlag = 0;
+        return;
     }
+    if(checkString(tempUsername)){
+        userErr->setText("");
+        utenteLocale->setUsername(tempUsername);
+        this->repaint();
+        userFlag = 1;
+    }else{
+        userErr->setText("Username must contain no whitespaces");
+        userErr->setStyleSheet("QLabel {color: #FF0000}");
+        this->repaint();
+        save->setEnabled(false);
+        userFlag = 0;
+    }
+
+    if(userFlag == 1 && passFlag == 1 && nickFlag == 1)
+        save->setEnabled(true);
 }
 
-void EditProfile::changedUsername(const QString &){
+//**************************************************
+//
+//Checks whether the nickname has spaces in it.
+//If it doesn't, the flag is set to 1 and saves
+//the new value in a local QUtente. If all
+//the other flags are set to 1, it enables the
+//save button
+//
+//**************************************************
 
-   QString username = usernameEdit ->text();
-   usernameEdit->setStyleSheet("QLineEdit {color: #000000;}");
-   if(!username.isEmpty()){
-       utenteLocale->setUsername(username);
+void EditProfile::nickWhitespaces(){
+    QString tempNick = nickEdit->text();
+    if(checkString(tempNick)){
+        nickErr->setText("");
+        utenteLocale->setNickName(tempNick);
+        this->repaint();
+        nickFlag = 1;
+
+    }else{
+        nickErr->setText("Nickname must contain no whitespaces");
+        nickErr->setStyleSheet("QLabel {color: #FF0000}");
+        this->repaint();
+        nickFlag = 0;
+        save->setEnabled(false);
     }
+
+    if(userFlag == 1 && passFlag == 1 && nickFlag == 1)
+        save->setEnabled(true);
+
 }
+
 
 //*********************************************************************
 //
@@ -123,6 +187,11 @@ void EditProfile::changedUsername(const QString &){
 //
 //*********************************************************************
 void EditProfile::savePressed(){
+
+    if(nickEdit->text().isEmpty() || nickEdit->text().isNull())
+        utenteLocale->setNickName(recDocsUtente->getNickName());
+    if(newPassEdit->text().isEmpty() || newPassEdit->text().isNull())
+        utenteLocale->setPassword(recDocsUtente->getPassword());
 
     emit(SigModificaProfiloUtente(*utenteLocale));
 }
@@ -212,8 +281,63 @@ void EditProfile::esitoModificaProfiloUtente(QString esito/*esito*/, QUtente use
         recDocsUtente->setUsername(userNew.getUsername());
         recDocsUtente->setNickName(userNew.getNickName());
         recDocsUtente->setNomeImg(userNew.getNomeImg());
+        recDocsUtente->setPassword(userNew.getPassword());
         close();
     }
 
 
+}
+//**********************************************************
+//Compare the password and password repetition.
+//If they're equal and without whitespaces, it sets
+//the flag at 1 and it saves the new value in a local QUtente.
+//If all the flags of other fields are set to 1,
+//"save" button is enabled
+//*************************************************************
+
+void EditProfile::comparePasswords(){
+    QString pass = newPassEdit->text();
+    QString repPass = newRepPassEdit->text();
+
+    if(repPass.isNull() || repPass.isEmpty())
+        return;
+    else{
+        if(pass.compare(repPass)!= 0){
+            passErr->setText("Passwords must match");
+            passErr->setStyleSheet("QLabel {color: #FF0000}");
+            save->setEnabled(false);
+            passFlag = 0;
+            this->repaint();
+        }
+        else{
+            passErr->setText("");
+            this->repaint();
+            passFlag = 1;
+        }
+        if(!checkString(pass) || !checkString(repPass)){
+            passErr->setText("Password cannot contain whitespaces");
+            passErr->setStyleSheet("QLabel {color: #FF0000}");
+          }else if(passFlag == 1)
+            utenteLocale->setPassword(pass);
+
+        if(passFlag == 1 && nickFlag == 1 && userFlag == 1 && checkString(pass) && checkString(repPass))
+            save->setEnabled(true);
+    }
+
+}
+
+//***************************************************
+//Checks whether the argument QString contains spaces.
+//If it doesn't, return true.
+//False, otherwise
+//***************************************************
+bool EditProfile::checkString(QString arg){
+    auto it = arg.begin();
+    while(it != arg.end()){
+        if(it->isSpace())
+            return false;
+        it++;
+    }
+
+    return true;
 }

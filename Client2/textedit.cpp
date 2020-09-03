@@ -422,26 +422,6 @@ void TextEdit::setupTextActions()
     addToolBar(tb);
     addToolBar(tb2);
 
-    comboStyle = new QComboBox(tb);
-    tb->addWidget(comboStyle);
-    comboStyle->addItem("Standard");
-    comboStyle->addItem("Bullet List (Disc)");
-    comboStyle->addItem("Bullet List (Circle)");
-    comboStyle->addItem("Bullet List (Square)");
-    comboStyle->addItem("Ordered List (Decimal)");
-    comboStyle->addItem("Ordered List (Alpha lower)");
-    comboStyle->addItem("Ordered List (Alpha upper)");
-    comboStyle->addItem("Ordered List (Roman lower)");
-    comboStyle->addItem("Ordered List (Roman upper)");
-    comboStyle->addItem("Heading 1");
-    comboStyle->addItem("Heading 2");
-    comboStyle->addItem("Heading 3");
-    comboStyle->addItem("Heading 4");
-    comboStyle->addItem("Heading 5");
-    comboStyle->addItem("Heading 6");
-
-    connect(comboStyle, QOverload<int>::of(&QComboBox::activated), this, &TextEdit::textStyle);
-
     comboFont = new QFontComboBox(tb);
     tb->addWidget(comboFont);
     connect(comboFont, QOverload<const QString &>::of(&QComboBox::activated), this, &TextEdit::textFamily);
@@ -459,10 +439,6 @@ void TextEdit::setupTextActions()
     connect(comboSize, QOverload<const QString &>::of(&QComboBox::activated), this, &TextEdit::textSize);
 }
 
-//void TextEdit::load(const QString &f)
-//{
-//    emit SigApriDoc(f);
-//}
 
 void TextEdit::setCurrentFileName(const QString &fileName)
 {
@@ -479,14 +455,6 @@ void TextEdit::setCurrentFileName(const QString &fileName)
     setWindowModified(false);
 }
 
-//void TextEdit::fileNew@(QString fileName)
-//{
-//        disconnect(textEdit->document(),&QTextDocument::contentsChange,this, &TextEdit::CRDTInsertRemove);
-//        textEdit->clear();
-//        setCurrentFileName(fileName);
-//        emit SigCreaDoc(fileName);
-//        connect(textEdit->document(),&QTextDocument::contentsChange,this, &TextEdit::CRDTInsertRemove );
-//}
 
 void TextEdit::filePrint()
 {

@@ -28,6 +28,8 @@ class EditProfile:public QWidget
     Q_OBJECT
 public:
     EditProfile(QWidget *parent, WorkerSocketClient* wscP, QUtente* utente);
+    bool checkString (QString arg);
+
 
 signals:
     void SigModificaProfiloUtente(QUtente userNew);
@@ -36,9 +38,10 @@ private slots:
     void savePressed();
     void discardPressed();
     void selectImagePressed();
-    void changedNick(const QString &);
-    void changedUsername(const QString &);
     void imageHovered();
+    void comparePasswords();
+    void userWhitespaces();
+    void nickWhitespaces();
     void imageUnhovered();
 
    /*
@@ -56,15 +59,24 @@ private:
     const QString rsrc = ":/images/win";
     QLabel *nickname;
     QLabel *username;
+    QLabel *newPass;
+    QLabel *newRepPass;
     ClickableLabel *userPic;
     QPixmap *profilePic;
     QLineEdit *usernameEdit;
     QLineEdit *nickEdit;
+    QLineEdit *newPassEdit;
+    QLineEdit *newRepPassEdit;
     QPushButton *save;
     QPushButton *discard;
     WorkerSocketClient* wscP;
     QUtente *utenteLocale;
+    QLabel *userErr;
+    QLabel *nickErr;
+    QLabel *passErr;
     QUtente *recDocsUtente;
+    int userFlag = 1, passFlag = 1, nickFlag = 1;
+
 
 };
 
