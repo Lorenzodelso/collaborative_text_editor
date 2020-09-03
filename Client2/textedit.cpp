@@ -674,6 +674,7 @@ void TextEdit::segnalaMovimentoCursore(QTextCursor cursor){
 void TextEdit::cursorPositionChanged()
 {
     alignmentChanged(textEdit->alignment());
+    /*
     QTextList *list = textEdit->textCursor().currentList();
     if (list) {
         switch (list->format().style()) {
@@ -708,10 +709,10 @@ void TextEdit::cursorPositionChanged()
     } else {
         int headingLevel = textEdit->textCursor().blockFormat().headingLevel();
         comboStyle->setCurrentIndex(headingLevel ? headingLevel + 8 : 0);
-
+        */
         //segnalo al WorkerSocketClient che c'è stato il movimento del cursore
         segnalaMovimentoCursore(textEdit->textCursor());
-    }
+    //}
 }
 
 void TextEdit::clipboardDataChanged()
