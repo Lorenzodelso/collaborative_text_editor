@@ -449,7 +449,7 @@ void Server::modificaProfiloUtente(WorkerSocket *wsP, QUtente userOld, QUtente u
         /*esiste tale utente*/
 
         /*se la modifica consiste nel cambio immagine profilo*/
-        if (userOld.getNomeImg().compare(userNew.getNomeImg())) {
+        if (userOld.getNomeImg().compare(userNew.getNomeImg()) != 0) {
 
             immagineModificata=true;
             /*setto il nome dell'immagine nuova in userNew*/

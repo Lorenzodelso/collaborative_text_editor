@@ -88,7 +88,7 @@ void  WorkerSocketClient::leggiMsgApp(){
                 if(user.getNomeImg() != NULL){
                       image->loadFromData(data,user.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
                       std::cout<< QDir::currentPath().toStdString()+val.toStdString()+user.getNomeImg().toStdString();
-                      std::cout<<image->save(QDir::currentPath()+val+user.getNomeImg());
+                      std::cout<<image->save(QDir::currentPath()+val+user.getNomeImg(), user.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
                       this->currentImg=image;
                 }
 
@@ -141,7 +141,7 @@ void  WorkerSocketClient::leggiMsgApp(){
                 this->user=userNew;
 
                 image->loadFromData(data,this->user.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
-                image->save(QDir::currentPath()+val+user.getNomeImg());
+                image->save(QDir::currentPath()+val+user.getNomeImg(), user.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
                 this->currentImg=image;
 
                 emit SigEsitoModificaProfiloUtente("Success",userNew);
@@ -270,7 +270,7 @@ void WorkerSocketClient::modificaProfiloUtente(QUtente user1)
     if(this->currentImg != NULL ){
         buffer.open(QIODevice::WriteOnly);
         this->currentImg->save(&buffer,this->user.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
-        if(arr.compare(arr1)==0){
+        if(QString(arr).compare(QString(arr1)) == 0){
              arr1= QByteArray();
         }
     }

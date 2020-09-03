@@ -202,7 +202,7 @@ void WorkerSocket::rispondiEsitoRegistrazione(QString esito, QString nomeImg)
     {
         in.writeBytes("r_a",len);
         if(nomeImg!=NULL){
-            this->image.save(QDir::currentPath()+val+nomeImg);
+            this->image.save(QDir::currentPath()+val+nomeImg, nomeImg.split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
         }
         socketConnessoP->disconnectFromHost();
     }
@@ -257,7 +257,7 @@ void WorkerSocket::rispondiEsitoModificaProfiloUtente(QUtente userNew,bool immag
 
         if(immagineModificata){
 
-            this->temporaryImage.save(QDir::currentPath()+val+userNew.getNomeImg());
+            this->temporaryImage.save(QDir::currentPath()+val+userNew.getNomeImg(), userNew.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
             this->image=this->temporaryImage;
 
         }
