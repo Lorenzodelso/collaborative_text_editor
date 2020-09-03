@@ -12,19 +12,19 @@
 class QUser {
 
 private:
-    quint16 userId;
+    quint32 userId;
     QString userName;
 
 public:
     QUser();
-    QUser(quint16 userId, QString userName);
-    quint16 getUserId();
-    void setUserId(quint16 userId);
+    QUser(quint32 userId, QString userName);
+    quint32 getUserId();
+    void setUserId(quint32 userId);
     QString getUserName();
     void setUserName(QString userName);
     bool operator==(QUser user);
 
-    friend QDataStream& operator<<(QDataStream& out,QUser& user);
+    friend QDataStream& operator<<(QDataStream& out,const QUser& user);
     friend QDataStream& operator>>(QDataStream& in, QUser& user);
 
 
