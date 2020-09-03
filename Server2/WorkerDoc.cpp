@@ -71,17 +71,34 @@ void WorkerDoc::workerDocPrimaAperturaDoc(QString nomeFile, WorkerSocket* wsP){
      * fa QObject::disconnect(this, &WorkerDoc::SigEsitoApriDoc, wsP, &WorkerSocket::rispondiEsitoApriDoc);
      * */
 
-void WorkerDoc::workerDocNsimaAperturaDoc(QUtente user,WorkerSocket* wsP){
+void WorkerDoc::workerDocNsimaAperturaDoc(QUtente user,WorkerSocket* wsP, QMap<QUser, WorkerSocket*> utentiGiaOnline, QMap<QUser, WorkerSocket*> nuovoUtenteOnline){
     QString esito("");
     //N-esima apertura, quindi sia crdt che openedFile dovrebbero essere inizializzati, faccio controllo robustezza
     if (crdt == nullptr || openedFile == nullptr){
         esito = "Failed";
+        emit SigEsitoApriDoc(esito, *crdt);
     }
     else{
         esito = "Success";
+        emit SigEsitoApriDoc(esito, *crdt);
         numClients++;
+        QMap<QUser, WorkerSocket*>::iterator i1;
+        for (i1 = utentiGiaOnline.begin(); i1 != utentiGiaOnline.end(); ++i1) {
+            QObject::connect(this, &WorkerDoc::SigQuestoUserHaApertoIlDoc, i1.value(), &WorkerSocket::questoUserHaApertoIlDoc);
+            emit SigQuestoUserHaApertoIlDoc(QUser(user.getUserId(),user.getUsername()));
+            QObject::disconnect(this, &WorkerDoc::SigQuestoUserHaApertoIlDoc,i1.value(), &WorkerSocket::questoUserHaApertoIlDoc);
+
+        }
+        QMap<QUser, WorkerSocket*>::iterator i2;
+        for (i2 = nuovoUtenteOnline.begin(); i2 != nuovoUtenteOnline.end(); ++i2) {
+            QMap<QUser, WorkerSocket*>::iterator i3;
+            for (i3 = utentiGiaOnline.begin(); i3 != utentiGiaOnline.end(); ++i3) {
+                QObject::connect(this, &WorkerDoc::SigQuestoUserHaApertoIlDoc, i2.value(), &WorkerSocket::questoUserHaApertoIlDoc);
+                emit SigQuestoUserHaApertoIlDoc(i3.key());
+                QObject::disconnect(this, &WorkerDoc::SigQuestoUserHaApertoIlDoc,i2.value(), &WorkerSocket::questoUserHaApertoIlDoc);
+            }
+        }
     }
-    emit SigEsitoApriDoc (esito, *crdt);
     QObject::disconnect(this, &WorkerDoc::SigEsitoApriDoc, wsP, &WorkerSocket::rispondiEsitoApriDoc);
 }
 

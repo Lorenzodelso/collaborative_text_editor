@@ -23,6 +23,7 @@ public:
     QString getUserName();
     void setUserName(QString userName);
     bool operator==(QUser user);
+    friend bool operator<(const QUser& a, const QUser& user);
 
     friend QDataStream& operator<<(QDataStream& out,const QUser& user);
     friend QDataStream& operator>>(QDataStream& in, QUser& user);

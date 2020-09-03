@@ -27,6 +27,7 @@ signals:
     void SigEsitoCreaDoc(QString esito/*esito*/, CRDT doc/*rappresentazione del file*/);
     void SigEsitoApriDoc(QString esito/*esito*/, CRDT doc/*rappresentazione del file*/);
     void SigNessunClientStaEditando(QString nomeFile);
+    void SigQuestoUserHaApertoIlDoc(QUser user);
 
 public:
     WorkerDoc();
@@ -62,7 +63,7 @@ public slots:
      *  se esito positivo allora esito="Success" e doc= COPIA dell'oggetto CRDT interno
      * fa QObject::disconnect(this, &WorkerDoc::SigEsitoApriDoc, wsP, &WorkerSocket::rispondiEsitoApriDoc);
      * */
-    void workerDocNsimaAperturaDoc(QUtente user, WorkerSocket* wsP);
+    void workerDocNsimaAperturaDoc(QUtente user, WorkerSocket* wsP, QMap<QUser, WorkerSocket*> utentiGiaOnline, QMap<QUser, WorkerSocket*> nuovoUtenteOnline);
 
 
 

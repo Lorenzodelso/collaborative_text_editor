@@ -35,3 +35,7 @@ bool QUser::operator==(QUser user){
     else
         return false;
 }
+bool operator<(const QUser& a, const QUser& b){
+
+    return a.userId<b.userId;
+}

@@ -116,48 +116,30 @@ void Server::apriDoc(QString nomeFile , WorkerSocket* wsP, QUtente user){
             /*la corrispondente disconnect, necessaria per evitare che il worker doc attivi lo slot indicato in ogni worker socket
              * a cui è collegato, viene fatta dentro a &WorkerDoc::workerDocNsimaAperturaDoc*/
 
+            QList<unsigned int> idUtentiGiaOnline = userEdits.keys(documents.value(nomeFile));
+            idUtentiGiaOnline.removeOne(user.getUserId());
+            QMap<QUser, WorkerSocket*> utentiGiaOnline;
 
-            emit SigWorkerDocNsimaAperturaDoc(user, wsP);
+            QList<quint32/*clientId*/>::iterator iteratore;
+
+            for(iteratore=idUtentiGiaOnline.begin(); iteratore!=idUtentiGiaOnline.end(); iteratore++){
+             QUtenteServer u= users.value(*iteratore);
+             utentiGiaOnline.insert(
+                   QUser(u.getUserId(),u.getUsername()), userConnections.value(*iteratore));
+            }
+
+            QMap<QUser, WorkerSocket*> nuovoUtenteOnline;
+            nuovoUtenteOnline.insert(QUser(user.getUserId(),user.getUsername()), userConnections.value(user.getUserId()));
+
+
+            emit SigWorkerDocNsimaAperturaDoc(user, wsP, utentiGiaOnline, nuovoUtenteOnline);
 
 
             /*infatti qui la disattivo*/
             QObject::disconnect(this, &Server::SigWorkerDocNsimaAperturaDoc, wdP, &WorkerDoc::workerDocNsimaAperturaDoc);
 
-            QUser curusr = QUser(user.getUserId(),user.getUsername());
-            /*mando ad ogni workerSocket associato a questo documento (tranne quello di questo user)
-             * il segnale che dice che questo user ora è online*/
 
-            //TO DO dovrebbe essere una lista di qint32
-            QList<unsigned int> usrs = userEdits.keys(documents.value(nomeFile));
-            /*utenti ora online per questo documento*/
-            QList<unsigned int>::iterator i;
-            for (i = usrs.begin(); i != usrs.end(); ++i){
-                if(*i==user.getUserId()){/*non devo fare niente per l'utente corrente*/}
-                else{
-                  WorkerSocket* wsPointer = userConnections.value(*i);
-                  QObject::connect(this, &Server::SigQuestoUserHaApertoIlDoc, wsPointer, &WorkerSocket::questoUserHaApertoIlDoc);
-                  emit SigQuestoUserHaApertoIlDoc(curusr);
-                  QObject::disconnect(this, &Server::SigQuestoUserHaApertoIlDoc, wsPointer, &WorkerSocket::questoUserHaApertoIlDoc);
 
-                }
-
-            }
-
-            /*mando al workerSocket di questo user il segnale che dice che un utente ha aperto questo documento
-             * tante volte quanti sono gli user (tranne lui) che ora lo stanno editando
-             * */
-            //TO DO dovrebbe essere una lista di qint32
-            for (i = usrs.begin(); i != usrs.end(); ++i){
-                if(*i==user.getUserId()){/*non devo fare niente per l'utente corrente*/}
-                else{
-                    QUtenteServer u = users.value(*i);
-                    QObject::connect(this, &Server::SigQuestoUserHaApertoIlDoc, wsP, &WorkerSocket::questoUserHaApertoIlDoc);
-                    emit SigQuestoUserHaApertoIlDoc(QUser(u.getUserId(),u.getUsername()));
-                    QObject::disconnect(this, &Server::SigQuestoUserHaApertoIlDoc, wsP, &WorkerSocket::questoUserHaApertoIlDoc);
-
-                }
-
-            }
         }
         else { /*non ho ancora oggetto QThread per tale documento*/
             tP = new QThread();

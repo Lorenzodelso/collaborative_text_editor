@@ -12,6 +12,7 @@ WorkerSocket::WorkerSocket(){
     qRegisterMetaType<QUser>();
     qRegisterMetaType<QList<QString>>();
     qRegisterMetaType<DocOperation>();
+    qRegisterMetaType<QMap<QUser,WorkerSocket*>>();
 
     socketConnessoP = new QTcpSocket( this );
     user = *new QUtente();
