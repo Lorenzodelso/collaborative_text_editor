@@ -6,8 +6,8 @@ QUser::QUser(quint16 userId, QString userName): userId(userId), userName(userNam
 QUser::QUser(){}
 
 
-QDataStream& operator<<(QDataStream& out,const QUser& user){
-    out <<1<< "Prova";
+QDataStream& operator<<(QDataStream& out,QUser& user){
+    out <<user.getUserId()<< user.getUserName();
     return out;
 }
 
