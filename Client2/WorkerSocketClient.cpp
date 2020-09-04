@@ -47,6 +47,9 @@ void  WorkerSocketClient::leggiMsgApp(){
             {
                 CRDT doc;
                 BlockReader(socketConnesso).stream() >> doc;
+                /*debug*/
+                qDebug()<<"esito apri doc: Success";
+                /*debug*/
                 emit SigEsitoApriDoc("Success", doc);
              }
             else
@@ -189,13 +192,20 @@ void  WorkerSocketClient::leggiMsgApp(){
         {
             QUser utente;
             BlockReader(socketConnesso).stream() >> utente;
+            /*debug*/
+            qDebug()<<"questo user ha chiuso il doc" << utente.getUserName();
+            /*debug*/
             emit  SigQuestoUserHaChiusoIlDoc(utente);
         }
 
         if (strcmp(msg,"uad")==0)
         {
+
             QUser utente;
             BlockReader(socketConnesso).stream() >> utente;
+            /*debug*/
+            qDebug()<<"questo user ha aperto il doc" << utente.getUserName();
+            /*debug*/
             emit  SigQuestoUserHaApertoIlDoc(utente);
         }
     }

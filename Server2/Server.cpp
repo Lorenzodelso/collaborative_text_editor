@@ -511,7 +511,7 @@ void Server::chiusuraConnessioneDaParteDelServer(WorkerSocket* wsP) {
 void Server::chiusuraDocumentoDaParteDelClient(WorkerSocket* wsP, QUtente user){
     WorkerDoc* wdP= userEdits.value(user.getUserId());
     QThread* qtdP = threadsDoc.value(wdP);
-    userEdits.remove(user.getUserId());
+
 
     /*
  * questa connect mi serve solo ora perchè è da this al WorkerDoc
@@ -562,6 +562,7 @@ void Server::chiusuraDocumentoDaParteDelClient(WorkerSocket* wsP, QUtente user){
         }
 
     }
+    userEdits.remove(user.getUserId());
 }
 
 void Server::nessunClientStaEditando(QString nomeFile) {
