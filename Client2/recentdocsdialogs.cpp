@@ -32,6 +32,15 @@ RecentDocsDialogs::RecentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP,q
         recentDocs->clear();
 
 
+    mw = new TextEdit(this,this->wscP,this->siteId, this->utente);
+
+    /*un altro user ha aperto il doc*/
+    QObject::connect(wscP, &WorkerSocketClient::SigQuestoUserHaApertoIlDoc, mw,  &TextEdit::questoUserHaApertoIlDoc);
+
+    /*un altro user ha chiuso il doc*/
+    QObject::connect(wscP, &WorkerSocketClient::SigQuestoUserHaChiusoIlDoc, mw,  &TextEdit::questoUserHaChiusoIlDoc);
+
+
     recentDocs->setSelectionMode(QAbstractItemView::SingleSelection);
 
     create = new QPushButton(tr("&New File"));
@@ -260,7 +269,8 @@ int isSuccess(QString esito){
 void RecentDocsDialogs::esitoCreaDoc(QString esito, CRDT doc){
   if (isSuccess(esito)){ //se esito positivo creo un CRDT vuoto perché il documento é stato appena creato
 
-    mw = new TextEdit(this,this->wscP,this->siteId);
+    //mw = new TextEdit(this,this->wscP,this->siteId, this->utente);
+
     const QRect availableGeometry = QApplication::desktop()->availableGeometry(mw);
     mw->resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);
     mw->move((availableGeometry.width() - mw->width()) / 2,
@@ -291,7 +301,8 @@ void RecentDocsDialogs::esitoCreaDoc(QString esito, CRDT doc){
 //******************************************
 void RecentDocsDialogs::esitoApriDoc(QString esito, CRDT doc){
   if (isSuccess(esito)){
-      mw = new TextEdit(this,this->wscP,this->siteId);
+      //mw = new TextEdit(this,this->wscP,this->siteId, this->utente);
+
       mw->loadCRDTIntoEditor(doc);
       const QRect availableGeometry = QApplication::desktop()->availableGeometry(mw);
       mw->resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);

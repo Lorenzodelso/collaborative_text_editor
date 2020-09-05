@@ -93,7 +93,7 @@ const QString rsrcPath = ":/images/mac";
 const QString rsrcPath = ":/images/win";
 #endif
 
-TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP,quint16 siteId)
+TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP,quint16 siteId, QUtente utente)
     : QMainWindow(parent)
 {
 	//Inserisco inizializzazione del CRDT
@@ -102,11 +102,14 @@ TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP,quint16 siteId)
     colorWriting = false;
 
     this->wscP = wscP;
+    this->utente = utente;
 
     //Creazione dockWidget utenti online/offline
 
     usersTree = new QTreeWidget();
     dockUsersTree = new QDockWidget("Users");
+    onlineUsers = new QList<QUser>();
+    offlineUsers = new QList<QUser>();
 //    onlineUsers.append(*new QUser(15, "piero"));
 //    onlineUsers.append(*new QUser(12, "gianni"));
 //    offlineUsers.append(*new QUser(3, "laura"));
@@ -161,11 +164,11 @@ TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP,quint16 siteId)
     /*operazione remota sul documento*/
     QObject::connect(wscP, &WorkerSocketClient::SigOpDocRemota, this,  &TextEdit::opDocRemota);
 
-    /*un altro user ha aperto il doc*/
-    QObject::connect(wscP, &WorkerSocketClient::SigQuestoUserHaApertoIlDoc, this,  &TextEdit::questoUserHaApertoIlDoc);
+//    /*un altro user ha aperto il doc*/
+//    QObject::connect(wscP, &WorkerSocketClient::SigQuestoUserHaApertoIlDoc, this,  &TextEdit::questoUserHaApertoIlDoc);
 
-    /*un altro user ha chiuso il doc*/
-    QObject::connect(wscP, &WorkerSocketClient::SigQuestoUserHaChiusoIlDoc, this,  &TextEdit::questoUserHaChiusoIlDoc);
+//    /*un altro user ha chiuso il doc*/
+//    QObject::connect(wscP, &WorkerSocketClient::SigQuestoUserHaChiusoIlDoc, this,  &TextEdit::questoUserHaChiusoIlDoc);
 
     /*op chi ha inserito cosa*/
     QObject::connect(this, &TextEdit::SigOpChiHaInseritoCosa, wscP, &WorkerSocketClient::opChiHaInseritoCosa);
@@ -312,6 +315,7 @@ void TextEdit::setupEditActions()
     if (const QMimeData *md = QApplication::clipboard()->mimeData())
         actionPaste->setEnabled(md->hasText());
 #endif
+
 }
 
 void TextEdit::setupTextActions()
@@ -400,16 +404,34 @@ void TextEdit::setupTextActions()
 
     tb->addSeparator();
 
+    QToolBar *tb3 = addToolBar(tr("UserInfo"));
+    QWidget *spacerWidget = new QWidget(this);
+    spacerWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    spacerWidget->setVisible(true);
+    tb3->addWidget(spacerWidget);
+    QBoxLayout *userInfo = new QBoxLayout(QBoxLayout::LeftToRight);
+    QImage profileImage = QImage(utente.getNomeImg());
+    QLabel tmpLabel;
+    tmpLabel.setPixmap(getCircularPixmap(profileImage));
+    userInfo->addWidget(&tmpLabel);
+    QLabel tmpLine(utente.getUsername());
+    userInfo->setSpacing(5);
+    userInfo->addWidget(&tmpLine);
+    userInfo->setAlignment(Qt::AlignCenter);
+    QLabel *viewLabel = new QLabel();
+    viewLabel->setLayout(userInfo);
+    tb3->addWidget(viewLabel);
+
     QToolBar *tb2 = addToolBar(tr("Color Mode"));
     QIcon colorModeIcon = QIcon(rsrcPath + "/colormode.png");
     colorMode = new QAction(colorModeIcon, tr("&ColorMode"), this);
     colorMode->setCheckable(true);
     colorMode->setShortcut(Qt::CTRL + Qt::Key_F);
     colorMode->setPriority(QAction::LowPriority);
-    QWidget *spacerWidget = new QWidget(this);
-    spacerWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-    spacerWidget->setVisible(true);
-    tb2->addWidget(spacerWidget);
+    QWidget *spacerWidget2 = new QWidget(this);
+    spacerWidget2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    spacerWidget2->setVisible(true);
+    tb2->addWidget(spacerWidget2);
     tb2->addAction(colorMode);
     tb2->setMovable(false);
 
@@ -987,12 +1009,12 @@ void TextEdit::opDocRemota(DocOperation operation){
 
 
 void TextEdit::questoUserHaApertoIlDoc(QUser usr){
-    onlineUsers.append(usr);
+    onlineUsers->append(usr);
     updateTreeWidget(colorWriting);
 }
 
 void TextEdit::questoUserHaChiusoIlDoc(QUser usr){
-    onlineUsers.removeAll(usr);
+    onlineUsers->removeAll(usr);
     updateTreeWidget(colorWriting);
 }
 
@@ -1060,8 +1082,8 @@ void TextEdit::quittingColorMode(){
 
 void TextEdit::esitoOpChiHaInseritoCosa(QList<QUser> users){
     for (auto user : users){
-        if (!onlineUsers.contains(user) && user.getUserId()!=this->algoritmoCRDT->getSiteID())
-            offlineUsers.append(user);
+        if (!onlineUsers->contains(user) && user.getUserId()!=this->algoritmoCRDT->getSiteID())
+            offlineUsers->append(user);
     }
     enteringColorMode();
     updateTreeWidget(colorWriting);
@@ -1116,7 +1138,7 @@ void TextEdit::updateTreeWidget(bool checked){
         QList<QColor> *colorList = new QList<QColor>();
         QList<QTreeWidgetItem*> *itemUsernameOnline = new QList<QTreeWidgetItem*>();
         QList<QUser>::iterator i;
-        for(i=onlineUsers.begin(); i != onlineUsers.end(); ++i){
+        for(i=onlineUsers->begin(); i != onlineUsers->end(); ++i){
             usernameOnline->append(i->getUserName());
             colorList->append(colors[i->getUserId()]);
         }
@@ -1137,7 +1159,7 @@ void TextEdit::updateTreeWidget(bool checked){
 
         item->insertChildren(0,*itemUsernameOnline);
 
-        if(!offlineUsers.isEmpty()){
+        if(!offlineUsers->isEmpty()){
             QList<QColor> *offlineColorList = new QList<QColor>();
             QTreeWidgetItem *item2 = new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString("Offline")));
             usersTree->insertTopLevelItem(0, item2);
@@ -1145,7 +1167,7 @@ void TextEdit::updateTreeWidget(bool checked){
             QList<QTreeWidgetItem*> *itemUsernameOffline = new QList<QTreeWidgetItem*>();
             QList<QUser>::iterator i;
 
-            for(i=offlineUsers.begin(); i != offlineUsers.end(); ++i){
+            for(i=offlineUsers->begin(); i != offlineUsers->end(); ++i){
                 usernameOffline->append(i->getUserName());
                 offlineColorList->append(colors[i->getUserId()]);
 
@@ -1173,7 +1195,7 @@ void TextEdit::updateTreeWidget(bool checked){
         QList<QString> *usernameOnline = new QList<QString>();
         QList<QTreeWidgetItem*> *itemUsernameOnline = new QList<QTreeWidgetItem*>();
         QList<QUser>::iterator i;
-        for(i=onlineUsers.begin(); i != onlineUsers.end(); ++i){
+        for(i=onlineUsers->begin(); i != onlineUsers->end(); ++i){
             usernameOnline->append(i->getUserName());
         }
 
@@ -1192,4 +1214,34 @@ void TextEdit::updateTreeWidget(bool checked){
 
     dockUsersTree->setWidget(usersTree);
 
+}
+
+
+//**************************************
+//
+//Returns a pixmap with a circular mask
+//
+//**************************************
+QPixmap TextEdit::getCircularPixmap(QImage& img)
+{
+img.convertToFormat(QImage::Format_ARGB32);
+//blank copy image
+QImage imageOut(img.size(),QImage::Format_ARGB32);
+//painter on it
+QPainter painter(&imageOut);
+//set opacity
+painter.setOpacity(0.5);
+painter.setBrush(Qt::white);
+painter.setPen(Qt::NoPen);
+//draw transparent image
+painter.drawImage(0,0,img);
+//set opacity
+painter.setOpacity(1);
+QPainterPath path(QPointF(100,100));
+//your mask - ellipse
+path.addEllipse(100,100,img.width()-200, img.height()-200);
+painter.setClipPath(path);
+//draw untransparent part of image
+painter.drawImage(0,0,img);
+return QPixmap::fromImage(imageOut);
 }

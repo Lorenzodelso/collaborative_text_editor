@@ -63,8 +63,14 @@
 #include <QObject>
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
+#include <QPainter>
+#include "qpainter.h"
 #include <QStringList>
 #include <QDockWidget>
+#include <QBoxLayout>
+#include <QLabel>
+#include <QLineEdit>
+#include "qlabel.h"
 #include "QUtente.h"
 #include "QUser.h"
 #include "WorkerSocketClient.h"
@@ -88,12 +94,14 @@ class TextEdit : public QMainWindow
     Q_OBJECT
 
 public:
-    TextEdit(QWidget *parent, WorkerSocketClient *wscP,quint16 siteId);
+    TextEdit(QWidget *parent, WorkerSocketClient *wscP,quint16 siteId, QUtente utente);
 
     void load(const QString &f);
 
     CRDT* getStrutturaCRDT();
     void loadCRDTIntoEditor(CRDT crdt);
+    QPixmap getCircularPixmap(QImage& img);
+
 
 public:
 
@@ -233,6 +241,7 @@ private:
 
     QComboBox *comboStyle;
     QFontComboBox *comboFont;
+    QBoxLayout *userInfo;
     QComboBox *comboSize;
     QToolBar *tb;
     QString fileName;
@@ -241,15 +250,16 @@ private:
     QMap<quint16, QTextCursor> *cursorMap;
     QTreeWidget *usersTree;
     QDockWidget *dockUsersTree;
+    QUtente utente;
 	
 	 //Aggiungo CRDT
     CRDT* algoritmoCRDT;
 
     //Aggiungo una lista di utenti online
-    QList<QUser> onlineUsers;
+    QList<QUser> *onlineUsers;
 
     //Lista utenti offline
-    QList<QUser> offlineUsers;
+    QList<QUser> *offlineUsers;
 
     //modalità scrittura a colori
     bool colorWriting;

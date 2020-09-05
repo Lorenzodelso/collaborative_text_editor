@@ -21,14 +21,14 @@ WorkerDoc::WorkerDoc(){
 //INVECE UN CRDT IDENTICO MA CON SITEID QUELLO DEL CLIENT, QUINDI LA GESTIONE VIENE DELEGATA AL COSTRUTTORE DI COPIA
 void WorkerDoc::workerDocCreaDoc(QString nomeFile, WorkerSocket* wsP){
     crdt = new CRDT(0); //CRDT vuoto perchè nuovo file
-    QFile newFile(nomeFile); //creo nuovo file
+    QFile *newFile = new QFile(nomeFile); //creo nuovo file
     QString esito("");
-    if ( !newFile.open(QIODevice::ReadWrite) ){ //controllo esito dell'operazione di apertura
+    if ( !newFile->open(QIODevice::ReadWrite) ){ //controllo esito dell'operazione di apertura
         esito = "Failed";
     }
     else{
         esito="Success";
-        openedFile = &newFile;
+        openedFile = newFile;
         numClients = 1; //ancora nessun client connesso, viene solo richiesto di creare il file
         this->nomeFile = nomeFile;
     }

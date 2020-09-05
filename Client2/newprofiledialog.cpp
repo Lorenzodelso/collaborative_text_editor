@@ -121,7 +121,7 @@ void NewProfileDialog::userWhitespaces(){
         registerUser->setEnabled(false);
     }
 
-    if(userFlag == 1 && passFlag == 1 && nickFlag == 1)
+    if(userFlag == 1 && passFlag == 1 && (nickFlag == 1 || nickEdit->text().isNull() || nickEdit->text().isEmpty()))
         registerUser->setEnabled(true);
 }
 
@@ -139,7 +139,7 @@ void NewProfileDialog::nickWhitespaces(){
         registerUser->setEnabled(false);
     }
 
-    if(userFlag == 1 && passFlag == 1 && nickFlag == 1)
+    if(userFlag == 1 && passFlag == 1 && (nickFlag == 1 || nickEdit->text().isNull() || nickEdit->text().isEmpty()))
         registerUser->setEnabled(true);
 
 }
@@ -208,7 +208,7 @@ void NewProfileDialog::comparePasswords(){
             passErr->setStyleSheet("QLabel {color: #FF0000}");
           }
 
-        if(passFlag == 1 && nickFlag == 1 && userFlag == 1 && checkString(pass) && checkString(repPass))
+        if(passFlag == 1 && (nickFlag == 1 || nickEdit->text().isNull() || nickEdit->text().isEmpty()) && userFlag == 1 && checkString(pass) && checkString(repPass))
             registerUser->setEnabled(true);
     }
 
