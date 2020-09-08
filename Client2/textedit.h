@@ -107,6 +107,8 @@ public:
 
      void setCurrentFileName(const QString &fileName);
      ~TextEdit();
+     void updateUserInfo(QUtente utente);
+
 
     signals:
         void formatChanged(const QTextCharFormat &format);
@@ -201,6 +203,7 @@ private:
     void setupEditActions();
     void setupTextActions();
 
+
     void launchProfileEditor();
     void mergeFormatOnWordOrSelection(const QTextCharFormat &format);
     void fontChanged(const QFont &f);
@@ -238,6 +241,7 @@ private:
     QAction *actionCopy;
     QAction *actionPaste;
 #endif
+    const QString rsrc = ":/images/win";
 
     QComboBox *comboStyle;
     QFontComboBox *comboFont;
@@ -251,6 +255,11 @@ private:
     QTreeWidget *usersTree;
     QDockWidget *dockUsersTree;
     QUtente utente;
+    QToolBar *userInfoTb;
+    QWidget *spacerWidgetUserInfo;
+    QImage profileImage;
+    QLabel *profileImageLabel;
+    QLabel *usernameLabel;
 	
 	 //Aggiungo CRDT
     CRDT* algoritmoCRDT;

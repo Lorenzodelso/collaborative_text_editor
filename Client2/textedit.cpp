@@ -241,9 +241,9 @@ void TextEdit::loadCRDTIntoEditor(CRDT crdt){
 void TextEdit::closeEvent(QCloseEvent *e)
 {
    if(parentWidget() != NULL){
+        onlineUsers->clear();
         emit(SigChiudiDoc(this->fileName));
         emit(updateRecDocs());
-        parentWidget()->show();
    }
    else
        e->ignore();
@@ -404,23 +404,24 @@ void TextEdit::setupTextActions()
 
     tb->addSeparator();
 
-    QToolBar *tb3 = addToolBar(tr("UserInfo"));
-    QWidget *spacerWidget = new QWidget(this);
-    spacerWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-    spacerWidget->setVisible(true);
-    tb3->addWidget(spacerWidget);
-    QBoxLayout *userInfo = new QBoxLayout(QBoxLayout::LeftToRight);
-    QImage profileImage = QImage(utente.getNomeImg());
-    QLabel tmpLabel;
-    tmpLabel.setPixmap(getCircularPixmap(profileImage));
-    userInfo->addWidget(&tmpLabel);
-    QLabel tmpLine(utente.getUsername());
-    userInfo->setSpacing(5);
-    userInfo->addWidget(&tmpLine);
-    userInfo->setAlignment(Qt::AlignCenter);
-    QLabel *viewLabel = new QLabel();
-    viewLabel->setLayout(userInfo);
-    tb3->addWidget(viewLabel);
+    userInfoTb = addToolBar(tr("UserInfo"));
+    userInfoTb->setMovable(false);
+    spacerWidgetUserInfo = new QWidget(this);
+    spacerWidgetUserInfo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    spacerWidgetUserInfo->setVisible(true);
+    userInfoTb->addWidget(spacerWidgetUserInfo);
+    if(!utente.getNomeImg().isEmpty() || !utente.getNomeImg().isNull())
+        profileImage = QImage(utente.getNomeImg());
+    else
+        profileImage = QImage(rsrc+"/colored-edit-profile.png");
+
+    profileImageLabel = new QLabel();
+    profileImageLabel->setPixmap(getCircularPixmap(profileImage).scaled(50,50, Qt::AspectRatioMode::KeepAspectRatio));
+    profileImageLabel->setMargin(5);
+    usernameLabel = new QLabel(utente.getUsername());
+    usernameLabel->setMargin(5);
+    userInfoTb->addWidget(profileImageLabel);
+    userInfoTb->addWidget(usernameLabel);
 
     QToolBar *tb2 = addToolBar(tr("Color Mode"));
     QIcon colorModeIcon = QIcon(rsrcPath + "/colormode.png");
@@ -1214,6 +1215,27 @@ void TextEdit::updateTreeWidget(bool checked){
 
     dockUsersTree->setWidget(usersTree);
 
+}
+
+//********************************************
+//
+//Updates the userInfo toolbar content
+//
+//********************************************
+
+void TextEdit::updateUserInfo(QUtente utente){
+
+    if(!utente.getNomeImg().isEmpty() || !utente.getNomeImg().isNull())
+        profileImage = QImage(utente.getNomeImg());
+    else
+        profileImage = QImage(rsrc+"/colored-edit-profile.png");
+
+    profileImageLabel->setPixmap(getCircularPixmap(profileImage).scaled(50,50, Qt::AspectRatioMode::KeepAspectRatio));
+    profileImageLabel->setMargin(5);
+    usernameLabel->setText(utente.getUsername());
+    usernameLabel->setMargin(5);
+//    userInfoTb->addWidget(profileImageLabel);
+//    userInfoTb->addWidget(usernameLabel);
 }
 
 

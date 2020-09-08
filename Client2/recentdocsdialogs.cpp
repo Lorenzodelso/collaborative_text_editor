@@ -33,7 +33,6 @@ RecentDocsDialogs::RecentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP,q
 
 
     mw = new TextEdit(this,this->wscP,this->siteId, this->utente);
-
     /*un altro user ha aperto il doc*/
     QObject::connect(wscP, &WorkerSocketClient::SigQuestoUserHaApertoIlDoc, mw,  &TextEdit::questoUserHaApertoIlDoc);
 
@@ -267,10 +266,8 @@ int isSuccess(QString esito){
 //*************************************************
 
 void RecentDocsDialogs::esitoCreaDoc(QString esito, CRDT doc){
-  if (isSuccess(esito)){ //se esito positivo creo un CRDT vuoto perché il documento é stato appena creato
-
-    //mw = new TextEdit(this,this->wscP,this->siteId, this->utente);
-
+    mw->updateUserInfo(this->utente);
+    if (isSuccess(esito)){ //se esito positivo creo un CRDT vuoto perché il documento é stato appena creato
     const QRect availableGeometry = QApplication::desktop()->availableGeometry(mw);
     mw->resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);
     mw->move((availableGeometry.width() - mw->width()) / 2,
@@ -300,16 +297,17 @@ void RecentDocsDialogs::esitoCreaDoc(QString esito, CRDT doc){
 //
 //******************************************
 void RecentDocsDialogs::esitoApriDoc(QString esito, CRDT doc){
-  if (isSuccess(esito)){
-      //mw = new TextEdit(this,this->wscP,this->siteId, this->utente);
-
+    mw->updateUserInfo(this->utente);
+    if (isSuccess(esito)){
       mw->loadCRDTIntoEditor(doc);
       const QRect availableGeometry = QApplication::desktop()->availableGeometry(mw);
       mw->resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);
       mw->move((availableGeometry.width() - mw->width()) / 2,
               (availableGeometry.height() - mw->height()) / 2);
       mw->setCurrentFileName(fileName);
-
+      if(!docList.contains(fileName)){
+          docList.append(fileName);
+      }
       mw->show();
       this->hide();
 
@@ -325,16 +323,16 @@ void RecentDocsDialogs::esitoApriDoc(QString esito, CRDT doc){
 }
 
 void RecentDocsDialogs::esitoChiudiDoc(QString esito){
-  //Per ora stampo solo l'esito ricevuto dal server
-  //Per evitare la chiusura del file nel caso in cui si ricevesse un esito negativo devo mantenere l'informazione riguardante
-  //il QCloseEvent scatenante il messaggio di chiusura
   if (isSuccess(esito)){
-      delete mw;
-      mw = nullptr;
+      mw->hide();
+      this->show();
   }
-  else
-      //Qui dovrebbe apparire una finestra in cui si indica l'errore, per far sapere all'utente che qualcosa è andato storto
-      std::cout << "Non ho chiuso il documento perchè il server ha risposto esito negativo\n"<<std::flush;
+  else{
+      QMessageBox msgBox;
+      msgBox.setText(tr("A problem occured while closing the document. Please, try again"));
+      msgBox.setIcon(QMessageBox::Critical);
+      msgBox.exec();
+  }
 }
 
 
