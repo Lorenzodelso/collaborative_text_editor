@@ -103,6 +103,7 @@ TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP,quint16 siteId, QUt
 
     this->wscP = wscP;
     this->utente = utente;
+    this->siteId = siteId;
 
     //Creazione dockWidget utenti online/offline
 
@@ -216,7 +217,7 @@ CRDT* TextEdit::getStrutturaCRDT(){
 }
 
 void TextEdit::loadCRDTIntoEditor(CRDT crdt){
-  algoritmoCRDT = new CRDT(crdt.getSiteID(),crdt.getListChar()); //salvo nel CRDT la rappresentazione del file
+  algoritmoCRDT = new CRDT(this->siteId,crdt.getListChar()); //salvo nel CRDT la rappresentazione del file
   // devo andare ad aggiornare il contenuto del QTextEdit tramite l'uso di cursori sulla base di quello che c'� scritto nel CRDT
   int currentIndex = 0;
   this->cursor = new QTextCursor(textEdit->textCursor());
@@ -245,6 +246,7 @@ void TextEdit::closeEvent(QCloseEvent *e)
         onlineUsers->clear();
         emit(SigChiudiDoc(this->fileName));
         emit(updateRecDocs());
+        this->parentWidget()->show();
    }
    else
        e->ignore();

@@ -257,10 +257,10 @@ int isSuccess(QString esito){
 //*************************************************
 
 void RecentDocsDialogs::esitoCreaDoc(QString esito, CRDT doc){
-    mw = new TextEdit(this,this->wscP,this->siteId, this->utente);
 
-    mw->updateUserInfo(this->utente);
     if (isSuccess(esito)){ //se esito positivo creo un CRDT vuoto perché il documento é stato appena creato
+        mw = new TextEdit(this,this->wscP,this->siteId, this->utente);
+        mw->updateUserInfo(this->utente);
     const QRect availableGeometry = QApplication::desktop()->availableGeometry(mw);
     mw->resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);
     mw->move((availableGeometry.width() - mw->width()) / 2,
@@ -290,10 +290,10 @@ void RecentDocsDialogs::esitoCreaDoc(QString esito, CRDT doc){
 //
 //******************************************
 void RecentDocsDialogs::esitoApriDoc(QString esito, CRDT doc){
-    mw = new TextEdit(this,this->wscP,this->siteId, this->utente);
 
-    mw->updateUserInfo(this->utente);
     if (isSuccess(esito)){
+      mw = new TextEdit(this,this->wscP,this->siteId, this->utente);
+      mw->updateUserInfo(this->utente);
       mw->loadCRDTIntoEditor(doc);
       const QRect availableGeometry = QApplication::desktop()->availableGeometry(mw);
       mw->resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);
@@ -320,7 +320,7 @@ void RecentDocsDialogs::esitoApriDoc(QString esito, CRDT doc){
 void RecentDocsDialogs::esitoChiudiDoc(QString esito){
   if (isSuccess(esito)){
       delete mw;
-      this->show();
+      mw=nullptr;
   }
   else{
       QMessageBox msgBox;

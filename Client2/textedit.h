@@ -264,6 +264,8 @@ private:
 	 //Aggiungo CRDT
     CRDT* algoritmoCRDT;
 
+    quint16 siteId;
+
     //Aggiungo una lista di utenti online
     QList<QUser> *onlineUsers;
 
