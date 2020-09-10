@@ -193,6 +193,14 @@ private:
     void setupEditActions();
     void setupTextActions();
 
+<<<<<<< Updated upstream
+=======
+    void restoreQTextEdit();
+    void removeActions();
+
+
+
+>>>>>>> Stashed changes
     void launchProfileEditor();
     void mergeFormatOnWordOrSelection(const QTextCharFormat &format);
     void fontChanged(const QFont &f);
@@ -234,14 +242,30 @@ private:
     QComboBox *comboStyle;
     QFontComboBox *comboFont;
     QComboBox *comboSize;
-    QToolBar *tb;
     QString fileName;
     QTextEdit *textEdit;
     QTextCursor *cursor;
     QMap<quint16, QTextCursor> *cursorMap;
     QTreeWidget *usersTree;
     QDockWidget *dockUsersTree;
+<<<<<<< Updated upstream
 	
+=======
+    QUtente utente;
+    QToolBar *userInfoTb;
+    QWidget *spacerWidgetUserInfo;
+    QImage profileImage;
+    QLabel *profileImageLabel;
+    QLabel *usernameLabel;
+    quint16 siteId;
+    QToolBar *tbEdit;
+    QMenu *menuEdit;
+    QToolBar *tbFile;
+    QToolBar *tbText;
+    QToolBar *tbColor;
+    QToolBar *tbFormat;
+
+>>>>>>> Stashed changes
 	 //Aggiungo CRDT
     CRDT* algoritmoCRDT;
 
