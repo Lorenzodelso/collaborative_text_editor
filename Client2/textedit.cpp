@@ -157,6 +157,7 @@ TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP,quint16 siteId, QUt
     /*chiusura documento*/
     QObject::connect(this, &TextEdit::SigChiudiDoc, wscP, &WorkerSocketClient::chiudiDoc);
 
+
     /*operazione locale sul documento*/
     QObject::connect(this, &TextEdit::SigOpDocLocale, wscP, &WorkerSocketClient::opDocLocale);
     QObject::connect(wscP, &WorkerSocketClient::SigEsitoOpDocLocale, this,  &TextEdit::esitoOpDocLocale);
@@ -164,11 +165,11 @@ TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP,quint16 siteId, QUt
     /*operazione remota sul documento*/
     QObject::connect(wscP, &WorkerSocketClient::SigOpDocRemota, this,  &TextEdit::opDocRemota);
 
-//    /*un altro user ha aperto il doc*/
-//    QObject::connect(wscP, &WorkerSocketClient::SigQuestoUserHaApertoIlDoc, this,  &TextEdit::questoUserHaApertoIlDoc);
+    /*un altro user ha aperto il doc*/
+    QObject::connect(wscP, &WorkerSocketClient::SigQuestoUserHaApertoIlDoc, this,  &TextEdit::questoUserHaApertoIlDoc);
 
-//    /*un altro user ha chiuso il doc*/
-//    QObject::connect(wscP, &WorkerSocketClient::SigQuestoUserHaChiusoIlDoc, this,  &TextEdit::questoUserHaChiusoIlDoc);
+    /*un altro user ha chiuso il doc*/
+    QObject::connect(wscP, &WorkerSocketClient::SigQuestoUserHaChiusoIlDoc, this,  &TextEdit::questoUserHaChiusoIlDoc);
 
     /*op chi ha inserito cosa*/
     QObject::connect(this, &TextEdit::SigOpChiHaInseritoCosa, wscP, &WorkerSocketClient::opChiHaInseritoCosa);
