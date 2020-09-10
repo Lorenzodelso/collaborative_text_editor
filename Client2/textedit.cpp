@@ -215,7 +215,7 @@ CRDT* TextEdit::getStrutturaCRDT(){
 }
 
 void TextEdit::loadCRDTIntoEditor(CRDT crdt){
-  algoritmoCRDT = new CRDT(algoritmoCRDT->getSiteID(),crdt.getListChar()); //salvo nel CRDT la rappresentazione del file
+  algoritmoCRDT = new CRDT(crdt.getSiteID(),crdt.getListChar()); //salvo nel CRDT la rappresentazione del file
   // devo andare ad aggiornare il contenuto del QTextEdit tramite l'uso di cursori sulla base di quello che c'� scritto nel CRDT
   int currentIndex = 0;
   this->cursor = new QTextCursor(textEdit->textCursor());
