@@ -11,6 +11,7 @@ void WorkerSocketClient::connessioneAlServer() {
     qRegisterMetaType<QUtente>();
     qRegisterMetaType<QUser>();
     qRegisterMetaType<QList<QString>>();
+    qRegisterMetaType<QList<QUser>>();
     qRegisterMetaType<CRDT>();
     qRegisterMetaType<DocOperation>();
 
