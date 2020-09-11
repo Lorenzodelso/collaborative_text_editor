@@ -261,6 +261,7 @@ void TextEdit::closeEvent(QCloseEvent *e)
         delete this->textEdit;
         textEdit = new QTextEdit(this);
         restoreQTextEdit();
+        e->ignore();
    }
    else
        e->ignore();
