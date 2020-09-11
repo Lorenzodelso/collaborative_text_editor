@@ -112,10 +112,6 @@ void Server::apriDoc(QString nomeFile , WorkerSocket* wsP, QUtente user){
             QObject::connect(wdP, &WorkerDoc::SigEsitoOpDoc, wsP, &WorkerSocket::rispondiEsitoOpDoc);
 
 
-            QObject::connect(wdP, &WorkerDoc::SigEsitoApriDoc, wsP, &WorkerSocket::rispondiEsitoApriDoc);
-            /*la corrispondente disconnect, necessaria per evitare che il worker doc attivi lo slot indicato in ogni worker socket
-             * a cui è collegato, viene fatta dentro a &WorkerDoc::workerDocNsimaAperturaDoc*/
-
             QList<unsigned int> idUtentiGiaOnline = userEdits.keys(documents.value(nomeFile));
             idUtentiGiaOnline.removeOne(user.getUserId());
             QMap<QUser, WorkerSocket*> utentiGiaOnline;
@@ -170,11 +166,6 @@ void Server::apriDoc(QString nomeFile , WorkerSocket* wsP, QUtente user){
 
             /*quando il thread ha finito (documento non più editato da alcun client) elimino oggetto worker doc*/
             QObject::connect(tP, &QThread::finished, wdP, &QObject::deleteLater);
-
-            QObject::connect(wdP, &WorkerDoc::SigEsitoApriDoc, wsP, &WorkerSocket::rispondiEsitoApriDoc);
-            /*la corrispondente disconnect, necessaria per evitare che il worker doc attivi lo slot indicato in ogni worker socket
-             * a cui è collegato, viene fatta dentro a &WorkerDoc::workerDocPrimaAperturaDoc*/
-
 
 
             emit SigWorkerDocPrimaAperturaDoc(nomeFile, wsP);
@@ -511,6 +502,10 @@ void Server::chiusuraConnessioneDaParteDelServer(WorkerSocket* wsP) {
 void Server::chiusuraDocumentoDaParteDelClient(WorkerSocket* wsP, QUtente user){
     WorkerDoc* wdP= userEdits.value(user.getUserId());
     QThread* qtdP = threadsDoc.value(wdP);
+
+    /*da ora in avanti quel workersocket non deve più parlare con quel worker doc*/
+    QObject::disconnect(wsP, &WorkerSocket::SigOpDoc, wdP, &WorkerDoc::opDoc);
+    QObject::disconnect(wdP, &WorkerDoc::SigEsitoOpDoc, wsP, &WorkerSocket::rispondiEsitoOpDoc);
 
 
     /*

@@ -325,6 +325,7 @@ void RecentDocsDialogs::esitoApriDoc(QString esito, CRDT doc){
 }
 
 void RecentDocsDialogs::esitoChiudiDoc(QString esito){
+    qDebug() << "dentro esitoChiudiDoc";
   if (isSuccess(esito)){
       mw->hide();
       this->show();

@@ -49,7 +49,9 @@ void WorkerDoc::workerDocPrimaAperturaDoc(QString nomeFile, WorkerSocket* wsP){
     this->openedFile = new QFile(nomeFile);
     QDataStream fileStream(openedFile); //creo uno stream di dati dal file per leggere direttamente il CRDT
     crdt = new CRDT(0);
-
+    QObject::connect(this, &WorkerDoc::SigEsitoApriDoc, wsP, &WorkerSocket::rispondiEsitoApriDoc);
+    /*la corrispondente disconnect, necessaria per evitare che il worker doc attivi lo slot indicato in ogni worker socket
+     * a cui è collegato, viene fatta qui in fondo*/
     //openedFile deve essere già inizializzato, effettuo un controllo per robustezza
     if (!openedFile->open(QIODevice::ReadWrite)){ //controllo anche apertura del file
         esito= "Failed";
@@ -73,6 +75,9 @@ void WorkerDoc::workerDocPrimaAperturaDoc(QString nomeFile, WorkerSocket* wsP){
 
 void WorkerDoc::workerDocNsimaAperturaDoc(QUtente user,WorkerSocket* wsP, QMap<QUser, WorkerSocket*> utentiGiaOnline, QMap<QUser, WorkerSocket*> nuovoUtenteOnline){
     QString esito("");
+    QObject::connect(this, &WorkerDoc::SigEsitoApriDoc, wsP, &WorkerSocket::rispondiEsitoApriDoc);
+    /*la corrispondente disconnect, necessaria per evitare che il worker doc attivi lo slot indicato in ogni worker socket
+     * a cui è collegato, viene fatta qui in fondo*/
     //N-esima apertura, quindi sia crdt che openedFile dovrebbero essere inizializzati, faccio controllo robustezza
     if (crdt == nullptr || openedFile == nullptr){
         esito = "Failed";

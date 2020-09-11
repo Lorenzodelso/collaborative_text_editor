@@ -119,9 +119,10 @@ void  WorkerSocketClient::leggiMsgApp(){
         {
             QString esito;
             BlockReader(socketConnesso).stream() >> esito;
-            in.readBytes(opt,prova);
-            if (esito.compare("Success")==0) emit SigEsitoChiudiDoc("Success");
-            else  emit SigEsitoChiudiDoc("Failed");
+            //in.readBytes(opt,prova);
+            if (esito.compare("Success")==0)
+            {emit SigEsitoChiudiDoc("Success");}
+            else {emit SigEsitoChiudiDoc("Failed");}
 
         }
         if (strcmp(msg,"mop")==0)
