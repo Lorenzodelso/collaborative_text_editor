@@ -1105,7 +1105,7 @@ void TextEdit::esitoOpChiHaInseritoCosa(QList<QUser> users){
             offlineUsers->append(user);
     }
     enteringColorMode();
-    updateTreeWidget(colorWriting);
+    //updateTreeWidget(colorWriting);
 }
 
 
@@ -1115,8 +1115,8 @@ void TextEdit::pressedButtonTrigger(bool checked){
     colorWriting = checked;
     if (checked==true){ // solamente se entriamo nella color Mode
     //emetto segnale per inviare la richiesta al server di ricevere la lista con storico utenti
-        //emit SigOpChiHaInseritoCosa();
-        enteringColorMode();
+        emit SigOpChiHaInseritoCosa();
+        //enteringColorMode();
     }
     else{
         quittingColorMode();

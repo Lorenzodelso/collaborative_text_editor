@@ -8,6 +8,7 @@
 WorkerSocket::WorkerSocket(){
 
     qRegisterMetaType<CRDT>();
+    qRegisterMetaType<QList<QUser>>();
     qRegisterMetaType<QUtente>();
     qRegisterMetaType<QUser>();
     qRegisterMetaType<QList<QString>>();
