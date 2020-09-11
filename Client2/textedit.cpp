@@ -166,12 +166,6 @@ TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP,quint16 siteId, QUt
     /*operazione remota sul documento*/
     QObject::connect(wscP, &WorkerSocketClient::SigOpDocRemota, this,  &TextEdit::opDocRemota);
 
-    /*un altro user ha aperto il doc*/
-    QObject::connect(wscP, &WorkerSocketClient::SigQuestoUserHaApertoIlDoc, this,  &TextEdit::questoUserHaApertoIlDoc);
-
-    /*un altro user ha chiuso il doc*/
-    QObject::connect(wscP, &WorkerSocketClient::SigQuestoUserHaChiusoIlDoc, this,  &TextEdit::questoUserHaChiusoIlDoc);
-
     /*op chi ha inserito cosa*/
     QObject::connect(this, &TextEdit::SigOpChiHaInseritoCosa, wscP, &WorkerSocketClient::opChiHaInseritoCosa);
     QObject::connect(wscP, &WorkerSocketClient::SigEsitoOpChiHaInseritoCosa, this,  &TextEdit::esitoOpChiHaInseritoCosa);
@@ -243,17 +237,39 @@ void TextEdit::loadCRDTIntoEditor(CRDT crdt){
 void TextEdit::closeEvent(QCloseEvent *e)
 {
    if(parentWidget() != NULL){
-        onlineUsers->clear();
         emit(SigChiudiDoc(this->fileName));
         emit(updateRecDocs());
-        this->parentWidget()->show();
+        disconnect(textEdit, &QTextEdit::currentCharFormatChanged,
+                    this, &TextEdit::currentCharFormatChanged);
+        disconnect(textEdit, &QTextEdit::cursorPositionChanged,
+                    this, &TextEdit::cursorPositionChanged);
+        disconnect(textEdit->document(), &QTextDocument::undoAvailable,
+                actionUndo, &QAction::setEnabled);
+        disconnect(textEdit->document(), &QTextDocument::redoAvailable,
+                actionRedo, &QAction::setEnabled);
+        disconnect(textEdit->document(),&QTextDocument::contentsChange,
+                this, &TextEdit::CRDTInsertRemove);
+        disconnect(textEdit, &QTextEdit::copyAvailable, actionCut, &QAction::setEnabled);
+        disconnect(textEdit, &QTextEdit::copyAvailable, actionCopy, &QAction::setEnabled);
+        removeActions();
+        delete algoritmoCRDT;
+        delete usersTree;
+        delete dockUsersTree;
+        delete onlineUsers;
+        delete offlineUsers;
+        delete cursorMap;
+        delete this->textEdit;
+        textEdit = new QTextEdit(this);
+        restoreQTextEdit();
    }
    else
        e->ignore();
 }
+
 void TextEdit::setupFileActions()
 {
-    QToolBar *tb = addToolBar(tr("File Actions"));
+    tbFile = addToolBar(tr("File Actions"));
+
     QMenu *menu = menuBar()->addMenu(tr("&File"));
     QAction *a;
 
@@ -262,7 +278,7 @@ void TextEdit::setupFileActions()
     a = menu->addAction(printIcon, tr("&Print..."), this, &TextEdit::filePrint);
     a->setPriority(QAction::LowPriority);
     a->setShortcut(QKeySequence::Print);
-    tb->addAction(a);
+    tbFile->addAction(a);
 
     const QIcon filePrintIcon = QIcon::fromTheme("fileprint", QIcon(rsrcPath + "/fileprint.png"));
     menu->addAction(filePrintIcon, tr("Print Preview..."), this, &TextEdit::filePrintPreview);
@@ -271,7 +287,7 @@ void TextEdit::setupFileActions()
     a = menu->addAction(exportPdfIcon, tr("&Export PDF..."), this, &TextEdit::filePrintPdf);
     a->setPriority(QAction::LowPriority);
     a->setShortcut(Qt::CTRL + Qt::Key_D);
-    tb->addAction(a);
+    tbFile->addAction(a);
 
     menu->addSeparator();
 #endif
@@ -282,48 +298,46 @@ void TextEdit::setupFileActions()
 
 void TextEdit::setupEditActions()
 {
-    QToolBar *tb = addToolBar(tr("Edit Actions"));
-    QMenu *menu = menuBar()->addMenu(tr("&Edit"));
-
+    tbEdit = addToolBar(tr("Edit Actions"));
+    menuEdit = menuBar()->addMenu(tr("&Edit"));
     const QIcon undoIcon = QIcon::fromTheme("edit-undo", QIcon(rsrcPath + "/editundo.png"));
-    actionUndo = menu->addAction(undoIcon, tr("&Undo"), textEdit, &QTextEdit::undo);
+    actionUndo = menuEdit->addAction(undoIcon, tr("&Undo"), textEdit, &QTextEdit::undo);
     actionUndo->setShortcut(QKeySequence::Undo);
-    tb->addAction(actionUndo);
+    tbEdit->addAction(actionUndo);
 
     const QIcon redoIcon = QIcon::fromTheme("edit-redo", QIcon(rsrcPath + "/editredo.png"));
-    actionRedo = menu->addAction(redoIcon, tr("&Redo"), textEdit, &QTextEdit::redo);
+    actionRedo = menuEdit->addAction(redoIcon, tr("&Redo"), textEdit, &QTextEdit::redo);
     actionRedo->setPriority(QAction::LowPriority);
     actionRedo->setShortcut(QKeySequence::Redo);
-    tb->addAction(actionRedo);
-    menu->addSeparator();
+    tbEdit->addAction(actionRedo);
+    menuEdit->addSeparator();
 
 #ifndef QT_NO_CLIPBOARD
     const QIcon cutIcon = QIcon::fromTheme("edit-cut", QIcon(rsrcPath + "/editcut.png"));
-    actionCut = menu->addAction(cutIcon, tr("Cu&t"), textEdit, &QTextEdit::cut);
+    actionCut = menuEdit->addAction(cutIcon, tr("Cu&t"), textEdit, &QTextEdit::cut);
     actionCut->setPriority(QAction::LowPriority);
     actionCut->setShortcut(QKeySequence::Cut);
-    tb->addAction(actionCut);
+    tbEdit->addAction(actionCut);
 
     const QIcon copyIcon = QIcon::fromTheme("edit-copy", QIcon(rsrcPath + "/editcopy.png"));
-    actionCopy = menu->addAction(copyIcon, tr("&Copy"), textEdit, &QTextEdit::copy);
+    actionCopy = menuEdit->addAction(copyIcon, tr("&Copy"), textEdit, &QTextEdit::copy);
     actionCopy->setPriority(QAction::LowPriority);
     actionCopy->setShortcut(QKeySequence::Copy);
-    tb->addAction(actionCopy);
+    tbEdit->addAction(actionCopy);
 
     const QIcon pasteIcon = QIcon::fromTheme("edit-paste", QIcon(rsrcPath + "/editpaste.png"));
-    actionPaste = menu->addAction(pasteIcon, tr("&Paste"), textEdit, &QTextEdit::paste);
+    actionPaste = menuEdit->addAction(pasteIcon, tr("&Paste"), textEdit, &QTextEdit::paste);
     actionPaste->setPriority(QAction::LowPriority);
     actionPaste->setShortcut(QKeySequence::Paste);
-    tb->addAction(actionPaste);
+    tbEdit->addAction(actionPaste);
     if (const QMimeData *md = QApplication::clipboard()->mimeData())
         actionPaste->setEnabled(md->hasText());
 #endif
-
 }
 
 void TextEdit::setupTextActions()
 {
-    QToolBar *tb = addToolBar(tr("Format Actions"));
+    tbText = addToolBar(tr("Format Actions"));
     QMenu *menu = menuBar()->addMenu(tr("&Format"));
 
     const QIcon boldIcon = QIcon::fromTheme("format-text-bold", QIcon(rsrcPath + "/textbold.png"));
@@ -333,7 +347,7 @@ void TextEdit::setupTextActions()
     QFont bold;
     bold.setBold(true);
     actionTextBold->setFont(bold);
-    tb->addAction(actionTextBold);
+    tbText->addAction(actionTextBold);
     actionTextBold->setCheckable(true);
 
     const QIcon italicIcon = QIcon::fromTheme("format-text-italic", QIcon(rsrcPath + "/textitalic.png"));
@@ -343,7 +357,7 @@ void TextEdit::setupTextActions()
     QFont italic;
     italic.setItalic(true);
     actionTextItalic->setFont(italic);
-    tb->addAction(actionTextItalic);
+    tbText->addAction(actionTextItalic);
     actionTextItalic->setCheckable(true);
 
     const QIcon underlineIcon = QIcon::fromTheme("format-text-underline", QIcon(rsrcPath + "/textunder.png"));
@@ -353,7 +367,7 @@ void TextEdit::setupTextActions()
     QFont underline;
     underline.setUnderline(true);
     actionTextUnderline->setFont(underline);
-    tb->addAction(actionTextUnderline);
+    tbText->addAction(actionTextUnderline);
     actionTextUnderline->setCheckable(true);
 
     menu->addSeparator();
@@ -395,7 +409,7 @@ void TextEdit::setupTextActions()
     }
     alignGroup->addAction(actionAlignJustify);
 
-    tb->addActions(alignGroup->actions());
+    tbText->addActions(alignGroup->actions());
     menu->addActions(alignGroup->actions());
 
     menu->addSeparator();
@@ -403,9 +417,9 @@ void TextEdit::setupTextActions()
     QPixmap pix(16, 16);
     pix.fill(Qt::black);
     actionTextColor = menu->addAction(pix, tr("&Color..."), this, &TextEdit::textColor);
-    tb->addAction(actionTextColor);
+    tbText->addAction(actionTextColor);
 
-    tb->addSeparator();
+    tbText->addSeparator();
 
     userInfoTb = addToolBar(tr("UserInfo"));
     userInfoTb->setMovable(false);
@@ -426,7 +440,7 @@ void TextEdit::setupTextActions()
     userInfoTb->addWidget(profileImageLabel);
     userInfoTb->addWidget(usernameLabel);
 
-    QToolBar *tb2 = addToolBar(tr("Color Mode"));
+    tbColor = addToolBar(tr("Color Mode"));
     QIcon colorModeIcon = QIcon(rsrcPath + "/colormode.png");
     colorMode = new QAction(colorModeIcon, tr("&ColorMode"), this);
     colorMode->setCheckable(true);
@@ -435,26 +449,28 @@ void TextEdit::setupTextActions()
     QWidget *spacerWidget2 = new QWidget(this);
     spacerWidget2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     spacerWidget2->setVisible(true);
-    tb2->addWidget(spacerWidget2);
-    tb2->addAction(colorMode);
-    tb2->setMovable(false);
+    tbColor->addWidget(spacerWidget2);
+    tbColor->addAction(colorMode);
+    tbColor->setMovable(false);
+
 
     //connetto il segnale allo slot che fa update del valore booleano
     connect(colorMode, &QAction::triggered, this, &TextEdit::pressedButtonTrigger);
 
-    tb = addToolBar(tr("Format Actions"));
-    tb->setAllowedAreas(Qt::TopToolBarArea | Qt::BottomToolBarArea);
+    tbFormat = addToolBar(tr("Format Actions"));
+    tbFormat->setAllowedAreas(Qt::TopToolBarArea | Qt::BottomToolBarArea);
     addToolBarBreak(Qt::TopToolBarArea);
-    addToolBar(tb);
-    addToolBar(tb2);
+    addToolBar(tbFormat);
+    addToolBar(tbColor);
 
-    comboFont = new QFontComboBox(tb);
-    tb->addWidget(comboFont);
+    comboFont = new QFontComboBox(tbFormat);
+    tbFormat->addWidget(comboFont);
+
     connect(comboFont, QOverload<const QString &>::of(&QComboBox::activated), this, &TextEdit::textFamily);
 
-    comboSize = new QComboBox(tb);
+    comboSize = new QComboBox(tbFormat);
     comboSize->setObjectName("comboSize");
-    tb->addWidget(comboSize);
+    tbFormat->addWidget(comboSize);
     comboSize->setEditable(true);
 
     const QList<int> standardSizes = QFontDatabase::standardSizes();
@@ -480,7 +496,6 @@ void TextEdit::setCurrentFileName(const QString &fileName)
     setWindowTitle(tr("%1[*] - %2").arg(shownName, QCoreApplication::applicationName()));
     setWindowModified(false);
 }
-
 
 void TextEdit::filePrint()
 {
@@ -514,7 +529,6 @@ void TextEdit::printPreview(QPrinter *printer)
     textEdit->print(printer);
 #endif
 }
-
 
 void TextEdit::filePrintPdf()
 {
@@ -1247,7 +1261,7 @@ void TextEdit::updateUserInfo(QUtente utente){
 //Returns a pixmap with a circular mask
 //
 //**************************************
-QPixmap TextEdit::getCircularPixmap(QImage& img)
+QPixmap TextEdit::getCircularPixmap(QImage &img)
 {
 img.convertToFormat(QImage::Format_ARGB32);
 //blank copy image
@@ -1269,4 +1283,85 @@ painter.setClipPath(path);
 //draw untransparent part of image
 painter.drawImage(0,0,img);
 return QPixmap::fromImage(imageOut);
+}
+
+void TextEdit::restoreQTextEdit(){
+    //Inserisco inizializzazione del CRDT
+    algoritmoCRDT = new CRDT(siteId);
+    //inizialmente scrittura normale
+    colorWriting = false;
+
+    //Creazione dockWidget utenti online/offline
+
+    usersTree = new QTreeWidget();
+    dockUsersTree = new QDockWidget("Users");
+    onlineUsers = new QList<QUser>();
+    offlineUsers = new QList<QUser>();
+    updateTreeWidget(false);
+
+    cursorMap = new QMap<quint16, QTextCursor>();
+
+    connect(textEdit, &QTextEdit::currentCharFormatChanged,
+            this, &TextEdit::currentCharFormatChanged);
+    connect(textEdit, &QTextEdit::cursorPositionChanged,
+            this, &TextEdit::cursorPositionChanged);
+    setCentralWidget(textEdit);
+    addDockWidget(Qt::RightDockWidgetArea, dockUsersTree);
+
+    setToolButtonStyle(Qt::ToolButtonFollowStyle);
+
+    setupFileActions();
+    setupEditActions();
+    setupTextActions();
+
+    QFont textFont("Helvetica");
+    textFont.setStyleHint(QFont::SansSerif);
+    textEdit->setFont(textFont);
+    fontChanged(textEdit->font());
+    colorChanged(textEdit->textColor());
+    alignmentChanged(textEdit->alignment());
+    defaultFmt.setFont(textEdit->font());
+    defaultFmt.setForeground(textEdit->textColor());
+
+    connect(textEdit->document(), &QTextDocument::undoAvailable,
+            actionUndo, &QAction::setEnabled);
+    connect(textEdit->document(), &QTextDocument::redoAvailable,
+            actionRedo, &QAction::setEnabled);
+
+    //connetto signal e slot che servono
+    connect(textEdit->document(),&QTextDocument::contentsChange,
+            this, &TextEdit::CRDTInsertRemove );
+
+    setWindowModified(textEdit->document()->isModified());
+    actionUndo->setEnabled(textEdit->document()->isUndoAvailable());
+    actionRedo->setEnabled(textEdit->document()->isRedoAvailable());
+
+#ifndef QT_NO_CLIPBOARD
+    actionCut->setEnabled(false);
+    connect(textEdit, &QTextEdit::copyAvailable, actionCut, &QAction::setEnabled);
+    actionCopy->setEnabled(false);
+    connect(textEdit, &QTextEdit::copyAvailable, actionCopy, &QAction::setEnabled);
+#endif
+
+#ifdef Q_OS_MACOS
+    // Use dark text on light background on macOS, also in dark mode.
+    QPalette pal = textEdit->palette();
+    pal.setColor(QPalette::Base, QColor(Qt::white));
+    pal.setColor(QPalette::Text, QColor(Qt::black));
+    textEdit->setPalette(pal);
+#endif
+}
+
+void TextEdit::removeActions(){
+
+    removeToolBar(tbEdit);
+    removeToolBar(tbFile);
+    removeToolBar(tbText);
+    removeToolBar(tbColor);
+    removeToolBar(tbFormat);
+    removeToolBar(userInfoTb);
+    menuBar()->clear();
+
+
+
 }

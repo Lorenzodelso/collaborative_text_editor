@@ -101,6 +101,9 @@ public:
     CRDT* getStrutturaCRDT();
     void loadCRDTIntoEditor(CRDT crdt);
     QPixmap getCircularPixmap(QImage& img);
+    void restoreQTextEdit();
+    void removeActions();
+
 
 
 public:
@@ -113,16 +116,16 @@ public:
     signals:
         void formatChanged(const QTextCharFormat &format);
         void SigChiudiDoc(QString nomeFile);
-	
+
 public slots:
     //void fileNew(QString fileName);
-	void format(const QTextCharFormat &format);
+    void format(const QTextCharFormat &format);
     void CRDTInsertRemove(int pos, int rem, int add);
 
     void updateTreeWidget(bool checked);
 
 
-	
+
 
 
     /*
@@ -212,8 +215,8 @@ private:
     void remoteUserConnected(QString username);
     void remoteCursorMoved(QString username, int pos);
     void remoteUserDisconnected(QString username);
-	
-	void comunicaCRDTInserimentoLocale(QTextEdit* txe,QTextCursor* cursor, int pos, int numInserted,CRDT* algCRDT);
+
+    void comunicaCRDTInserimentoLocale(QTextEdit* txe,QTextCursor* cursor, int pos, int numInserted,CRDT* algCRDT);
     void comunicaCRDTRimozioneLocale(int pos, int numRemoved,CRDT* algCRDT);
     void comunicaCRDTCambioFormat(QTextCharFormat format, int pos, int numCar,CRDT* algCRDT);
 
@@ -260,8 +263,14 @@ private:
     QImage profileImage;
     QLabel *profileImageLabel;
     QLabel *usernameLabel;
-	
-	 //Aggiungo CRDT
+    QToolBar *tbEdit;
+    QMenu *menuEdit;
+    QToolBar *tbFile;
+    QToolBar *tbText;
+    QToolBar *tbColor;
+    QToolBar *tbFormat;
+
+     //Aggiungo CRDT
     CRDT* algoritmoCRDT;
 
     quint16 siteId;
