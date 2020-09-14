@@ -1029,11 +1029,15 @@ void TextEdit::opDocRemota(DocOperation operation){
 
 void TextEdit::questoUserHaApertoIlDoc(QUser usr){
     onlineUsers->append(usr);
+    if(offlineUsers->contains(usr))
+        offlineUsers->removeAll(usr);
     updateTreeWidget(colorWriting);
 }
 
 void TextEdit::questoUserHaChiusoIlDoc(QUser usr){
     onlineUsers->removeAll(usr);
+    if(!offlineUsers->contains(usr))
+        offlineUsers->append(usr);
     updateTreeWidget(colorWriting);
 }
 
@@ -1081,7 +1085,9 @@ void TextEdit::quittingColorMode(){
     QTextCursor* colorCursor = new QTextCursor(textEdit->textCursor());
     QObject::disconnect(textEdit->document(),&QTextDocument::contentsChange,
             this, &TextEdit::CRDTInsertRemove );
-    updateTreeWidget(colorWriting); //deve essere false per forza
+    //deve essere false per forza
+    updateTreeWidget(colorWriting);
+    offlineUsers->clear();
     //caso in cui ci troviamo nella color mode e l'utente preme di nuovo il bottone per togliere la modalità
     //torniamo alla modalità in cui tutti i caratteri sono neri
     QTextCharFormat format;
@@ -1101,7 +1107,7 @@ void TextEdit::quittingColorMode(){
 
 void TextEdit::esitoOpChiHaInseritoCosa(QList<QUser> users){
     for (auto user : users){
-        if (!onlineUsers->contains(user) && user.getUserId()!=this->algoritmoCRDT->getSiteID())
+        if (!onlineUsers->contains(user) && user.getUserId()!=this->algoritmoCRDT->getSiteID() && !offlineUsers->contains(user))
             offlineUsers->append(user);
     }
     enteringColorMode();
@@ -1207,8 +1213,6 @@ void TextEdit::updateTreeWidget(bool checked){
 
         }
     }else{
-
-
         usersTree->setColumnCount(1);
 
         QList<QString> *usernameOnline = new QList<QString>();
