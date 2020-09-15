@@ -434,7 +434,7 @@ void TextEdit::setupTextActions()
         profileImage = QImage(rsrc+"/colored-edit-profile.png");
 
     profileImageLabel = new QLabel();
-    profileImageLabel->setPixmap(getCircularPixmap(profileImage).scaled(50,50, Qt::AspectRatioMode::KeepAspectRatio));
+    profileImageLabel->setPixmap(QPixmap::fromImage(profileImage).scaled(50,50, Qt::AspectRatioMode::KeepAspectRatio));
     profileImageLabel->setMargin(5);
     usernameLabel = new QLabel(utente.getUsername());
     usernameLabel->setMargin(5);
@@ -1252,7 +1252,7 @@ void TextEdit::updateUserInfo(QUtente utente){
     else
         profileImage = QImage(rsrc+"/colored-edit-profile.png");
 
-    profileImageLabel->setPixmap(getCircularPixmap(profileImage).scaled(50,50, Qt::AspectRatioMode::KeepAspectRatio));
+    profileImageLabel->setPixmap(QPixmap::fromImage(profileImage).scaled(50,50, Qt::AspectRatioMode::KeepAspectRatio));
     profileImageLabel->setMargin(5);
     usernameLabel->setText(utente.getUsername());
     usernameLabel->setMargin(5);

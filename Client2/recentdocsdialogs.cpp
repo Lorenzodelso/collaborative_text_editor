@@ -329,6 +329,7 @@ void RecentDocsDialogs::esitoChiudiDoc(QString esito){
   if (isSuccess(esito)){
       mw->hide();
       this->show();
+      open->setEnabled(false);
   }
   else{
       QMessageBox msgBox;
