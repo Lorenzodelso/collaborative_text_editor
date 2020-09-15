@@ -12,7 +12,6 @@ class QUtente: public QObject {
 private:
     quint32 userId;
     QString userName;
-    QString nickName;
     QString password;
     QString nomeImg;
 
@@ -20,7 +19,7 @@ private:
 
 public:
     QUtente();
-    QUtente(quint32 userId, QString userName, QString nickName, QString password, QString nomeImg);
+    QUtente(quint32 userId, QString userName, QString password, QString nomeImg);
     QUtente(QUtente const &utente);
     QUtente operator=(QUtente const &utente);
     friend QDataStream& operator<<(QDataStream& out,QUtente& user);
@@ -30,9 +29,9 @@ public:
     QString getUsername();
     QString getPassword();
     QString getNomeImg();
-    QString getNickName();
 
-    void setNickName(QString nickName);
+
+
 
     void setUserId(quint32 userId);
 
