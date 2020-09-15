@@ -206,7 +206,7 @@ void WorkerSocket::rispondiEsitoRegistrazione(QString esito, QString nomeImg)
         if(nomeImg!=NULL){
             this->image.save(QDir::currentPath()+val+nomeImg, nomeImg.split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
         }
-        socketConnessoP->disconnectFromHost();
+        //socketConnessoP->disconnectFromHost();
     }
     else
     {
