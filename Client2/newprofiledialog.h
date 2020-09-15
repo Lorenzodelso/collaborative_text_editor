@@ -38,8 +38,6 @@ public slots:
     void imageUnhovered();
     void selectImagePressed();
     void userWhitespaces();
-    void nickWhitespaces();
-
    /*
     * fa la cosa opportuna sulla base dell'esito ricevuto
     *
@@ -60,7 +58,6 @@ private:
     QLabel *username;
     QLabel *password;
     QLabel *repeatPassword;
-    QLabel *nickname;
     ClickableLabel *userPic;
     QPixmap *profilePic;
     QPushButton *registerUser;
@@ -68,12 +65,10 @@ private:
     QLineEdit *userEdit;
     QLineEdit *passEdit;
     QLineEdit *repPassEdit;
-    QLineEdit *nickEdit;
     QLabel *userErr;
-    QLabel *nickErr;
     QLabel *passErr;
     RecentDocsDialogs *docsDialog;
-    int userFlag = 0, passFlag = 0, nickFlag = 0;
+    int userFlag = 0, passFlag = 0;
 };
 
 #endif // NEWPROFILEDIALOG_H

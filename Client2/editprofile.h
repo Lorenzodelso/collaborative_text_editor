@@ -41,7 +41,6 @@ private slots:
     void imageHovered();
     void comparePasswords();
     void userWhitespaces();
-    void nickWhitespaces();
     void imageUnhovered();
 
    /*
@@ -57,14 +56,12 @@ private slots:
 
 private:
     const QString rsrc = ":/images/win";
-    QLabel *nickname;
     QLabel *username;
     QLabel *newPass;
     QLabel *newRepPass;
     ClickableLabel *userPic;
     QPixmap *profilePic;
     QLineEdit *usernameEdit;
-    QLineEdit *nickEdit;
     QLineEdit *newPassEdit;
     QLineEdit *newRepPassEdit;
     QPushButton *save;
@@ -72,10 +69,9 @@ private:
     WorkerSocketClient* wscP;
     QUtente *utenteLocale;
     QLabel *userErr;
-    QLabel *nickErr;
     QLabel *passErr;
     QUtente *recDocsUtente;
-    int userFlag = 1, passFlag = 1, nickFlag = 1;
+    int userFlag = 1, passFlag = 1;
 
 
 };

@@ -86,7 +86,7 @@ LoginDialog::LoginDialog(QWidget *parent, WorkerSocketClient* wscP)
 void LoginDialog::loginClicked(){
     QString username = usernameEdit->text();
     QString password = passwordEdit->text();
-    QUtente *user = new QUtente(0, username, "", password, "");
+    QUtente *user = new QUtente(0, username, password, "");
     emit(SigLogin(*user));
 }
 

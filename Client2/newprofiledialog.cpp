@@ -32,8 +32,6 @@ NewProfileDialog::NewProfileDialog(QWidget *parent, WorkerSocketClient* wscP)
     registerUser->setEnabled(false);
     abort = new QPushButton(tr("Cancel"));
 
-    nickname = new QLabel(tr("Nickname: "));
-    nickEdit = new QLineEdit();
     userPic = new ClickableLabel();
     userPic->setBackgroundRole(QPalette::Dark);
     userPic->setScaledContents(false);
@@ -42,7 +40,6 @@ NewProfileDialog::NewProfileDialog(QWidget *parent, WorkerSocketClient* wscP)
     userPic->setPixmap(*profilePic);
     userErr = new QLabel("");
     passErr = new QLabel("");
-    nickErr = new QLabel("");
 
     QDialogButtonBox *buttonBox = new QDialogButtonBox();
     buttonBox->addButton(registerUser, QDialogButtonBox::ActionRole);
@@ -55,7 +52,6 @@ NewProfileDialog::NewProfileDialog(QWidget *parent, WorkerSocketClient* wscP)
     connect(abort, &QPushButton::clicked, this, &NewProfileDialog::abortPressed);
     connect(passEdit, &QLineEdit::textEdited, this, &NewProfileDialog::comparePasswords);
     connect(userEdit, &QLineEdit::textEdited, this, &NewProfileDialog::userWhitespaces);
-    connect(nickEdit, &QLineEdit::textEdited, this, &NewProfileDialog::nickWhitespaces);
     connect(repPassEdit, &QLineEdit::textEdited, this, &NewProfileDialog::comparePasswords);
     connect(userPic, &ClickableLabel::hovered, this, &NewProfileDialog::imageHovered);
     connect(userPic, &ClickableLabel::unHovered, this, &NewProfileDialog::imageUnhovered);
@@ -71,9 +67,6 @@ NewProfileDialog::NewProfileDialog(QWidget *parent, WorkerSocketClient* wscP)
     formLayout->addRow(username, userEdit);
     formLayout->addRow(userErr);
     formLayout->setSpacing(5);
-    formLayout->addRow(nickname, nickEdit);
-    formLayout->addRow(nickErr);
-    formLayout->setSpacing(5);
     formLayout->addRow(password, passEdit);
     formLayout->setSpacing(5);
     formLayout->addRow(repeatPassword, repPassEdit);
@@ -83,7 +76,7 @@ NewProfileDialog::NewProfileDialog(QWidget *parent, WorkerSocketClient* wscP)
     layout->addWidget(buttonBox);
     setLayout(layout);
     setFixedSize(300,450);
-    utente = new QUtente(0,"","","","");
+    utente = new QUtente(0,"","","");
 
 //    //**********************************************************
 //    QUtente *utenteTest = new QUtente(1234, "mario", "mariogrdn", "password", "");
@@ -121,29 +114,9 @@ void NewProfileDialog::userWhitespaces(){
         registerUser->setEnabled(false);
     }
 
-    if(userFlag == 1 && passFlag == 1 && (nickFlag == 1 || nickEdit->text().isNull() || nickEdit->text().isEmpty()))
+    if(userFlag == 1 && passFlag == 1)
         registerUser->setEnabled(true);
 }
-
-void NewProfileDialog::nickWhitespaces(){
-    QString tempNick = nickEdit->text();
-    if(checkString(tempNick)){
-        nickErr->setText("");
-        this->repaint();
-        nickFlag = 1;
-    }else{
-        nickErr->setText("Nickname must contain no whitespaces");
-        nickErr->setStyleSheet("QLabel {color: #FF0000}");
-        this->repaint();
-        nickFlag = 0;
-        registerUser->setEnabled(false);
-    }
-
-    if(userFlag == 1 && passFlag == 1 && (nickFlag == 1 || nickEdit->text().isNull() || nickEdit->text().isEmpty()))
-        registerUser->setEnabled(true);
-
-}
-
 
 //*********************************************************************
 //
@@ -156,7 +129,6 @@ void NewProfileDialog::nickWhitespaces(){
 void NewProfileDialog::registerPressed(){
     QString user = userEdit->text();
     QString pass = passEdit->text();
-    QString nick = nickEdit->text();
 
     if(utente->getNomeImg().isNull() || utente->getNomeImg().isEmpty())
         utente->setNomeImg(nullptr);
@@ -169,8 +141,6 @@ void NewProfileDialog::registerPressed(){
         utente->setUserId(0);
         utente->setPassword(pass);
         utente->setUsername(user);
-        utente->setNickName(nick);
-
         emit SigRegistrazione(*utente);
     }
 }
@@ -208,7 +178,7 @@ void NewProfileDialog::comparePasswords(){
             passErr->setStyleSheet("QLabel {color: #FF0000}");
           }
 
-        if(passFlag == 1 && (nickFlag == 1 || nickEdit->text().isNull() || nickEdit->text().isEmpty()) && userFlag == 1 && checkString(pass) && checkString(repPass))
+        if(passFlag == 1 && userFlag == 1 && checkString(pass) && checkString(repPass))
             registerUser->setEnabled(true);
     }
 

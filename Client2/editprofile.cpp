@@ -20,8 +20,6 @@ EditProfile::EditProfile(QWidget *parent, WorkerSocketClient* wscP, QUtente* ute
     utenteLocale = new QUtente(*utente);
     this->wscP = wscP;
     usernameEdit = new QLineEdit();
-    nickname = new QLabel(tr("&Nickname: "));
-    nickEdit = new QLineEdit();
     newPass = new QLabel(tr("New Password"));
     newPassEdit = new QLineEdit();
     newPassEdit->setEchoMode(QLineEdit::Password);
@@ -33,11 +31,9 @@ EditProfile::EditProfile(QWidget *parent, WorkerSocketClient* wscP, QUtente* ute
     userPic->setScaledContents(false);
     profilePic = new QPixmap();
     userErr = new QLabel("");
-    nickErr = new QLabel("");
     passErr = new QLabel("");
     userPic->setPixmap(*profilePic);
     username->setBuddy(usernameEdit);
-    nickname->setBuddy(nickEdit);
     newPass->setBuddy(newPassEdit);
     newRepPass->setBuddy(newRepPassEdit);
 
@@ -45,11 +41,6 @@ EditProfile::EditProfile(QWidget *parent, WorkerSocketClient* wscP, QUtente* ute
         usernameEdit->setText(utente->getUsername());
         usernameEdit->setEnabled(true);
 
-        if(!utente->getNickName().isEmpty()){
-            nickEdit->setText(utente->getNickName());
-        }else{
-            nickEdit->setPlaceholderText(tr("(Optional)"));
-        }
         qDebug()<< QDir::currentPath()+"/"+utente->getNomeImg();
         if(!QFileInfo::exists(QDir::currentPath()+"/"+utente->getNomeImg()) || !QFileInfo(QDir::currentPath()+"/"+utente->getNomeImg()).isFile()){
                 profilePic->load(rsrc+"/colored-edit-profile.png");
@@ -75,8 +66,6 @@ EditProfile::EditProfile(QWidget *parent, WorkerSocketClient* wscP, QUtente* ute
     formLayout->addRow(username, usernameEdit);
     formLayout->addRow(userErr);
     formLayout->setSpacing(5);
-    formLayout->addRow(nickname, nickEdit);
-    formLayout->addRow(nickErr);
     formLayout->setSpacing(5);
     formLayout->addRow(newPass, newPassEdit);
     formLayout->setSpacing(5);
@@ -97,7 +86,6 @@ EditProfile::EditProfile(QWidget *parent, WorkerSocketClient* wscP, QUtente* ute
     connect(userPic, &ClickableLabel::unHovered, this, &EditProfile::imageUnhovered);
     connect(newPassEdit, &QLineEdit::textEdited, this, &EditProfile::comparePasswords);
     connect(usernameEdit, &QLineEdit::textEdited, this, &EditProfile::userWhitespaces);
-    connect(nickEdit, &QLineEdit::textEdited, this, &EditProfile::nickWhitespaces);
     connect(newRepPassEdit, &QLineEdit::textEdited, this, &EditProfile::comparePasswords);
 
     /*modifica profilo utente*/
@@ -145,39 +133,8 @@ void EditProfile::userWhitespaces(){
         userFlag = 0;
     }
 
-    if(userFlag == 1 && passFlag == 1 && nickFlag == 1)
+    if(userFlag == 1 && passFlag == 1)
         save->setEnabled(true);
-}
-
-//**************************************************
-//
-//Checks whether the nickname has spaces in it.
-//If it doesn't, the flag is set to 1 and saves
-//the new value in a local QUtente. If all
-//the other flags are set to 1, it enables the
-//save button
-//
-//**************************************************
-
-void EditProfile::nickWhitespaces(){
-    QString tempNick = nickEdit->text();
-    if(checkString(tempNick)){
-        nickErr->setText("");
-        utenteLocale->setNickName(tempNick);
-        this->repaint();
-        nickFlag = 1;
-
-    }else{
-        nickErr->setText("Nickname must contain no whitespaces");
-        nickErr->setStyleSheet("QLabel {color: #FF0000}");
-        this->repaint();
-        nickFlag = 0;
-        save->setEnabled(false);
-    }
-
-    if(userFlag == 1 && passFlag == 1 && nickFlag == 1)
-        save->setEnabled(true);
-
 }
 
 
@@ -188,8 +145,6 @@ void EditProfile::nickWhitespaces(){
 //*********************************************************************
 void EditProfile::savePressed(){
 
-    if(nickEdit->text().isEmpty() || nickEdit->text().isNull())
-        utenteLocale->setNickName(recDocsUtente->getNickName());
     if(newPassEdit->text().isEmpty() || newPassEdit->text().isNull())
         utenteLocale->setPassword(recDocsUtente->getPassword());
 
@@ -279,7 +234,6 @@ void EditProfile::esitoModificaProfiloUtente(QString esito/*esito*/, QUtente use
     }else{
         recDocsUtente->setUserId(userNew.getUserId());
         recDocsUtente->setUsername(userNew.getUsername());
-        recDocsUtente->setNickName(userNew.getNickName());
         recDocsUtente->setNomeImg(userNew.getNomeImg());
         recDocsUtente->setPassword(userNew.getPassword());
         close();
@@ -320,7 +274,7 @@ void EditProfile::comparePasswords(){
           }else if(passFlag == 1)
             utenteLocale->setPassword(pass);
 
-        if(passFlag == 1 && nickFlag == 1 && userFlag == 1 && checkString(pass) && checkString(repPass))
+        if(passFlag == 1 && userFlag == 1 && checkString(pass) && checkString(repPass))
             save->setEnabled(true);
     }
 
