@@ -100,7 +100,6 @@ public:
 
     CRDT* getStrutturaCRDT();
     void loadCRDTIntoEditor(CRDT crdt);
-    QPixmap getCircularPixmap(QImage& img);
     void restoreQTextEdit();
     void removeActions();
 

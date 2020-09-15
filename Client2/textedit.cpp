@@ -1261,35 +1261,6 @@ void TextEdit::updateUserInfo(QUtente utente){
 }
 
 
-//**************************************
-//
-//Returns a pixmap with a circular mask
-//
-//**************************************
-QPixmap TextEdit::getCircularPixmap(QImage &img)
-{
-img.convertToFormat(QImage::Format_ARGB32);
-//blank copy image
-QImage imageOut(img.size(),QImage::Format_ARGB32);
-//painter on it
-QPainter painter(&imageOut);
-//set opacity
-painter.setOpacity(0.5);
-painter.setBrush(Qt::white);
-painter.setPen(Qt::NoPen);
-//draw transparent image
-painter.drawImage(0,0,img);
-//set opacity
-painter.setOpacity(1);
-QPainterPath path(QPointF(100,100));
-//your mask - ellipse
-path.addEllipse(100,100,img.width()-200, img.height()-200);
-painter.setClipPath(path);
-//draw untransparent part of image
-painter.drawImage(0,0,img);
-return QPixmap::fromImage(imageOut);
-}
-
 void TextEdit::restoreQTextEdit(){
     //Inserisco inizializzazione del CRDT
     algoritmoCRDT = new CRDT(siteId);
