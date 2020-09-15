@@ -328,6 +328,7 @@ void RecentDocsDialogs::esitoChiudiDoc(QString esito){
     qDebug() << "dentro esitoChiudiDoc";
   if (isSuccess(esito)){
       mw->hide();
+      mw->cleanTextEdit();
       this->show();
       open->setEnabled(false);
   }

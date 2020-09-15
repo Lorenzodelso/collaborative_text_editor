@@ -110,9 +110,9 @@ public:
      void setCurrentFileName(const QString &fileName);
      ~TextEdit();
      void updateUserInfo(QUtente utente);
+     void cleanTextEdit();
 
-
-    signals:
+signals:
         void formatChanged(const QTextCharFormat &format);
         void SigChiudiDoc(QString nomeFile);
 

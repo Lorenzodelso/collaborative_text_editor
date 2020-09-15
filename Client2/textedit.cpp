@@ -239,28 +239,7 @@ void TextEdit::closeEvent(QCloseEvent *e)
    if(parentWidget() != NULL){
         emit(SigChiudiDoc(this->fileName));
         emit(updateRecDocs());
-        disconnect(textEdit, &QTextEdit::currentCharFormatChanged,
-                    this, &TextEdit::currentCharFormatChanged);
-        disconnect(textEdit, &QTextEdit::cursorPositionChanged,
-                    this, &TextEdit::cursorPositionChanged);
-        disconnect(textEdit->document(), &QTextDocument::undoAvailable,
-                actionUndo, &QAction::setEnabled);
-        disconnect(textEdit->document(), &QTextDocument::redoAvailable,
-                actionRedo, &QAction::setEnabled);
-        disconnect(textEdit->document(),&QTextDocument::contentsChange,
-                this, &TextEdit::CRDTInsertRemove);
-        disconnect(textEdit, &QTextEdit::copyAvailable, actionCut, &QAction::setEnabled);
-        disconnect(textEdit, &QTextEdit::copyAvailable, actionCopy, &QAction::setEnabled);
-        removeActions();
-        delete algoritmoCRDT;
-        delete usersTree;
-        delete dockUsersTree;
-        delete onlineUsers;
-        delete offlineUsers;
-        delete cursorMap;
-        delete this->textEdit;
-        textEdit = new QTextEdit(this);
-        restoreQTextEdit();
+
         e->ignore();
    }
    else
@@ -1337,7 +1316,30 @@ void TextEdit::removeActions(){
     removeToolBar(tbFormat);
     removeToolBar(userInfoTb);
     menuBar()->clear();
+}
 
+void TextEdit::cleanTextEdit(){
 
-
+    disconnect(textEdit, &QTextEdit::currentCharFormatChanged,
+                this, &TextEdit::currentCharFormatChanged);
+    disconnect(textEdit, &QTextEdit::cursorPositionChanged,
+                this, &TextEdit::cursorPositionChanged);
+    disconnect(textEdit->document(), &QTextDocument::undoAvailable,
+            actionUndo, &QAction::setEnabled);
+    disconnect(textEdit->document(), &QTextDocument::redoAvailable,
+            actionRedo, &QAction::setEnabled);
+    disconnect(textEdit->document(),&QTextDocument::contentsChange,
+            this, &TextEdit::CRDTInsertRemove);
+    disconnect(textEdit, &QTextEdit::copyAvailable, actionCut, &QAction::setEnabled);
+    disconnect(textEdit, &QTextEdit::copyAvailable, actionCopy, &QAction::setEnabled);
+    removeActions();
+    delete algoritmoCRDT;
+    delete usersTree;
+    delete dockUsersTree;
+    delete onlineUsers;
+    delete offlineUsers;
+    delete cursorMap;
+    delete this->textEdit;
+    textEdit = new QTextEdit(this);
+    restoreQTextEdit();
 }
