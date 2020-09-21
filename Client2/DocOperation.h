@@ -12,7 +12,8 @@ enum typeList :quint16{
     remoteInsert = 0,
     remoteDelete = 1,
     changedFormat = 2,
-    cursorMoved = 3
+    cursorMoved = 3,
+    alignementChanged=4
 };
 
 class DocOperation
@@ -27,8 +28,11 @@ public:
     quint16 cursorPos;
     quint16 cursorAnch;
 
+    quint16 alignementType;
+
     DocOperation();
     DocOperation(quint16 type, Char ch, QTextCharFormat oldFormat,quint16 siteId, quint16 cursorPos, quint16 cursorAnch);
+    DocOperation(quint16 cursorPos, quint16 alignementType,quint16 siteId);
     void printOperation();
     quint16 getSiteId();
 

@@ -6,7 +6,13 @@ DocOperation::DocOperation()
 }
 
 DocOperation::DocOperation(quint16 type, Char ch, QTextCharFormat oldFormat,quint16 siteId,quint16 cursorPos, quint16 cursorAnch):
-    type(type), character(ch), oldFormat(oldFormat),siteId(siteId), cursorPos(cursorPos),cursorAnch(cursorAnch)
+    type(type), character(ch), oldFormat(oldFormat),siteId(siteId), cursorPos(cursorPos),cursorAnch(cursorAnch),alignementType(0)
+{
+
+}
+
+DocOperation::DocOperation(quint16 cursorPos,quint16 alignementType,quint16 siteId):
+    type(alignementChanged),cursorPos(cursorPos),alignementType(alignementType),siteId(siteId)
 {
 
 }
@@ -54,6 +60,8 @@ QDataStream& operator<<(QDataStream& out, DocOperation docOp){
     out<< fontWeight;
     out<< isUndelined;
     out<< fontSize;
+
+    out<< docOp.alignementType;
     return out;
 }
 
@@ -68,6 +76,8 @@ QDataStream& operator>>(QDataStream& in, DocOperation& docOp){
     quint16 cursorPos;
     quint16 cursorAnch;
 
+    quint16 alignementType;
+
     in >> siteId >> cursorPos >> cursorAnch;
 
     QString fontFamily;
@@ -81,13 +91,19 @@ QDataStream& operator>>(QDataStream& in, DocOperation& docOp){
     double fontSize;
     in >> fontSize;
 
-    format->setFontFamily(fontFamily);
-    format->setFontItalic(isItalic);
-    format->setFontWeight(int(fontWeight));
-    format->setFontUnderline(isUndelined);
-    format->setFontPointSize(fontSize);
+    in >> alignementType;
+    if(alignementType!=0){
+        docOp = *new DocOperation(cursorPos,alignementType,siteId);
+    }else{
+        format->setFontFamily(fontFamily);
+        format->setFontItalic(isItalic);
+        format->setFontWeight(int(fontWeight));
+        format->setFontUnderline(isUndelined);
+        format->setFontPointSize(fontSize);
 
-    docOp = *new DocOperation(type,character,*format,siteId,cursorPos,cursorAnch);
+        docOp = *new DocOperation(type,character,*format,siteId,cursorPos,cursorAnch);
+    }
+
     return in;
 }
 

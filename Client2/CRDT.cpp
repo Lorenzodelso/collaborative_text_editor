@@ -282,6 +282,10 @@ quint16 CRDT::remoteFormatChange(Char ch){
     return index;
 }
 
+void CRDT::setCharAlign(quint16 alignementType, quint16 index){
+    this->listChar[index].setAlign(alignementType);
+}
+
 
 
 

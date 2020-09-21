@@ -47,6 +47,7 @@ public:
     friend QDataStream& operator>>(QDataStream& in, CRDT& crdt);
     void saveCRDTonFile(QString nomeFile);
     void readCRDTfromFile(QString nomeFile);
+    void setCharAlign(quint16 alignementType,quint16 index);
 
 protected:
     Char* generateChar(QChar value,QTextCharFormat format, quint16 index);

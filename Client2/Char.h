@@ -16,6 +16,7 @@ private:
     QVector<quint16> position;
     QChar value;
     QTextCharFormat format;
+    quint16 alignementType;
 
 public:
     Char();
@@ -27,6 +28,8 @@ public:
     void setFormat(QTextCharFormat format);
     QTextCharFormat getFormat();
     quint16 getSiteId();
+    quint16 getAlign();
+    void setAlign(quint16 alignementType);
     friend QDataStream& operator<<(QDataStream& out,const Char& ch);
     friend QDataStream& operator>>(QDataStream& in, Char& ch);
 

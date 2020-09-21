@@ -4,9 +4,9 @@
 
 Char::Char(){}
 Char::Char(quint16 siteId, quint16 counter, QVector<quint16> position, QChar value,QTextCharFormat format):
-siteId(siteId), counter(counter),position(position),value(value),format(format) {}
+siteId(siteId), counter(counter),position(position),value(value),format(format),alignementType(0) {}
 
-Char::Char(const Char& source):siteId(source.siteId), counter(source.counter), value(source.value),format(source.format){
+Char::Char(const Char& source):siteId(source.siteId), counter(source.counter), value(source.value),format(source.format),alignementType(source.alignementType){
     position = QVector<quint16>(source.position);
 }
 
@@ -49,6 +49,7 @@ QChar Char::getValue() {
 
 void Char::setFormat(QTextCharFormat format){
     this->format.merge(format);
+    QString name = this->format.fontFamily();
 }
 
 QTextCharFormat Char::getFormat(){
@@ -58,7 +59,7 @@ QTextCharFormat Char::getFormat(){
 quint16 Char::getSiteId(){return this->siteId;}
 
 QDataStream& operator<<(QDataStream& out,const Char& ch){
-    out << ch.siteId << ch.counter << ch.position <<ch.value;
+    out << ch.siteId << ch.counter << ch.position <<ch.value <<ch.alignementType;
     //Passaggio di valori che mi interessano per salvare anche il formato per ogni carattere
     //Chiamateci stacanovisti
 
@@ -83,12 +84,14 @@ QDataStream& operator>>(QDataStream& in, Char& ch){
     quint16 siteId;
     quint16 counter;
     QChar value;
+    quint16 alignementType;
     QVector<quint16> pos;
     QTextCharFormat* format = new QTextCharFormat();
     in >> siteId;
     in >> counter;
     in >> pos;
     in >> value;
+    in >> alignementType;
 
     //Riprendo tutti i valori che mi interessano per il formato
     QString fontFamily;
@@ -111,5 +114,12 @@ QDataStream& operator>>(QDataStream& in, Char& ch){
 
     //Costruisco il Char anche con il formato
     ch = *new Char(siteId,counter,pos,value,*format);
+    ch.setAlign(alignementType);
     return in;
+}
+void Char::setAlign(quint16 alignementType){
+    this->alignementType = alignementType;
+}
+quint16 Char::getAlign(){
+    return this->alignementType;
 }

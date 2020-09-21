@@ -132,23 +132,38 @@ void WorkerDoc::opDoc(DocOperation docOp){
     QDataStream outStream(this->openedFile);
     switch(docOp.type){
         case remoteDelete:
+    {
+
             this->crdt->remoteDelete(docOp.character);
             outStream << *crdt;
             break;
+    }
         case remoteInsert:
+    {
             this->crdt->remoteInsert(docOp.character);
             outStream << *crdt;
             break;
+    }
         case changedFormat:
+    {
             this->crdt->remoteFormatChange(docOp.character);
             outStream << *crdt;
             break;
+    }
         case cursorMoved:
+    {
             //Aggiorno la mappa dei cursori
             QTextCursor* cursor = new QTextCursor();
             cursor->setPosition(docOp.cursorPos,QTextCursor::MoveAnchor);
             cursorMap->find(docOp.siteId).value() = *cursor;
             break;
+    }
+        case alignementChanged:
+    {
+            this->crdt->setCharAlign(docOp.cursorPos,docOp.alignementType);
+            outStream << *crdt;
+            break;
+    }
     }
     file->close();
     emit SigEsitoOpDoc("Success",docOp);

@@ -225,9 +225,25 @@ void TextEdit::loadCRDTIntoEditor(CRDT crdt){
     str.append(ch.getValue());
     this->cursor->insertText(str,ch.getFormat());
     //Da controllare se il cursore si muove da solo dopo l'inserimento
-    //currentIndex++
+
     //this->cursor->setPosition(currentIndex);
+    if(ch.getAlign()!=0){
+        this->textEdit->textCursor().setPosition(currentIndex);
+        if (ch.getAlign()==1){
+            textEdit->setAlignment(Qt::AlignLeft | Qt::AlignAbsolute);
+        }
+        else if (ch.getAlign()==2){
+            textEdit->setAlignment(Qt::AlignHCenter);
+        }
+        else if (ch.getAlign()==3){
+            textEdit->setAlignment(Qt::AlignRight | Qt::AlignAbsolute);
+        }
+        else if (ch.getAlign()==4){
+            textEdit->setAlignment(Qt::AlignJustify);
+        }
+    }
   }
+  currentIndex++;
   connect(textEdit->document(),&QTextDocument::contentsChange,
           this, &TextEdit::CRDTInsertRemove );
 }
@@ -663,14 +679,29 @@ void TextEdit::textColor()
 
 void TextEdit::textAlign(QAction *a)
 {
-    if (a == actionAlignLeft)
+    disconnect(textEdit->document(),&QTextDocument::contentsChange,this, &TextEdit::CRDTInsertRemove);
+    quint16 alignementType=0;
+    auto cursorPos = textEdit->textCursor().position();
+    if (a == actionAlignLeft){
         textEdit->setAlignment(Qt::AlignLeft | Qt::AlignAbsolute);
-    else if (a == actionAlignCenter)
+        alignementType=1;
+    }
+    else if (a == actionAlignCenter){
         textEdit->setAlignment(Qt::AlignHCenter);
-    else if (a == actionAlignRight)
+        alignementType=2;
+    }
+    else if (a == actionAlignRight){
         textEdit->setAlignment(Qt::AlignRight | Qt::AlignAbsolute);
-    else if (a == actionAlignJustify)
+        alignementType=3;
+    }
+    else if (a == actionAlignJustify){
         textEdit->setAlignment(Qt::AlignJustify);
+        alignementType=4;
+    }
+    algoritmoCRDT->setCharAlign(alignementType,cursorPos);
+    DocOperation* docOp = new DocOperation(cursorPos,alignementType,this->siteId);
+    emit SigOpDocLocale(*docOp);
+    connect(textEdit->document(),&QTextDocument::contentsChange,this, &TextEdit::CRDTInsertRemove);
 }
 
 void TextEdit::currentCharFormatChanged(const QTextCharFormat &format)
@@ -983,6 +1014,7 @@ void TextEdit::opDocRemota(DocOperation operation){
       break;
    }
    case cursorMoved:
+   {
        //Il QTextCursor si posiziona sempre in mezzo a due caratteri
        //Supponiamo quindi che per gestire la visualizzazione del cursore, il carattere '|' si posiziona sempre prima del cursore
        // Esempio: testo di pro|(cursore)va
@@ -1002,6 +1034,40 @@ void TextEdit::opDocRemota(DocOperation operation){
        cursorMap->find(operation.siteId).value() = cursor;
        break;
     }
+   case alignementChanged:
+   {
+       disconnect(textEdit->document(),&QTextDocument::contentsChange,
+                  this, &TextEdit::CRDTInsertRemove);
+       textEdit->textCursor().setPosition(operation.cursorPos);
+       switch(operation.alignementType){
+       case 1:
+       {
+           textEdit->setAlignment(Qt::AlignLeft | Qt::AlignAbsolute);
+           break;
+       }
+       case 2:
+       {
+           textEdit->setAlignment(Qt::AlignHCenter);
+           break;
+       }
+       case 3:
+       {
+           textEdit->setAlignment(Qt::AlignRight | Qt::AlignAbsolute);
+           break;
+       }
+       case 4:
+       {
+           textEdit->setAlignment(Qt::AlignJustify);
+           break;
+       }
+       }
+       connect(textEdit->document(),&QTextDocument::contentsChange,
+                  this, &TextEdit::CRDTInsertRemove);
+       break;
+   }
+
+
+ }
 }
 
 

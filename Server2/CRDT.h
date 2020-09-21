@@ -29,8 +29,8 @@ private:
 public:
     QString text;
     quint16 counter;
-
     CRDT();
+
     CRDT(quint16 id);
     CRDT(quint16 id, QVector<Char> listChar);
     quint16 getSiteID();
@@ -40,13 +40,14 @@ public:
     DocOperation localInsert(QChar value,QTextCharFormat format, quint16 index);
     DocOperation localErase(quint16 index);
     DocOperation localFormatChange(QTextCharFormat format, quint16 index);
-    void remoteInsert(Char value);
-    void remoteDelete(Char value);
-    void remoteFormatChange(Char ch);
+    quint16 remoteInsert(Char value);
+    quint16 remoteDelete(Char value);
+    quint16 remoteFormatChange(Char ch);
     friend QDataStream& operator<<(QDataStream& out,const CRDT& crdt);
     friend QDataStream& operator>>(QDataStream& in, CRDT& crdt);
     void saveCRDTonFile(QString nomeFile);
     void readCRDTfromFile(QString nomeFile);
+    void setCharAlign(quint16 alignementType,quint16 index);
 
 protected:
     Char* generateChar(QChar value,QTextCharFormat format, quint16 index);
