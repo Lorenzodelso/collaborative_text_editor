@@ -225,23 +225,31 @@ void TextEdit::loadCRDTIntoEditor(CRDT crdt){
     str.append(ch.getValue());
     this->cursor->insertText(str,ch.getFormat());
     //Da controllare se il cursore si muove da solo dopo l'inserimento
-
-    //this->cursor->setPosition(currentIndex);
-    if(ch.getAlign()!=0){
+    /*
+    if(ch.getValue()=='\n'){
         this->textEdit->textCursor().setPosition(currentIndex);
-        if (ch.getAlign()==1){
-            textEdit->setAlignment(Qt::AlignLeft | Qt::AlignAbsolute);
-        }
-        else if (ch.getAlign()==2){
-            textEdit->setAlignment(Qt::AlignHCenter);
-        }
-        else if (ch.getAlign()==3){
-            textEdit->setAlignment(Qt::AlignRight | Qt::AlignAbsolute);
-        }
-        else if (ch.getAlign()==4){
-            textEdit->setAlignment(Qt::AlignJustify);
-        }
+        textEdit->setAlignment(Qt::AlignLeft | Qt::AlignAbsolute);
     }
+*/
+    //else{
+    //this->cursor->setPosition(currentIndex);
+        if(ch.getAlign()!=0){
+            qDebug()<<currentIndex;
+            this->textEdit->textCursor().setPosition(currentIndex);
+            if (ch.getAlign()==1){
+                textEdit->setAlignment(Qt::AlignLeft | Qt::AlignAbsolute);
+            }
+            else if (ch.getAlign()==2){
+                textEdit->setAlignment(Qt::AlignHCenter);
+            }
+            else if (ch.getAlign()==3){
+                textEdit->setAlignment(Qt::AlignRight | Qt::AlignAbsolute);
+            }
+            else if (ch.getAlign()==4){
+                textEdit->setAlignment(Qt::AlignJustify);
+            }
+        }
+   // }
   }
   currentIndex++;
   connect(textEdit->document(),&QTextDocument::contentsChange,
@@ -681,7 +689,7 @@ void TextEdit::textAlign(QAction *a)
 {
     disconnect(textEdit->document(),&QTextDocument::contentsChange,this, &TextEdit::CRDTInsertRemove);
     quint16 alignementType=0;
-    auto cursorPos = textEdit->textCursor().position();
+    auto cursorPos = textEdit->textCursor().block().position();
     if (a == actionAlignLeft){
         textEdit->setAlignment(Qt::AlignLeft | Qt::AlignAbsolute);
         alignementType=1;
@@ -698,6 +706,7 @@ void TextEdit::textAlign(QAction *a)
         textEdit->setAlignment(Qt::AlignJustify);
         alignementType=4;
     }
+    qDebug()<<cursorPos;
     algoritmoCRDT->setCharAlign(alignementType,cursorPos);
     DocOperation* docOp = new DocOperation(cursorPos,alignementType,this->siteId);
     emit SigOpDocLocale(*docOp);
@@ -719,7 +728,7 @@ Nella DocOperation i parametri che non vengono utilizzati vengono settati a null
 void TextEdit::segnalaMovimentoCursore(QTextCursor cursor){
     DocOperation* docOpCursore = new DocOperation(
                 cursorMoved,Char(),QTextCharFormat(),this->algoritmoCRDT->getSiteID(),cursor.position(),cursor.anchor() );
-  //  emit SigOpDocLocale(*docOpCursore);
+   //emit SigOpDocLocale(*docOpCursore);
 }
 
 void TextEdit::cursorPositionChanged()
@@ -965,19 +974,24 @@ void TextEdit::opDocRemota(DocOperation operation){
     {
        //Se è attiva la modalità di scrittura a colori devo fare un merge sul formato che mi arriva
        //inserendo anche il colore corretto rispetto al siteId del client che l'ha inserito
-       if (colorWriting == true){
-           auto colors = QColor::colorNames();
-           QTextCharFormat coloredFormat(operation.character.getFormat());
-           coloredFormat.setForeground(QBrush(QColor(colors[operation.character.getSiteId()])));
-           operation.character.setFormat(coloredFormat);
-       }
       quint16 index = algoritmoCRDT->remoteInsert(operation.character);
       disconnect(textEdit->document(),&QTextDocument::contentsChange,
                      this, &TextEdit::CRDTInsertRemove );
       //QTextCursor cursor = cursorMap->find(operation.siteId).value();
-      QTextCursor cursor = textEdit->textCursor();   //MODIFICA TEMPORANEA CURSORE
-      cursor.setPosition(index);
-      cursor.insertText(operation.character.getValue());
+      //QTextCursor cursor = textEdit->textCursor();   //MODIFICA TEMPORANEA CURSORE
+      QTextCursor *cursor = new QTextCursor(textEdit->textCursor());
+      auto colors = QColor::colorNames();
+      if (colorWriting == true){
+          QTextCharFormat coloredFormat(operation.character.getFormat());
+          coloredFormat.setForeground(QBrush(QColor(colors[operation.character.getSiteId()])));
+          cursor->setPosition(index);
+          cursor->mergeCharFormat(coloredFormat);
+          cursor->insertText(operation.character.getValue());
+          textEdit->setTextColor(QColor(colors[this->siteId]));
+      }
+      else{
+          cursor->insertText(operation.character.getValue());
+      }
       connect(textEdit->document(),&QTextDocument::contentsChange,
                      this, &TextEdit::CRDTInsertRemove );
       break;
@@ -1038,7 +1052,11 @@ void TextEdit::opDocRemota(DocOperation operation){
    {
        disconnect(textEdit->document(),&QTextDocument::contentsChange,
                   this, &TextEdit::CRDTInsertRemove);
-       textEdit->textCursor().setPosition(operation.cursorPos);
+
+       QTextCursor* cursor = new QTextCursor(textEdit->textCursor());
+       cursor->setPosition(operation.cursorPos);
+       textEdit->setTextCursor(*cursor);
+
        switch(operation.alignementType){
        case 1:
        {
@@ -1094,7 +1112,7 @@ void TextEdit::enteringColorMode(){
     }
     auto colors = QColor::colorNames();
     QTextCursor* colorCursor = new QTextCursor(textEdit->textCursor());
-    colorCursor->setPosition(QTextCursor::End);
+    colorCursor->setPosition(0);
 
     //Devo disconnettere e riconnettere il segnale per non far arrivare un segnale allo slot
     //che sto modificando il formato del testo
@@ -1105,8 +1123,9 @@ void TextEdit::enteringColorMode(){
     for (auto character:algoritmoCRDT->getListChar()){
         QTextCharFormat* format = new QTextCharFormat();
         format->setForeground( QBrush( QColor(colors[character.getSiteId()]) ) );
-        colorCursor->movePosition(QTextCursor::PreviousCharacter,QTextCursor::KeepAnchor,1);
+        colorCursor->movePosition(QTextCursor::NextCharacter,QTextCursor::KeepAnchor,1);
         colorCursor->mergeCharFormat(*format);
+        colorCursor->clearSelection();
         //colorCursor->movePosition(colorCursor->NextCharacter);
     }
 

@@ -29,7 +29,9 @@ private:
 public:
     QString text;
     quint16 counter;
+    quint16 alignement;
     CRDT();
+
 
     CRDT(quint16 id);
     CRDT(quint16 id, QVector<Char> listChar);

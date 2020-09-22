@@ -9,10 +9,10 @@ CRDT::CRDT(){
 
 }
 
-CRDT::CRDT(quint16 id): siteID(id), strategy(RANDOM_STRATEGY),counter(0),boundary(10),base(32),text("") {
+CRDT::CRDT(quint16 id): siteID(id), strategy(RANDOM_STRATEGY),counter(0),boundary(10),base(32),text(""),alignement(0) {
     this->listChar.clear();
 }
-CRDT::CRDT(quint16 id, QVector<Char> listChar): siteID(id), strategy(RANDOM_STRATEGY),counter(0),boundary(10),base(32){
+CRDT::CRDT(quint16 id, QVector<Char> listChar): siteID(id), strategy(RANDOM_STRATEGY),counter(0),boundary(10),base(32),alignement(0){
     this->listChar = listChar;
     this->text.clear();
     for(Char ch : this->listChar){
@@ -195,9 +195,15 @@ int CRDT::findIndexByPosition(Char ch) {
 DocOperation CRDT::localInsert(QChar value, QTextCharFormat format, quint16 index) {
     Char* QCharacter = generateChar(value,format,index);
     Char Qc = *QCharacter;
+
+    //Per gestire i casi di cambiamento di allineamento quando ancora non c'è scritto nulla
+    if(alignement!=0){
+        Qc.setAlign(alignement);
+        alignement=0;
+    }
     this->listChar.insert(index,Qc);
     this->text.insert(index, QCharacter->getValue());
-    //Mi occupo qui di segnalare al WorkerSocket dell'operazione
+
     QTextCharFormat* oldFormat = new QTextCharFormat();
     oldFormat->setFontFamily("fontFamily");
     oldFormat->setFontItalic(true);
@@ -283,7 +289,11 @@ quint16 CRDT::remoteFormatChange(Char ch){
 }
 
 void CRDT::setCharAlign(quint16 alignementType, quint16 index){
-    this->listChar[index].setAlign(alignementType);
+    if(this->listChar.length()>index)
+        this->listChar[index].setAlign(alignementType);
+    else{
+        alignement = alignementType;
+    }
 }
 
 

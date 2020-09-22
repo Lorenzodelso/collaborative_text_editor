@@ -160,7 +160,7 @@ void WorkerDoc::opDoc(DocOperation docOp){
     }
         case alignementChanged:
     {
-            this->crdt->setCharAlign(docOp.cursorPos,docOp.alignementType);
+            this->crdt->setCharAlign(docOp.alignementType,docOp.cursorPos);
             outStream << *crdt;
             break;
     }
