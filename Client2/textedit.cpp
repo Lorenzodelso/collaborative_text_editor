@@ -873,6 +873,7 @@ void TextEdit::comunicaCRDTCambioFormat(QTextCharFormat format, int pos, int num
 
 void TextEdit::CRDTInsertRemove(int pos, int rem, int add){
     QTextCursor cursor = textEdit->textCursor();
+    //qDebug()<<"Add: "<<add<<" Rem: "<<rem<< " Pos:"<<pos;
     if(rem==0 && add>0){
         //AGGIUNTA DI UNO O PIU' CARATTERI
         comunicaCRDTInserimentoLocale(textEdit,&cursor,pos,add,algoritmoCRDT);
@@ -903,9 +904,14 @@ void TextEdit::CRDTInsertRemove(int pos, int rem, int add){
             }
         }
         else{
-            //Caso in cui si incolla una stringa sopra una selezione
-            comunicaCRDTRimozioneLocale(pos,rem,algoritmoCRDT);
-            comunicaCRDTInserimentoLocale(textEdit,&cursor,pos,add,algoritmoCRDT);
+            if(pos==0){
+                comunicaCRDTInserimentoLocale(textEdit,&cursor,pos,add-rem,algoritmoCRDT);
+            }
+            else{
+                //Caso in cui si incolla una stringa sopra una selezione
+                comunicaCRDTRimozioneLocale(pos,rem,algoritmoCRDT);
+                comunicaCRDTInserimentoLocale(textEdit,&cursor,pos,add,algoritmoCRDT);
+            }
         }
     }
 }

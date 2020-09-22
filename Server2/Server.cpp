@@ -36,7 +36,7 @@ Server::Server() {
     file.close();
 
     mainSocketP= new QTcpServerMio();
-    if (!mainSocketP->listen(QHostAddress::LocalHost,3030)) {
+    if (!mainSocketP->listen(QHostAddress::Any,3030)) {
             return;
         }
     QObject::connect(mainSocketP, &QTcpServerMio::SigNuovaConnessione, this, &Server::nuovaConnessione);

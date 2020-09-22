@@ -110,13 +110,19 @@ QVector<quint16> CRDT::generatePosBetween(QVector<quint16> pos1, QVector<quint16
         return newPos;
     } else if (difference == 1){
         newPos.push_back(id1);
-        pos1.pop_front();
+        if(!pos1.empty())
+            pos1.pop_front();
+        else pos1.clear();
         pos2.clear();
         return this->generatePosBetween(pos1, pos2, newPos,level+1);
     }else if(difference == 0){
         newPos.push_back(id1);
-        pos1.pop_front();
-        pos2.pop_front();
+        if(!pos1.empty())
+            pos1.pop_front();
+        else pos1.clear();
+        if(!pos2.empty())
+            pos2.pop_front();
+        else pos2.clear();
         return this->generatePosBetween(pos1, pos2, newPos,level+1);
     }
 }
