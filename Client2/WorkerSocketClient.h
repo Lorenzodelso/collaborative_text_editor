@@ -25,6 +25,9 @@ class WorkerSocketClient : public QObject{
     public:
     ~WorkerSocketClient();
 
+    private:
+        bool connected = false;
+
     signals:
 
 
@@ -60,7 +63,7 @@ public slots:
      * fa QObject::connect(ogg SocketConnesso, ready read, this,  leggiMsgApp)
      * emette SigEsitoConnessioneAlServer("Success"/"Failed")
      * */
-    void connessioneAlServer();
+    void connessioneAlServer(QString ipAddr);
 
     /*
      * sulla base del msg di livello applicazione ricevuto emette

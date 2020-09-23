@@ -6,7 +6,7 @@
 #include <QDebug>
 #include <QDir>
 
-void WorkerSocketClient::connessioneAlServer() {
+void WorkerSocketClient::connessioneAlServer(QString ipAddr) {
 
     qRegisterMetaType<QUtente>();
     qRegisterMetaType<QUser>();
@@ -17,9 +17,9 @@ void WorkerSocketClient::connessioneAlServer() {
 
     this->socketConnesso = new QTcpSocket( this );
 
-    this->socketConnesso->connectToHost(QHostAddress::LocalHost, 3030 );
+    this->socketConnesso->connectToHost(QHostAddress(ipAddr), 3030 );
 
-    bool connected = (socketConnesso->state() == QTcpSocket::ConnectedState);
+    connected = (socketConnesso->state() == QTcpSocket::ConnectedState);
 
     if(connected==true)
 
@@ -31,7 +31,8 @@ void WorkerSocketClient::connessioneAlServer() {
 }
 
 WorkerSocketClient::~WorkerSocketClient(){
-    this->socketConnesso->disconnectFromHost();
+    if(connected == true)
+        this->socketConnesso->disconnectFromHost();
 }
 
 void  WorkerSocketClient::leggiMsgApp(){

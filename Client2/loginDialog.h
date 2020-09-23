@@ -18,8 +18,7 @@ public:
 
 public slots:
 
-    /*emette il segnale SigConnessioneAlServer*/
-    void attivaSocket();
+
 
 private slots:
     void loginClicked();
@@ -27,10 +26,6 @@ private slots:
     void enableLoginButton();
     void registerClicked();
 
-    /*
-    * ritorna il parametro ricevuto
-    * */
-    QString esitoConnessioneAlServer(QString esito/*esito*/);
 
     /*
      * fa la cosa opportuna sulla base dell'esito ricevuto
@@ -49,7 +44,7 @@ signals:
 
     void SigLogin(QUtente user);
 
-    void SigConnessioneAlServer();
+
 
 private:
     QLabel *username;

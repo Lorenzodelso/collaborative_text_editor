@@ -40,9 +40,6 @@ LoginDialog::LoginDialog(QWidget *parent, WorkerSocketClient* wscP)
     connect(cancelButton, &QPushButton::clicked, this, &LoginDialog::cancelClicked);
     connect(newProfileButton, &QPushButton::clicked, this, &LoginDialog::registerClicked);
 
-    /*settaggio connessione*/
-    QObject::connect(this, &LoginDialog::SigConnessioneAlServer, wscP, &WorkerSocketClient::connessioneAlServer);
-    QObject::connect(wscP, &WorkerSocketClient::SigEsitoConnessioneAlServer, this,  &LoginDialog::esitoConnessioneAlServer);
 
     /*login*/
     QObject::connect(this, &LoginDialog::SigLogin, wscP, &WorkerSocketClient::login);
@@ -154,10 +151,3 @@ void LoginDialog::esitoLogin(QString esito/*esito*/, QUtente user, QList<QString
 
 }
 
-void LoginDialog::attivaSocket(){
-    emit SigConnessioneAlServer();
-}
-
-QString LoginDialog::esitoConnessioneAlServer(QString esito){
-    return esito;
-}

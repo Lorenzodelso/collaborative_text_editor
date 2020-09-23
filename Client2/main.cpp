@@ -48,38 +48,22 @@
 **
 ****************************************************************************/
 
-#include "LoginDialog.h"
-
 #include <QApplication>
 #include <QDesktopWidget>
 #include <QCommandLineParser>
 #include <QCommandLineOption>
+#include "serverselection.h"
 #include "WorkerSocketClient.h"
 #include <iostream>
 
 int main(int argc, char *argv[])
 {
     Q_INIT_RESOURCE(textedit);
-
     QApplication a(argc, argv);
     QThread* tP = new QThread();
     WorkerSocketClient* wscP= new WorkerSocketClient();
     wscP->moveToThread(tP);
-
-    LoginDialog *ld = new LoginDialog(0, wscP);
-
-    /*deallocazione oggetto worker socket client se thread corrispondente finisce*/
-    QObject::connect(tP, &QThread::finished, wscP, &QObject::deleteLater);
-
-    tP->start();
-    //if((ld->attivaSocket()).compare("Failed")==0){
-    ld->attivaSocket();
-    /*dealloco thread socket*/
-    /*    tP->quit();
-        tP->wait();
-        delete tP;
-    } */
-
+    serverSelection *ss = new serverSelection(0, wscP);
     a.setStyle("fusion");
     QFile File (":/stylesheet/editorStylesheet.qss");
     File.open(QFile::ReadOnly);
@@ -89,9 +73,19 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationName("Collaborative Text Editor");
     QCoreApplication::setApplicationVersion(QT_VERSION_STR);
 
+    /*deallocazione oggetto worker socket client se thread corrispondente finisce*/
+    QObject::connect(tP, &QThread::finished, wscP, &QObject::deleteLater);
 
+    tP->start();
+    //if((ld->attivaSocket()).compare("Failed")==0){
+    //ld->attivaSocket();
+    /*dealloco thread socket*/
+    /*    tP->quit();
+        tP->wait();
+        delete tP;
+    } */
 
-    ld->show();
+    ss->show();
     qint32 ris = a.exec();
     a.quit();
 
