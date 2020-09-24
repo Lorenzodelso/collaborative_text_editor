@@ -234,7 +234,6 @@ void TextEdit::loadCRDTIntoEditor(CRDT crdt){
     //else{
     //this->cursor->setPosition(currentIndex);
         if(ch.getAlign()!=0){
-            qDebug()<<currentIndex;
             this->textEdit->textCursor().setPosition(currentIndex);
             if (ch.getAlign()==1){
                 textEdit->setAlignment(Qt::AlignLeft | Qt::AlignAbsolute);
@@ -857,6 +856,10 @@ void TextEdit::comunicaCRDTRimozioneLocale(int pos, int numRemoved,CRDT* algCRDT
     for(int i=0;i<numRemoved;i++){
         DocOperation docOp = algCRDT->localErase(pos);
         emit SigOpDocLocale(docOp);
+        if (docOp.character.getValue()=='\n'){
+            DocOperation* docOp2 = new DocOperation(pos,0,this->siteId);
+            emit SigOpDocLocale(*docOp2);
+        }
     }
 }
 
