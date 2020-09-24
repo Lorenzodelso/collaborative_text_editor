@@ -13,11 +13,11 @@
 #include <QVBoxLayout>
 #include <regex>
 
-class serverSelection : public QWidget
+class ServerSelection : public QWidget
 {
     Q_OBJECT
 public:
-    serverSelection(QWidget *parent, WorkerSocketClient *wscP);
+    ServerSelection(QWidget *parent, WorkerSocketClient *wscP);
 
 
     LoginDialog *ld;

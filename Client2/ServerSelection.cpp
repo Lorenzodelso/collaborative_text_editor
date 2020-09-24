@@ -1,6 +1,6 @@
 #include "ServerSelection.h"
 
-serverSelection::serverSelection(QWidget *parent, WorkerSocketClient *wscP):QWidget(parent), wscP(wscP)
+ServerSelection::ServerSelection(QWidget *parent, WorkerSocketClient *wscP):QWidget(parent), wscP(wscP)
 {
     setWindowTitle("Connect");
     setAttribute(Qt::WA_DeleteOnClose);
@@ -28,32 +28,32 @@ serverSelection::serverSelection(QWidget *parent, WorkerSocketClient *wscP):QWid
     setLayout(vLayout);
     setFixedSize(300,100);
 
-    QObject::connect(connectButton, &QPushButton::pressed, this, &serverSelection::attivaSocket);
-    QObject::connect(address, &QLineEdit::textEdited, this, &serverSelection::activateConnect);
-    QObject::connect(closeButton, &QPushButton::pressed, this, &serverSelection::closePressed);
+    QObject::connect(connectButton, &QPushButton::pressed, this, &ServerSelection::attivaSocket);
+    QObject::connect(address, &QLineEdit::textEdited, this, &ServerSelection::activateConnect);
+    QObject::connect(closeButton, &QPushButton::pressed, this, &ServerSelection::closePressed);
 
     /*settaggio connessione*/
-    QObject::connect(this, &serverSelection::SigConnessioneAlServer, wscP, &WorkerSocketClient::connessioneAlServer);
-    QObject::connect(wscP, &WorkerSocketClient::SigEsitoConnessioneAlServer, this,  &serverSelection::esitoConnessioneAlServer);
+    QObject::connect(this, &ServerSelection::SigConnessioneAlServer, wscP, &WorkerSocketClient::connessioneAlServer);
+    QObject::connect(wscP, &WorkerSocketClient::SigEsitoConnessioneAlServer, this,  &ServerSelection::esitoConnessioneAlServer);
 
 }
 
-void serverSelection::activateConnect(){
+void ServerSelection::activateConnect(){
     if(std::regex_match(address->text().toStdString(), ipv4))
         connectButton->setEnabled(true);
     else
         connectButton->setEnabled(false);
 }
 
-void serverSelection::closePressed(){
+void ServerSelection::closePressed(){
     QCoreApplication::quit();
 }
 
-void serverSelection::attivaSocket(){
+void ServerSelection::attivaSocket(){
     emit SigConnessioneAlServer(address->text());
 }
 
-void serverSelection::esitoConnessioneAlServer(QString esito){
+void ServerSelection::esitoConnessioneAlServer(QString esito){
     if(esito.compare("Success") == 0){
         ld = new LoginDialog(0, wscP);
         ld->show();

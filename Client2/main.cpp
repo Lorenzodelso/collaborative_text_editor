@@ -52,7 +52,7 @@
 #include <QDesktopWidget>
 #include <QCommandLineParser>
 #include <QCommandLineOption>
-#include "serverselection.h"
+#include "ServerSelection.h"
 #include "WorkerSocketClient.h"
 #include <iostream>
 
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
     QThread* tP = new QThread();
     WorkerSocketClient* wscP= new WorkerSocketClient();
     wscP->moveToThread(tP);
-    serverSelection *ss = new serverSelection(0, wscP);
+    ServerSelection *ss = new ServerSelection(0, wscP);
     a.setStyle("fusion");
     QFile File (":/stylesheet/editorStylesheet.qss");
     File.open(QFile::ReadOnly);

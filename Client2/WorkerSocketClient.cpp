@@ -15,18 +15,16 @@ void WorkerSocketClient::connessioneAlServer(QString ipAddr) {
     qRegisterMetaType<CRDT>();
     qRegisterMetaType<DocOperation>();
 
-    this->socketConnesso = new QTcpSocket( this );
-
+    this->socketConnesso = new QTcpSocket(this);
+    connect(socketConnesso,&QTcpSocket::connected, this, &WorkerSocketClient::socketConnected);
     this->socketConnesso->connectToHost(QHostAddress(ipAddr), 3030 );
+}
 
+void WorkerSocketClient::socketConnected(){
     connected = (socketConnesso->state() == QTcpSocket::ConnectedState);
-
     if(connected==true)
-
-      emit SigEsitoConnessioneAlServer("Success");
-
+        emit SigEsitoConnessioneAlServer("Success");
     else  emit SigEsitoConnessioneAlServer("Failed");
-
     connect(socketConnesso, &QTcpSocket::readyRead, this,  &WorkerSocketClient::leggiMsgApp,Qt::QueuedConnection);
 }
 

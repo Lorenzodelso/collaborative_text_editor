@@ -26,7 +26,7 @@ class WorkerSocketClient : public QObject{
     ~WorkerSocketClient();
 
     private:
-        bool connected = false;
+        bool connected=false;
 
     signals:
 
@@ -56,6 +56,7 @@ class WorkerSocketClient : public QObject{
     void SigEsitoOpChiHaInseritoCosa(QList<QUser> users/*lista degli utenti che hanno editato in passato e/o stanno editando questo doc*/);
 
 public slots:
+    void socketConnected();
 
     /*
      * crea connessione verso server, in particolare;

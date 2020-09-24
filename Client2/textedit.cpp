@@ -706,7 +706,6 @@ void TextEdit::textAlign(QAction *a)
         textEdit->setAlignment(Qt::AlignJustify);
         alignementType=4;
     }
-    qDebug()<<cursorPos;
     algoritmoCRDT->setCharAlign(alignementType,cursorPos);
     DocOperation* docOp = new DocOperation(cursorPos,alignementType,this->siteId);
     emit SigOpDocLocale(*docOp);
