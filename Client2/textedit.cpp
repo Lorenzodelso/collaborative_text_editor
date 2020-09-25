@@ -124,7 +124,8 @@ TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP,quint16 siteId, QUt
 #endif
     setWindowTitle(QCoreApplication::applicationName());
 
-    cursorMap = new QMap<quint16, QTextCursor>();
+    cursorMap = new QMap<quint16, QTextCursor*>();
+    labelMap = new QMap<quint16,QLabel*>();
     textEdit = new QTextEdit(this);
 
     connect(textEdit, &QTextEdit::currentCharFormatChanged,
@@ -987,20 +988,20 @@ void TextEdit::opDocRemota(DocOperation operation){
       quint16 index = algoritmoCRDT->remoteInsert(operation.character);
       disconnect(textEdit->document(),&QTextDocument::contentsChange,
                      this, &TextEdit::CRDTInsertRemove );
-      QTextCursor cursor = cursorMap->find(operation.siteId).value();
+      QTextCursor *cursor = cursorMap->find(operation.siteId).value();
       //QTextCursor cursor = textEdit->textCursor();   //MODIFICA TEMPORANEA CURSORE
       //QTextCursor *cursor = new QTextCursor(textEdit->textCursor());
       auto colors = QColor::colorNames();
       if (colorWriting == true){
           QTextCharFormat coloredFormat(operation.character.getFormat());
           coloredFormat.setForeground(QBrush(QColor(colors[operation.character.getSiteId()])));
-          cursor.setPosition(index);
-          cursor.mergeCharFormat(coloredFormat);
-          cursor.insertText(operation.character.getValue());
+          cursor->setPosition(index);
+          cursor->mergeCharFormat(coloredFormat);
+          cursor->insertText(operation.character.getValue());
           textEdit->setTextColor(QColor(colors[this->siteId]));
       }
       else{
-          cursor.insertText(operation.character.getValue());
+          cursor->insertText(operation.character.getValue());
       }
       connect(textEdit->document(),&QTextDocument::contentsChange,
                      this, &TextEdit::CRDTInsertRemove );
@@ -1011,10 +1012,10 @@ void TextEdit::opDocRemota(DocOperation operation){
       quint16 index =algoritmoCRDT->remoteDelete(operation.character);
       disconnect(textEdit->document(),&QTextDocument::contentsChange,
                      this, &TextEdit::CRDTInsertRemove );
-      QTextCursor cursor = cursorMap->find(operation.siteId).value();
+      QTextCursor *cursor = cursorMap->find(operation.siteId).value();
       //QTextCursor cursor = textEdit->textCursor();
-      cursor.setPosition(index);
-      cursor.deleteChar();
+      cursor->setPosition(index);
+      cursor->deleteChar();
       connect(textEdit->document(),&QTextDocument::contentsChange,
                      this, &TextEdit::CRDTInsertRemove );
       break;
@@ -1031,10 +1032,10 @@ void TextEdit::opDocRemota(DocOperation operation){
       disconnect(textEdit->document(),&QTextDocument::contentsChange,
                      this, &TextEdit::CRDTInsertRemove );
       //QTextCursor cursor = textEdit->textCursor();
-      QTextCursor cursor = cursorMap->find(operation.siteId).value();
-      cursor.setPosition(index);
-      cursor.setPosition(index+1,QTextCursor::KeepAnchor);
-      cursor.mergeCharFormat(operation.character.getFormat());
+      QTextCursor *cursor = cursorMap->find(operation.siteId).value();
+      cursor->setPosition(index);
+      cursor->setPosition(index+1,QTextCursor::KeepAnchor);
+      cursor->mergeCharFormat(operation.character.getFormat());
       connect(textEdit->document(),&QTextDocument::contentsChange,
                      this, &TextEdit::CRDTInsertRemove );
       break;
@@ -1046,12 +1047,8 @@ void TextEdit::opDocRemota(DocOperation operation){
        // Esempio: testo di pro|(cursore)va
 
        //Rimuovo carattere | dalla vecchia posizione
-       QTextCursor cursor = cursorMap->find(operation.siteId).value();
+       QTextCursor *cursor = cursorMap->find(operation.siteId).value();
 
-       disconnect(textEdit->document(),&QTextDocument::contentsChange,
-               this, &TextEdit::CRDTInsertRemove );
-       disconnect(textEdit, &QTextEdit::cursorPositionChanged,
-               this, &TextEdit::cursorPositionChanged);
        /*
        cursor.movePosition(QTextCursor::PreviousCharacter,QTextCursor::KeepAnchor,1);
        cursor.removeSelectedText();
@@ -1060,12 +1057,10 @@ void TextEdit::opDocRemota(DocOperation operation){
 
        cursor.insertText("|");
        */
-       cursor.setPosition(operation.cursorPos, QTextCursor::MoveAnchor);
 
-       connect(textEdit, &QTextEdit::cursorPositionChanged,
-                      this, &TextEdit::cursorPositionChanged);
-       connect(textEdit->document(),&QTextDocument::contentsChange,
-               this, &TextEdit::CRDTInsertRemove );
+       cursor->setPosition(operation.cursorPos, QTextCursor::MoveAnchor);
+       QRect rect = textEdit->cursorRect(*cursor);
+       labelMap->find(operation.getSiteId()).value()->move(rect.right(),rect.top()-20);
 
        //Aggiorno mappa siteId - cursore
        //cursorMap->find(operation.siteId).value().setPosition(operation.cursorPos);
@@ -1078,9 +1073,9 @@ void TextEdit::opDocRemota(DocOperation operation){
                   this, &TextEdit::CRDTInsertRemove);
 
        //QTextCursor* cursor = new QTextCursor(textEdit->textCursor());
-       QTextCursor cursor = cursorMap->find(operation.siteId).value();
-       cursor.setPosition(operation.cursorPos);
-       textEdit->setTextCursor(cursor);
+       QTextCursor *cursor = cursorMap->find(operation.siteId).value();
+       cursor->setPosition(operation.cursorPos);
+       textEdit->setTextCursor(*cursor);
 
        switch(operation.alignementType){
        case 1:
@@ -1123,13 +1118,18 @@ void TextEdit::questoUserHaApertoIlDoc(QUser usr){
 
     //Cursore dell'utente appena loggato al documento
     QTextCursor *cursor =  new QTextCursor(textEdit->document());
-    cursorMap->insert(usr.getUserId(),*cursor);
+    cursorMap->insert(usr.getUserId(),cursor);
     qDebug()<<"Inserito cursore per utente: "<<usr.getUserId();
-    disconnect(textEdit->document(),&QTextDocument::contentsChange,
-            this, &TextEdit::CRDTInsertRemove );
+    QLabel *lbl = new QLabel(usr.getUserName(),textEdit);
+    labelMap->insert(usr.getUserId(),lbl);
     cursor->setPosition(0);
-    connect(textEdit->document(),&QTextDocument::contentsChange,
-            this, &TextEdit::CRDTInsertRemove );
+    QRect rect = textEdit->cursorRect(*cursor);
+    qDebug()<<textEdit->fontPointSize();
+    lbl->move(rect.right(),rect.top()-20);
+    lbl->raise();
+    lbl->setMargin(3);
+    lbl->setStyleSheet("QLabel { background-color: "+QColor::colorNames()[usr.getUserId()]+" ; color : black ;}");
+    lbl->show();
 }
 
 void TextEdit::questoUserHaChiusoIlDoc(QUser usr){
@@ -1138,6 +1138,8 @@ void TextEdit::questoUserHaChiusoIlDoc(QUser usr){
         offlineUsers->append(usr);
     updateTreeWidget(colorWriting);
     cursorMap->remove(usr.getUserId());
+    labelMap->find(usr.getUserId()).value()->clear();
+    labelMap->remove(usr.getUserId());
 }
 
 void TextEdit::enteringColorMode(){
@@ -1375,7 +1377,8 @@ void TextEdit::restoreQTextEdit(){
     offlineUsers = new QList<QUser>();
     updateTreeWidget(false);
 
-    cursorMap = new QMap<quint16, QTextCursor>();
+    cursorMap = new QMap<quint16, QTextCursor*>();
+    labelMap->clear();
 
     connect(textEdit, &QTextEdit::currentCharFormatChanged,
             this, &TextEdit::currentCharFormatChanged);

@@ -252,7 +252,8 @@ private:
     QString fileName;
     QTextEdit *textEdit;
     QTextCursor *cursor;
-    QMap<quint16, QTextCursor> *cursorMap;
+    QMap<quint16, QTextCursor*> *cursorMap;
+    QMap<quint16,QLabel*> *labelMap;
     QTreeWidget *usersTree;
     QDockWidget *dockUsersTree;
     QUtente utente;
