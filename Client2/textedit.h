@@ -165,7 +165,6 @@ public slots:
 protected:
     void closeEvent(QCloseEvent *e) override;
     int isSuccess(QString esito);
-
 signals:
 
 

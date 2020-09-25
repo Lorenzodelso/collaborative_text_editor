@@ -152,11 +152,13 @@ void WorkerDoc::opDoc(DocOperation docOp){
     }
         case cursorMoved:
     {
+        /*
             //Aggiorno la mappa dei cursori
             QTextCursor* cursor = new QTextCursor();
             cursor->setPosition(docOp.cursorPos,QTextCursor::MoveAnchor);
             cursorMap->find(docOp.siteId).value() = *cursor;
             break;
+            */
     }
         case alignementChanged:
     {
