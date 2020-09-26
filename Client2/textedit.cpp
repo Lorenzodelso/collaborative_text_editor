@@ -602,6 +602,9 @@ void TextEdit::textSize(const QString &p)
         fmt.setFontPointSize(pointSize);
         mergeFormatOnWordOrSelection(fmt);
     }
+    for (auto lbl:labelMap->values()){
+        lbl->setFixedSize(3,pointSize);
+    }
     connect(textEdit->document(),&QTextDocument::contentsChange,this, &TextEdit::CRDTInsertRemove );
 }
 
@@ -1060,7 +1063,8 @@ void TextEdit::opDocRemota(DocOperation operation){
 
        cursor->setPosition(operation.cursorPos, QTextCursor::MoveAnchor);
        QRect rect = textEdit->cursorRect(*cursor);
-       labelMap->find(operation.getSiteId()).value()->move(rect.right(),rect.top()-20);
+       labelMap->find(operation.getSiteId()).value()->move(rect.left(),rect.top());
+       labelMap->find(operation.getSiteId()).value()->setFixedSize(3,cursor->charFormat().fontPointSize());
 
        //Aggiorno mappa siteId - cursore
        //cursorMap->find(operation.siteId).value().setPosition(operation.cursorPos);
@@ -1120,15 +1124,17 @@ void TextEdit::questoUserHaApertoIlDoc(QUser usr){
     QTextCursor *cursor =  new QTextCursor(textEdit->document());
     cursorMap->insert(usr.getUserId(),cursor);
     qDebug()<<"Inserito cursore per utente: "<<usr.getUserId();
-    QLabel *lbl = new QLabel(usr.getUserName(),textEdit);
+    QLabel *lbl = new QLabel("",textEdit);
     labelMap->insert(usr.getUserId(),lbl);
     cursor->setPosition(0);
     QRect rect = textEdit->cursorRect(*cursor);
     qDebug()<<textEdit->fontPointSize();
-    lbl->move(rect.right(),rect.top()-20);
+    lbl->setFrameStyle(QFrame::VLine | QFrame::Plain);
+    lbl->setFixedSize(3,textEdit->fontPointSize());
+    lbl->move(rect.left(),rect.top());
     lbl->raise();
     lbl->setMargin(3);
-    lbl->setStyleSheet("QLabel { background-color: "+QColor::colorNames()[usr.getUserId()]+" ; color : black ;}");
+    lbl->setStyleSheet("QLabel { background-color: "+QColor::colorNames()[usr.getUserId()]+"; color: "+QColor::colorNames()[usr.getUserId()]+"}");
     lbl->show();
 }
 
@@ -1139,6 +1145,7 @@ void TextEdit::questoUserHaChiusoIlDoc(QUser usr){
     updateTreeWidget(colorWriting);
     cursorMap->remove(usr.getUserId());
     labelMap->find(usr.getUserId()).value()->clear();
+    delete labelMap->find(usr.getUserId()).value();
     labelMap->remove(usr.getUserId());
 }
 
