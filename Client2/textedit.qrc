@@ -44,5 +44,7 @@
         <file>images/win/colormode.png</file>
         <file>images/win/online.png</file>
         <file>images/win/offline.png</file>
+        <file>images/mac/downarrow.png</file>
+        <file>images/win/downarrow.png</file>
     </qresource>
 </RCC>
