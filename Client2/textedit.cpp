@@ -1322,22 +1322,30 @@ void TextEdit::updateTreeWidget(bool checked){
 
         }
     }else{
+        auto colors = QColor::colorNames();
         usersTree->setColumnCount(1);
 
         QList<QString> *usernameOnline = new QList<QString>();
+        QList<QColor> *colorList = new QList<QColor>();
         QList<QTreeWidgetItem*> *itemUsernameOnline = new QList<QTreeWidgetItem*>();
         QList<QUser>::iterator i;
         for(i=onlineUsers->begin(); i != onlineUsers->end(); ++i){
             usernameOnline->append(i->getUserName());
+            colorList->append(colors[i->getUserId()]);
         }
 
         QTreeWidgetItem *item = new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString("Online")));
         usersTree->insertTopLevelItem(0, item);
         QList<QString>::iterator j;
+        QList<QColor>::iterator z;
+        z=colorList->begin();
         for(j=usernameOnline->begin(); j!=usernameOnline->end(); ++j){
             QTreeWidgetItem *utenteOnline = new QTreeWidgetItem((QTreeWidget*)0, QStringList(*j));
-            //utenteOnline->setIcon(0,QIcon(rsrcPath + "/online.png"));
+            QPixmap pix(16, 16);
+            pix.fill(*z);
+            utenteOnline->setIcon(0,QIcon(pix));
             itemUsernameOnline->append(utenteOnline);
+            z++;
         }
 
         item->insertChildren(0,*itemUsernameOnline);

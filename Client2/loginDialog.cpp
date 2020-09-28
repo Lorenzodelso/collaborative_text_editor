@@ -23,10 +23,13 @@ LoginDialog::LoginDialog(QWidget *parent, WorkerSocketClient* wscP)
     username->setBuddy(usernameEdit);
     password->setBuddy(passwordEdit);
     loginButton = new QPushButton(tr("&Login"));
+    loginButton->setFixedSize(65,25);
     loginButton->setDefault(true);
     loginButton->setEnabled(false);
     cancelButton = new QPushButton(tr("&Cancel"));
+    cancelButton->setFixedSize(70,25);
     newProfileButton = new QPushButton(tr("&Create a new profile"));
+    newProfileButton->setFixedSize(160,25);
     newProfileButton->setFlat(true);
     newProfileButton->setStyleSheet("QPushButton {color: #FFFFFF;}");
     QDialogButtonBox *buttonBox = new QDialogButtonBox(Qt::Horizontal);

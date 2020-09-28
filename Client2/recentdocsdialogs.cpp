@@ -44,12 +44,17 @@ RecentDocsDialogs::RecentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP,q
 
     create = new QPushButton(tr("&New File"));
     create->setDisabled(true);
+    create->setFixedSize(90,25);
     editProfile = new QPushButton(tr("&Edit User Profile"));
+    editProfile->setFixedSize(120, 25);
     open = new QPushButton(tr("&Open"));
+    open->setFixedSize(65,25);
     open->setDisabled(true);
     abort = new QPushButton(tr("&Close"));
+    abort->setFixedSize(70,25);
     openUrl = new QPushButton(tr("&Open URL"));
     openUrl->setDisabled(true);
+    openUrl->setFixedSize(90,25);
     newFileName = new QLineEdit();
     newFileName->setEnabled(true);
     newFileName->setPlaceholderText("New File Name");

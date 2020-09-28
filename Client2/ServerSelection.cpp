@@ -10,7 +10,9 @@ ServerSelection::ServerSelection(QWidget *parent, WorkerSocketClient *wscP):QWid
     addressLabel = new QLabel("Server IP Address: ");
     connectButton = new QPushButton("Connect");
     connectButton->setEnabled(false);
+    connectButton->setFixedSize(80,25);
     closeButton = new QPushButton("Close");
+    closeButton->setFixedSize(60,25);
     addressLabel->setBuddy(address);
     QDialogButtonBox *buttonBox = new QDialogButtonBox();
     buttonBox->addButton(connectButton, QDialogButtonBox::AcceptRole);

@@ -29,8 +29,10 @@ NewProfileDialog::NewProfileDialog(QWidget *parent, WorkerSocketClient* wscP)
     password->setBuddy(repPassEdit);
 
     registerUser = new QPushButton(tr("Register"));
+    registerUser->setFixedSize(80,25);
     registerUser->setEnabled(false);
     abort = new QPushButton(tr("Cancel"));
+    abort->setFixedSize(70,25);
 
     userPic = new ClickableLabel();
     userPic->setBackgroundRole(QPalette::Dark);

@@ -54,6 +54,7 @@
 #include <QCommandLineOption>
 #include "ServerSelection.h"
 #include "WorkerSocketClient.h"
+
 #include <iostream>
 
 int main(int argc, char *argv[])
@@ -64,7 +65,7 @@ int main(int argc, char *argv[])
     WorkerSocketClient* wscP= new WorkerSocketClient();
     wscP->moveToThread(tP);
     ServerSelection *ss = new ServerSelection(0, wscP);
-    a.setStyle("fusion");
+    //a.setStyle("Material");
     QFile File (":/stylesheet/editorStylesheet.qss");
     File.open(QFile::ReadOnly);
     QString styleSheet = QLatin1String(File.readAll());

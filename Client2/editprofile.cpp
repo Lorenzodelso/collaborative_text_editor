@@ -53,7 +53,9 @@ EditProfile::EditProfile(QWidget *parent, WorkerSocketClient* wscP, QUtente* ute
 
 
     save = new QPushButton(tr("&Save"));
+    save->setFixedSize(60,25);
     discard= new QPushButton(tr("&Discard"));
+    discard->setFixedSize(70,25);
     QDialogButtonBox *buttonBox = new QDialogButtonBox(Qt::Horizontal);
     buttonBox->addButton(save, QDialogButtonBox::ApplyRole);
     buttonBox->addButton(discard, QDialogButtonBox::RejectRole);
