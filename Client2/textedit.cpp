@@ -201,9 +201,6 @@ TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP,quint16 siteId, QUt
     textEdit->setPalette(pal);
 #endif
 
-    QChar ch = '\0';
-    DocOperation docOp = algoritmoCRDT->localInsert(ch,QTextCharFormat(),0);
-    emit SigOpDocLocale(docOp);
 }
 
 TextEdit::~TextEdit(){
