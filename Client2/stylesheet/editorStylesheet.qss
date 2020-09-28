@@ -336,7 +336,11 @@ QStatusBar {
 }
 QToolBar{
 	background-color:#03A9F4;
+	border: 0px;
 }
+QToolBar::Separator{
+	color: #0288D1;
+    }
 QDockWidget > QWidget {
     background-color: #B3E5FC;
     border-style: solid;
