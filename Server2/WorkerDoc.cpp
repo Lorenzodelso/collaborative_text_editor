@@ -21,6 +21,7 @@ WorkerDoc::WorkerDoc(){
 //INVECE UN CRDT IDENTICO MA CON SITEID QUELLO DEL CLIENT, QUINDI LA GESTIONE VIENE DELEGATA AL COSTRUTTORE DI COPIA
 void WorkerDoc::workerDocCreaDoc(QString nomeFile, WorkerSocket* wsP){
     crdt = new CRDT(0); //CRDT vuoto perchè nuovo file
+    crdt->localInsert('\0',QTextCharFormat(),0);
     QFile *newFile = new QFile(nomeFile); //creo nuovo file
     QString esito("");
     if ( !newFile->open(QIODevice::ReadWrite) ){ //controllo esito dell'operazione di apertura
@@ -31,6 +32,8 @@ void WorkerDoc::workerDocCreaDoc(QString nomeFile, WorkerSocket* wsP){
         openedFile = newFile;
         numClients = 1; //ancora nessun client connesso, viene solo richiesto di creare il file
         this->nomeFile = nomeFile;
+        QDataStream outStream(this->openedFile);
+        outStream<<*crdt;
     }
     emit SigEsitoCreaDoc(esito,*crdt /* passo il CRDT come copia, quindi non il puntatore*/);
     QObject::disconnect(this, &WorkerDoc::SigEsitoCreaDoc, wsP, &WorkerSocket::rispondiEsitoCreaDoc);

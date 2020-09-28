@@ -100,6 +100,7 @@ TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP,quint16 siteId, QUt
 {
 	//Inserisco inizializzazione del CRDT
     algoritmoCRDT = new CRDT(siteId);
+
     //inizialmente scrittura normale
     colorWriting = false;
 
@@ -199,6 +200,10 @@ TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP,quint16 siteId, QUt
     pal.setColor(QPalette::Text, QColor(Qt::black));
     textEdit->setPalette(pal);
 #endif
+
+    QChar ch = '\0';
+    DocOperation docOp = algoritmoCRDT->localInsert(ch,QTextCharFormat(),0);
+    emit SigOpDocLocale(docOp);
 }
 
 TextEdit::~TextEdit(){
@@ -225,8 +230,10 @@ void TextEdit::loadCRDTIntoEditor(CRDT crdt){
   for (auto richChar = lista.cbegin(); richChar!=lista.cend(); richChar++ ){
     QString str = "";
     Char ch = *richChar;
-    str.append(ch.getValue());
-    this->cursor->insertText(str,ch.getFormat());
+    if(ch.getValue()!='\0'){
+        str.append(ch.getValue());
+        this->cursor->insertText(str,ch.getFormat());
+    }
     //Da controllare se il cursore si muove da solo dopo l'inserimento
     /*
     if(ch.getValue()=='\n'){
@@ -881,7 +888,7 @@ void TextEdit::comunicaCRDTCambioFormat(QTextCharFormat format, int pos, int num
 
 void TextEdit::CRDTInsertRemove(int pos, int rem, int add){
     QTextCursor cursor = textEdit->textCursor();
-    //qDebug()<<"Add: "<<add<<" Rem: "<<rem<< " Pos:"<<pos;
+    qDebug()<<"Add: "<<add<<" Rem: "<<rem<< " Pos:"<<pos;
     if(rem==0 && add>0){
         //AGGIUNTA DI UNO O PIU' CARATTERI
         comunicaCRDTInserimentoLocale(textEdit,&cursor,pos,add,algoritmoCRDT);
