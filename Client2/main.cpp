@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
     WorkerSocketClient* wscP= new WorkerSocketClient();
     wscP->moveToThread(tP);
     ServerSelection *ss = new ServerSelection(0, wscP);
-    //a.setStyle("Material");
+    QApplication::setStyle("fusion");
     QFile File (":/stylesheet/editorStylesheet.qss");
     File.open(QFile::ReadOnly);
     QString styleSheet = QLatin1String(File.readAll());

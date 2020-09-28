@@ -380,6 +380,10 @@ QDateEdit {
 QComboBox {
 	color: #212121;	
 	background: #ffffff;
+        border-radius: 4px;
+        border-style: solid;
+        border-width: 2px;
+        border-color: #0288D1;
 }
 QComboBox:editable {
 	background: #ffffff;
@@ -399,6 +403,10 @@ QComboBox:!editable:on, QComboBox::drop-down:editable:on {
 QFontComboBox {
 	color: #212121;	
 	background-color: #ffffff;
+        border-radius: 4px;
+        border-style: solid;
+        border-width: 2px;
+        border-color: #0288D1;
 }
 QToolBox {
 	color: #212121;
@@ -449,4 +457,43 @@ QSlider::sub-page:horizontal {
 }
 QSlider::sub-page:vertical {
     background: #04b97f;
+}
+QScrollBar:vertical {
+        background: #B3E5FC;				/* Background where slider is not */
+        width: 10px;
+        margin: 0;
+}
+QScrollBar::handle:vertical {
+    background: #0288D1;					/* Slider color */
+    min-height: 16px;
+        border-radius: 4px;
+}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {	/* Hides the slider arrows */
+      border: none;
+      background: none;
+}
+
+QComboBox::drop-down
+{
+    border: 0px; /* This seems to replace the whole arrow of the combo box */
+}
+
+/* Define a new custom arrow icon for the combo box */
+QComboBox::down-arrow {
+    image: url(:/images/win/downarrow.png);
+    width: 14px;
+    height: 14px;
+}
+
+QFontComboBox::drop-down
+{
+    border: 0px; /* This seems to replace the whole arrow of the combo box */
+}
+
+/* Define a new custom arrow icon for the combo box */
+QFontComboBox::down-arrow {
+    image: url(:/images/win/downarrow.png);
+    width: 14px;
+    height: 14px;
 }
