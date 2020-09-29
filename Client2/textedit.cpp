@@ -717,7 +717,16 @@ void TextEdit::textAlign(QAction *a)
         textEdit->setAlignment(Qt::AlignJustify);
         alignementType=4;
     }
+    cursorPos = textEdit->textCursor().position();
     algoritmoCRDT->setCharAlign(alignementType,cursorPos);
+
+    for(auto cursor: cursorMap->values()){
+        QRect rect = textEdit->cursorRect(*cursor);
+        auto key = cursorMap->key(cursor);
+        labelMap->find(key).value()->move(rect.left(),rect.top());
+        labelMap->find(key).value()->setFixedSize(3,textEdit->fontPointSize());
+    }
+
     DocOperation* docOp = new DocOperation(cursorPos,alignementType,this->siteId);
     emit SigOpDocLocale(*docOp);
     connect(textEdit->document(),&QTextDocument::contentsChange,this, &TextEdit::CRDTInsertRemove);
@@ -1087,6 +1096,7 @@ void TextEdit::opDocRemota(DocOperation operation){
 
        //QTextCursor* cursor = new QTextCursor(textEdit->textCursor());
        QTextCursor *cursor = cursorMap->find(operation.siteId).value();
+       QTextCursor oldCursor = textEdit->textCursor();
        cursor->setPosition(operation.cursorPos);
        textEdit->setTextCursor(*cursor);
 
@@ -1112,6 +1122,12 @@ void TextEdit::opDocRemota(DocOperation operation){
            break;
        }
        }
+       textEdit->setTextCursor(oldCursor);
+
+       QRect rect = textEdit->cursorRect(*cursor);
+       labelMap->find(operation.getSiteId()).value()->move(rect.left(),rect.top());
+       qDebug()<<textEdit->fontPointSize();
+       labelMap->find(operation.getSiteId()).value()->setFixedSize(3,textEdit->fontPointSize());
        connect(textEdit->document(),&QTextDocument::contentsChange,
                   this, &TextEdit::CRDTInsertRemove);
        break;
