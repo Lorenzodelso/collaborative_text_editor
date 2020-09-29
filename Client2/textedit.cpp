@@ -144,11 +144,13 @@ TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP,quint16 siteId, QUt
     QFont textFont("Helvetica");
     textFont.setStyleHint(QFont::SansSerif);
     textEdit->setFont(textFont);
+    textEdit->setFontPointSize(13);
     fontChanged(textEdit->font());
     colorChanged(textEdit->textColor());
     alignmentChanged(textEdit->alignment());
     defaultFmt.setFont(textEdit->font());
     defaultFmt.setForeground(textEdit->textColor());
+    defaultFmt.setFontPointSize(13);
 
     connect(textEdit->document(), &QTextDocument::undoAvailable,
             actionUndo, &QAction::setEnabled);
@@ -885,7 +887,7 @@ void TextEdit::comunicaCRDTCambioFormat(QTextCharFormat format, int pos, int num
 
 void TextEdit::CRDTInsertRemove(int pos, int rem, int add){
     QTextCursor cursor = textEdit->textCursor();
-    qDebug()<<"Add: "<<add<<" Rem: "<<rem<< " Pos:"<<pos;
+    //qDebug()<<"Add: "<<add<<" Rem: "<<rem<< " Pos:"<<pos;
     if(rem==0 && add>0){
         //AGGIUNTA DI UNO O PIU' CARATTERI
         comunicaCRDTInserimentoLocale(textEdit,&cursor,pos,add,algoritmoCRDT);
@@ -1008,7 +1010,9 @@ void TextEdit::opDocRemota(DocOperation operation){
           textEdit->setTextColor(QColor(colors[this->siteId]));
       }
       else{
-          cursor->insertText(operation.character.getValue());
+          qDebug()<<"Prima: "<<textEdit->fontPointSize();
+          cursor->insertText(operation.character.getValue(),operation.character.getFormat());
+          qDebug()<<"Dopo: "<<textEdit->fontPointSize();
       }
       connect(textEdit->document(),&QTextDocument::contentsChange,
                      this, &TextEdit::CRDTInsertRemove );
@@ -1068,7 +1072,8 @@ void TextEdit::opDocRemota(DocOperation operation){
        cursor->setPosition(operation.cursorPos, QTextCursor::MoveAnchor);
        QRect rect = textEdit->cursorRect(*cursor);
        labelMap->find(operation.getSiteId()).value()->move(rect.left(),rect.top());
-       labelMap->find(operation.getSiteId()).value()->setFixedSize(3,cursor->charFormat().fontPointSize());
+       qDebug()<<textEdit->fontPointSize();
+       labelMap->find(operation.getSiteId()).value()->setFixedSize(3,textEdit->fontPointSize());
 
        //Aggiorno mappa siteId - cursore
        //cursorMap->find(operation.siteId).value().setPosition(operation.cursorPos);
@@ -1415,6 +1420,7 @@ void TextEdit::restoreQTextEdit(){
     QFont textFont("Helvetica");
     textFont.setStyleHint(QFont::SansSerif);
     textEdit->setFont(textFont);
+    textEdit->setFontPointSize(13);
     fontChanged(textEdit->font());
     colorChanged(textEdit->textColor());
     alignmentChanged(textEdit->alignment());
