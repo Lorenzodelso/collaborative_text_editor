@@ -3,6 +3,7 @@
 ServerSelection::ServerSelection(QWidget *parent, WorkerSocketClient *wscP):QWidget(parent), wscP(wscP)
 {
     setWindowTitle("Connect");
+    setObjectName("srvrSel");
     setAttribute(Qt::WA_DeleteOnClose);
     address = new QLineEdit();
     address->setPlaceholderText("Insert IP");

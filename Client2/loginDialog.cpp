@@ -14,6 +14,7 @@ LoginDialog::LoginDialog(QWidget *parent, WorkerSocketClient* wscP)
 //
 //********************************************************************************************
     setParent(parent);
+    setObjectName("login");
     this->wscP = wscP;
     username = new QLabel(tr("Username: "));
     usernameEdit = new QLineEdit;

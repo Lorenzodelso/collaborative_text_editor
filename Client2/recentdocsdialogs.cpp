@@ -17,6 +17,7 @@ RecentDocsDialogs::RecentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP,q
 
     this-> setWindowTitle("Recent Docs");
     setParent(parent);
+    setObjectName("recDocs");
     setAttribute(Qt::WA_DeleteOnClose);
     this->wscP = wscP;
     this->siteId = siteId;

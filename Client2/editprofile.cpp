@@ -15,6 +15,7 @@ EditProfile::EditProfile(QWidget *parent, WorkerSocketClient* wscP, QUtente* ute
     setParent(parent);
     setWindowTitle("User Profile editor");
     setWindowFlag(Qt::Window);
+    setObjectName("editProfile");
     recDocsUtente = utente;
     username = new QLabel(tr("&Username: "));
     utenteLocale = new QUtente(*utente);

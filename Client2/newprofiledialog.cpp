@@ -11,6 +11,7 @@ NewProfileDialog::NewProfileDialog(QWidget *parent, WorkerSocketClient* wscP)
 {
     qRegisterMetaType<QUtente>();
     setParent(parent);
+    setObjectName("newProfile");
     setWindowFlag(Qt::Window);
     setModal(true);
     this->wscP = wscP;
