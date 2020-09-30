@@ -31,6 +31,8 @@ void WorkerSocketClient::socketConnected(){
 WorkerSocketClient::~WorkerSocketClient(){
     if(connected == true)
         this->socketConnesso->disconnectFromHost();
+    delete socketConnesso;
+    delete currentImg;
 }
 
 void  WorkerSocketClient::leggiMsgApp(){
@@ -54,8 +56,7 @@ void  WorkerSocketClient::leggiMsgApp(){
              }
             else
             {
-                CRDT doc=*new CRDT();
-                emit SigEsitoApriDoc("Failed", doc);
+                emit SigEsitoApriDoc("Failed", CRDT());
             }
         }
         if (strcmp(msg,"ecd")==0){
@@ -68,7 +69,7 @@ void  WorkerSocketClient::leggiMsgApp(){
            }
            else
            {
-              CRDT doc =*new CRDT();
+              CRDT doc;
               emit SigEsitoCreaDoc("Failed", doc);
            }
         }
@@ -78,7 +79,7 @@ void  WorkerSocketClient::leggiMsgApp(){
             if(strcmp(opt,"suc")==0)
             {
                 QList<QString> nomiFilesEditati;
-                QUtente user = *new QUtente();
+                QUtente user;
                 qint64 dimension;
                 QByteArray data;
                 QImage* image = new QImage();
@@ -103,7 +104,7 @@ void  WorkerSocketClient::leggiMsgApp(){
             else
             {
                 QList <QString> nomiFilesEditati;
-                QUtente user = *new QUtente();
+                QUtente user;
                 emit SigEsitoLogin("Failed", user, nomiFilesEditati);
             }
         }
@@ -152,7 +153,7 @@ void  WorkerSocketClient::leggiMsgApp(){
             }
             else
             {
-                QUtente user=*new QUtente();
+                QUtente user;
                 emit SigEsitoModificaProfiloUtente("Failed", user);
             }
         }
@@ -193,9 +194,6 @@ void  WorkerSocketClient::leggiMsgApp(){
         {
             QUser utente;
             BlockReader(socketConnesso).stream() >> utente;
-            /*debug*/
-            qDebug()<<"questo user ha chiuso il doc" << utente.getUserName();
-            /*debug*/
             emit  SigQuestoUserHaChiusoIlDoc(utente);
         }
 
@@ -204,9 +202,6 @@ void  WorkerSocketClient::leggiMsgApp(){
 
             QUser utente;
             BlockReader(socketConnesso).stream() >> utente;
-            /*debug*/
-            qDebug()<<"questo user ha aperto il doc" << utente.getUserName();
-            /*debug*/
             emit  SigQuestoUserHaApertoIlDoc(utente);
         }
     }
@@ -215,20 +210,15 @@ void  WorkerSocketClient::leggiMsgApp(){
 void WorkerSocketClient::opDocLocale(DocOperation operazione)
 {
     QDataStream in(this->socketConnesso);
-
     uint len=3;
-
     in.writeBytes("opd",len);
-
     BlockWriter(socketConnesso).stream()<< operazione;
 }
 
 void WorkerSocketClient::apriDoc(QString nomeFile)
 {
     QDataStream in(this->socketConnesso);
-
     uint len=3;
-
     in.writeBytes("ope",len);
     BlockWriter(socketConnesso).stream() << nomeFile;
 }
@@ -236,22 +226,16 @@ void WorkerSocketClient::apriDoc(QString nomeFile)
 void WorkerSocketClient::creaDoc(QString nomeFile)
 {
     QDataStream in(this->socketConnesso);
-
     uint len=3;
-
     in.writeBytes("cre",len);
-
     BlockWriter(socketConnesso).stream() << nomeFile;
 }
 
 void WorkerSocketClient::login(QUtente user)
 {
     QDataStream in(this->socketConnesso);
-
     uint len=3;
-
     in.writeBytes("log",len);
-
     BlockWriter(socketConnesso).stream() << user;
 
 }
@@ -259,24 +243,19 @@ void WorkerSocketClient::login(QUtente user)
 void WorkerSocketClient::modificaProfiloUtente(QUtente user1)
 {
     QDataStream in(this->socketConnesso);
-
     uint len=3;
-
     in.writeBytes("mod",len);
-
 
     QByteArray arr;
     QByteArray arr1;
-
     QBuffer buffer(&arr);
     QBuffer buffer1(&arr1);
     QString val= QString("/");
+    QImage image1;
 
-    QImage* image1=new QImage();
-
-    image1->load(user1.getNomeImg());
+    image1.load(user1.getNomeImg());
     buffer1.open(QIODevice::WriteOnly);
-    image1->save(&buffer1, user1.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
+    image1.save(&buffer1, user1.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
 
     if(this->currentImg != NULL ){
         buffer.open(QIODevice::WriteOnly);
@@ -288,47 +267,39 @@ void WorkerSocketClient::modificaProfiloUtente(QUtente user1)
     BlockWriter(socketConnesso).stream() << user1;
     BlockWriter(socketConnesso).stream() << static_cast<qint64>(arr1.size());
     BlockWriter(socketConnesso).stream() << arr1;
-
-
-
 }
 
 void WorkerSocketClient::registrazione(QUtente user)
 {
-
-
     QDataStream in(this->socketConnesso);
     QByteArray arr;
     QBuffer buffer(&arr);
     uint len=3;
     in.writeBytes("reg",len);
-    QImage* image=new QImage();
+    QImage image;
 
     if(user.getNomeImg()!= nullptr)
     {
-        image->load(user.getNomeImg());
+        image.load(user.getNomeImg());
         buffer.open(QIODevice::WriteOnly);
-        image->save(&buffer, user.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
+        image.save(&buffer, user.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
      }
 
     BlockWriter(socketConnesso).stream() << user;
     BlockWriter(socketConnesso).stream() << static_cast<qint64>(arr.size());
     BlockWriter(socketConnesso).stream() << arr;
 }
+
 void WorkerSocketClient::chiudiDoc(QString nomeFile)
 {
     QDataStream in(this->socketConnesso);
-
     uint len=3;
-
     in.writeBytes("c_d",len);
 }
 
 void WorkerSocketClient::opChiHaInseritoCosa()
 {
     QDataStream in(this->socketConnesso);
-
     uint len=3;
-
     in.writeBytes("c_i",len);
 }

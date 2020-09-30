@@ -7,6 +7,10 @@
 WorkerDoc::WorkerDoc(){
 
 }
+
+WorkerDoc::~WorkerDoc(){
+    delete cursorMap;
+}
 /*
     COMMENTI EDO:
      * crea il file
@@ -65,6 +69,7 @@ void WorkerDoc::workerDocPrimaAperturaDoc(QString nomeFile, WorkerSocket* wsP){
         this->nomeFile = nomeFile;
         numClients = 1;
     }
+    qDebug()<<crdt->text;
     emit SigEsitoApriDoc(esito,*crdt /* passo il CRDT come copia, quindi non il puntatore*/);
     QObject::disconnect(this, &WorkerDoc::SigEsitoApriDoc, wsP, &WorkerSocket::rispondiEsitoApriDoc);
 }
@@ -121,22 +126,22 @@ void WorkerDoc::workerDocNsimaAperturaDoc(QUtente user,WorkerSocket* wsP, QMap<Q
 void WorkerDoc::unClientHaChiusoIlDoc(){
     numClients--;
     if (numClients==0){
-        openedFile->close();
+        delete crdt;
+        delete openedFile;
         emit SigNessunClientStaEditando(this->nomeFile);
     }
 }
 
 void WorkerDoc::opDoc(DocOperation docOp){
-    QFile* file=new QFile(this->nomeFile);
-    file->open(QIODevice::ReadWrite);
-    this->openedFile=file;
+
+    QFile file(this->nomeFile);
+    file.open(QIODevice::ReadWrite);
 
     // salvataggio su file del crdt ogni operazione che si effettua su di esso
-    QDataStream outStream(this->openedFile);
+    QDataStream outStream(&file);
     switch(docOp.type){
         case remoteDelete:
     {
-
             this->crdt->remoteDelete(docOp.character);
             outStream << *crdt;
             break;
@@ -170,7 +175,7 @@ void WorkerDoc::opDoc(DocOperation docOp){
             break;
     }
     }
-    file->close();
+    file.close();
     emit SigEsitoOpDoc("Success",docOp);
 }
 

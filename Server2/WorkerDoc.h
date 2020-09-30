@@ -31,6 +31,7 @@ signals:
 
 public:
     WorkerDoc();
+    ~WorkerDoc();
     QMap<quint16,QTextCursor>* cursorMap = new QMap<quint16, QTextCursor>();
 
 public slots:

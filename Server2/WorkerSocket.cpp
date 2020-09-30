@@ -15,8 +15,11 @@ WorkerSocket::WorkerSocket(){
     qRegisterMetaType<DocOperation>();
     qRegisterMetaType<QMap<QUser,WorkerSocket*>>();
 
-    socketConnessoP = new QTcpSocket( this );
-    user = *new QUtente();
+    socketConnessoP = new QTcpSocket(this);
+}
+
+WorkerSocket::~WorkerSocket(){
+    delete socketConnessoP;
 }
 
 void WorkerSocket::WorkerSocketAttivati(quintptr socketDescriptor){
@@ -144,17 +147,16 @@ void WorkerSocket::rispondiEsitoLogin(QUtente user, QList<QString> nomiFilesEdit
 
         QByteArray arr;
         QBuffer buffer(&arr);
-        QImage* image=new QImage();
+        QImage image;
         QString val=QString("/");
 
         this->user=user;
-
         if(user.getNomeImg()!=NULL)
         {
-            image->load(QDir::currentPath()+val+user.getNomeImg());
+            image.load(QDir::currentPath()+val+user.getNomeImg());
             qDebug()<<QDir::currentPath();
             buffer.open(QIODevice::WriteOnly);
-            image->save(&buffer, user.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
+            image.save(&buffer, user.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
          }
 
         BlockWriter(socketConnessoP).stream() << user;
@@ -249,35 +251,22 @@ void WorkerSocket::rispondiEsitoModificaProfiloUtente(QUtente userNew,bool immag
     if(userOLD.getUsername() == userNew.getUsername() &&
         userOLD.getPassword() == userNew.getPassword() &&
         immagineModificata==false){
-
-        in.writeBytes("fld",len);
-
+            in.writeBytes("fld",len);
     }
-
     else{
-
         in.writeBytes("suc",len);
-
         if(immagineModificata){
-
             this->temporaryImage.save(QDir::currentPath()+val+userNew.getNomeImg(), userNew.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
             this->image=this->temporaryImage;
-
         }
-
-
         buffer.open(QIODevice::WriteOnly);
         this->image.save(&buffer, userNew.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
-
 
         BlockWriter(socketConnessoP).stream() << this->user;
         BlockWriter(socketConnessoP).stream() << static_cast<qint64>(arr.size());
         BlockWriter(socketConnessoP).stream() << arr;
-
-
     }
 }
-
 
 void WorkerSocket::rispondiEsitoChiusuraDocumentoDaParteDelClient(QString esito)
 {

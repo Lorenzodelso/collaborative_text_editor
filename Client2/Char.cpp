@@ -86,7 +86,7 @@ QDataStream& operator>>(QDataStream& in, Char& ch){
     QChar value;
     quint16 alignementType;
     QVector<quint16> pos;
-    QTextCharFormat* format = new QTextCharFormat();
+    QTextCharFormat format;
     in >> siteId;
     in >> counter;
     in >> pos;
@@ -106,14 +106,14 @@ QDataStream& operator>>(QDataStream& in, Char& ch){
     in >> fontSize;
 
     //Setto i valori in un formato di default
-    format->setFontFamily(fontFamily);
-    format->setFontItalic(isItalic);
-    format->setFontWeight(int(fontWeight));
-    format->setFontUnderline(isUndelined);
-    format->setFontPointSize(fontSize);
+    format.setFontFamily(fontFamily);
+    format.setFontItalic(isItalic);
+    format.setFontWeight(int(fontWeight));
+    format.setFontUnderline(isUndelined);
+    format.setFontPointSize(fontSize);
 
     //Costruisco il Char anche con il formato
-    ch = *new Char(siteId,counter,pos,value,*format);
+    ch = *new Char(siteId,counter,pos,value,format);
     ch.setAlign(alignementType);
     return in;
 }

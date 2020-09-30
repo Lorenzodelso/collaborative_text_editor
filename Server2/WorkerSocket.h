@@ -45,6 +45,7 @@ class WorkerSocket: public QObject {
     QImage temporaryImage;
 public:
     WorkerSocket();
+    ~WorkerSocket();
 
 signals:
 

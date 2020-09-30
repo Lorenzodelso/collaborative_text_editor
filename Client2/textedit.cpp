@@ -208,6 +208,13 @@ TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP,quint16 siteId, QUt
 TextEdit::~TextEdit(){
     delete this->textEdit;
     delete this->algoritmoCRDT;
+    delete this->cursorMap;
+    delete this->labelMap;
+    delete this->cursor;
+    delete this->usersTree;
+    delete this->dockUsersTree;
+    delete this->onlineUsers;
+    delete this->offlineUsers;
 }
 
 //Le prossime due funzioni vengono usate nel RecentDocDialog per caricare il file
@@ -218,6 +225,10 @@ CRDT* TextEdit::getStrutturaCRDT(){
 }
 
 void TextEdit::loadCRDTIntoEditor(CRDT crdt){
+    if (algoritmoCRDT!=nullptr){
+        delete this->algoritmoCRDT;
+        algoritmoCRDT=nullptr;
+    }
   algoritmoCRDT = new CRDT(this->siteId,crdt.getListChar()); //salvo nel CRDT la rappresentazione del file
   // devo andare ad aggiornare il contenuto del QTextEdit tramite l'uso di cursori sulla base di quello che c'� scritto nel CRDT
   int currentIndex = 0;
@@ -727,8 +738,7 @@ void TextEdit::textAlign(QAction *a)
         labelMap->find(key).value()->setFixedSize(3,textEdit->fontPointSize());
     }
 
-    DocOperation* docOp = new DocOperation(cursorPos,alignementType,this->siteId);
-    emit SigOpDocLocale(*docOp);
+    emit SigOpDocLocale(DocOperation(cursorPos,alignementType,this->siteId));
     connect(textEdit->document(),&QTextDocument::contentsChange,this, &TextEdit::CRDTInsertRemove);
 }
 
@@ -745,53 +755,13 @@ Nella DocOperation i parametri che non vengono utilizzati vengono settati a null
 */
 
 void TextEdit::segnalaMovimentoCursore(QTextCursor cursor){
-    DocOperation* docOpCursore = new DocOperation(
-                cursorMoved,Char(),QTextCharFormat(),this->algoritmoCRDT->getSiteID(),cursor.position(),cursor.anchor() );
-   emit SigOpDocLocale(*docOpCursore);
+   emit SigOpDocLocale(DocOperation(cursorMoved,Char(),QTextCharFormat(),this->algoritmoCRDT->getSiteID(),cursor.position(),cursor.anchor()));
 }
 
 void TextEdit::cursorPositionChanged()
 {
     alignmentChanged(textEdit->alignment());
-    /*
-    QTextList *list = textEdit->textCursor().currentList();
-    if (list) {
-        switch (list->format().style()) {
-        case QTextListFormat::ListDisc:
-            comboStyle->setCurrentIndex(1);
-            break;
-        case QTextListFormat::ListCircle:
-            comboStyle->setCurrentIndex(2);
-            break;
-        case QTextListFormat::ListSquare:
-            comboStyle->setCurrentIndex(3);
-            break;
-        case QTextListFormat::ListDecimal:
-            comboStyle->setCurrentIndex(4);
-            break;
-        case QTextListFormat::ListLowerAlpha:
-            comboStyle->setCurrentIndex(5);
-            break;
-        case QTextListFormat::ListUpperAlpha:
-            comboStyle->setCurrentIndex(6);
-            break;
-        case QTextListFormat::ListLowerRoman:
-            comboStyle->setCurrentIndex(7);
-            break;
-        case QTextListFormat::ListUpperRoman:
-            comboStyle->setCurrentIndex(8);
-            break;
-        default:
-            comboStyle->setCurrentIndex(-1);
-            break;
-        }
-    } else {
-        int headingLevel = textEdit->textCursor().blockFormat().headingLevel();
-        comboStyle->setCurrentIndex(headingLevel ? headingLevel + 8 : 0);
-        */
-        //segnalo al WorkerSocketClient che c'è stato il movimento del cursore
-        segnalaMovimentoCursore(textEdit->textCursor());
-    //}
+    segnalaMovimentoCursore(textEdit->textCursor());
 }
 
 void TextEdit::clipboardDataChanged()
@@ -878,8 +848,7 @@ void TextEdit::comunicaCRDTRimozioneLocale(int pos, int numRemoved,CRDT* algCRDT
         DocOperation docOp = algCRDT->localErase(pos);
         emit SigOpDocLocale(docOp);
         if (docOp.character.getValue()=='\n'){
-            DocOperation* docOp2 = new DocOperation(pos,0,this->siteId);
-            emit SigOpDocLocale(*docOp2);
+            emit SigOpDocLocale(DocOperation(pos,0,this->siteId));
         }
     }
 }
@@ -987,9 +956,8 @@ void TextEdit::esitoOpDocLocale(QString esito, DocOperation operation){
           break;
         }
     case changedFormat:// mi salvo il vecchio formato dal CRDT prima di cambiarlo
-      Char* character = new Char(operation.character);
-      character->setFormat(operation.oldFormat);
-      algoritmoCRDT->remoteFormatChange(*character);
+      operation.character.setFormat(operation.oldFormat);
+      algoritmoCRDT->remoteFormatChange(operation.character);
       break;
     }
   }
@@ -1168,6 +1136,7 @@ void TextEdit::questoUserHaChiusoIlDoc(QUser usr){
     if(!offlineUsers->contains(usr))
         offlineUsers->append(usr);
     updateTreeWidget(colorWriting);
+    delete cursorMap->find(usr.getUserId()).value();
     cursorMap->remove(usr.getUserId());
     labelMap->find(usr.getUserId()).value()->clear();
     delete labelMap->find(usr.getUserId()).value();
@@ -1205,6 +1174,7 @@ void TextEdit::enteringColorMode(){
     cursorFormat.setForeground(QBrush(QColor(colors[this->algoritmoCRDT->getSiteID()])));
     textEdit->setCurrentCharFormat(cursorFormat);
 
+    delete colorCursor;
     QObject::connect(textEdit->document(),&QTextDocument::contentsChange,
             this, &TextEdit::CRDTInsertRemove );
 }
@@ -1234,6 +1204,7 @@ void TextEdit::quittingColorMode(){
     cursorFormat.setForeground(QBrush(QColor("black")));
     textEdit->setCurrentCharFormat(cursorFormat);
 
+    delete colorCursor;
     QObject::connect(textEdit->document(),&QTextDocument::contentsChange,
         this, &TextEdit::CRDTInsertRemove );
 }

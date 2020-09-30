@@ -68,7 +68,7 @@ QDataStream& operator<<(QDataStream& out, DocOperation docOp){
 QDataStream& operator>>(QDataStream& in, DocOperation& docOp){
     quint16 type;
     Char character;
-    QTextCharFormat* format = new QTextCharFormat();
+    QTextCharFormat format;
     in >> type;
     in >> character;
 
@@ -95,13 +95,13 @@ QDataStream& operator>>(QDataStream& in, DocOperation& docOp){
     if(alignementType!=0){
         docOp = *new DocOperation(cursorPos,alignementType,siteId);
     }else{
-        format->setFontFamily(fontFamily);
-        format->setFontItalic(isItalic);
-        format->setFontWeight(int(fontWeight));
-        format->setFontUnderline(isUndelined);
-        format->setFontPointSize(fontSize);
+        format.setFontFamily(fontFamily);
+        format.setFontItalic(isItalic);
+        format.setFontWeight(int(fontWeight));
+        format.setFontUnderline(isUndelined);
+        format.setFontPointSize(fontSize);
 
-        docOp = *new DocOperation(type,character,*format,siteId,cursorPos,cursorAnch);
+        docOp = *new DocOperation(type,character,format,siteId,cursorPos,cursorAnch);
     }
 
     return in;

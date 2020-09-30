@@ -6,7 +6,7 @@
 #include "CRDT.h"
 
 CRDT::CRDT(){
-
+    rand = new QRandomGenerator();
 }
 
 CRDT::CRDT(quint16 id): siteID(id), strategy(RANDOM_STRATEGY),counter(0),boundary(10),base(32),text(""),alignement(0) {
@@ -110,25 +110,31 @@ QVector<quint16> CRDT::generatePosBetween(QVector<quint16> pos1, QVector<quint16
         return newPos;
     } else if (difference == 1){
         newPos.push_back(id1);
-        pos1.pop_front();
+        if(!pos1.empty())
+            pos1.pop_front();
+        else pos1.clear();
         pos2.clear();
         return this->generatePosBetween(pos1, pos2, newPos,level+1);
     }else if(difference == 0){
         newPos.push_back(id1);
-        pos1.pop_front();
-        pos2.pop_front();
+        if(!pos1.empty())
+            pos1.pop_front();
+        else pos1.clear();
+        if(!pos2.empty())
+            pos2.pop_front();
+        else pos2.clear();
         return this->generatePosBetween(pos1, pos2, newPos,level+1);
     }
 }
 
-Char* CRDT::generateChar(QChar value,QTextCharFormat format,quint16 index){
+Char CRDT::generateChar(QChar value,QTextCharFormat format,quint16 index){
     QVector<quint16> pos1 = findPosBefore(index);
     QVector<quint16> pos2 = findPosAfter(index);
     QVector<quint16> newPos;
     newPos.clear();
     QVector<quint16> newPos1 = generatePosBetween(pos1,pos2,newPos,0);
 
-    return new Char(this->siteID,this->counter++,newPos1,value,format);
+    return Char(this->siteID,this->counter++,newPos1,value,format);
 }
 
 int CRDT::findInsertIndex(Char ch) {
@@ -193,8 +199,7 @@ int CRDT::findIndexByPosition(Char ch) {
 
 
 DocOperation CRDT::localInsert(QChar value, QTextCharFormat format, quint16 index) {
-    Char* QCharacter = generateChar(value,format,index);
-    Char Qc = *QCharacter;
+    Char Qc = generateChar(value,format,index);
 
     //Per gestire i casi di cambiamento di allineamento quando ancora non c'è scritto nulla
     if(alignement!=0){
@@ -202,16 +207,16 @@ DocOperation CRDT::localInsert(QChar value, QTextCharFormat format, quint16 inde
         alignement=0;
     }
     this->listChar.insert(index,Qc);
-    this->text.insert(index, QCharacter->getValue());
-
+    this->text.insert(index, Qc.getValue());
+    /*
     QTextCharFormat* oldFormat = new QTextCharFormat();
     oldFormat->setFontFamily("fontFamily");
     oldFormat->setFontItalic(true);
     oldFormat->setFontWeight(777);
     oldFormat->setFontUnderline(false);
     oldFormat->setFontPointSize(21.1);
-    DocOperation* docOp = new DocOperation(0,Qc,QTextCharFormat(),this->siteID,0,0);
-    return *docOp;
+    */
+    return DocOperation(0,Qc,QTextCharFormat(),this->siteID,0,0);
 }
 
 DocOperation CRDT::localErase(quint16 index) {
@@ -219,8 +224,7 @@ DocOperation CRDT::localErase(quint16 index) {
     this->listChar.remove(index);
     this->text.remove(index,1);
     //Mi occupo qui di segnalare al WorkerSocket dell'operazione
-    DocOperation* docOp = new DocOperation(1,Qc,QTextCharFormat(),this->siteID,0,0);
-    return *docOp;
+    return DocOperation(1,Qc,QTextCharFormat(),this->siteID,0,0);
 }
 
 quint16 CRDT::remoteInsert(Char value) {
@@ -278,8 +282,7 @@ void CRDT::readCRDTfromFile(QString nomeFile){
 DocOperation CRDT::localFormatChange(QTextCharFormat format, quint16 index){
     QTextCharFormat oldFormat = listChar[index].getFormat();
     this->listChar[index].setFormat(format);
-    DocOperation* docOp = new DocOperation(2,listChar[index],oldFormat,this->siteID,0,0);
-    return *docOp;
+    return DocOperation(2,listChar[index],oldFormat,this->siteID,0,0);
 }
 
 quint16 CRDT::remoteFormatChange(Char ch){
@@ -295,6 +298,8 @@ void CRDT::setCharAlign(quint16 alignementType, quint16 index){
         alignement = alignementType;
     }
 }
+
+
 
 
 

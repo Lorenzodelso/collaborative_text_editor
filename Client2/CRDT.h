@@ -21,10 +21,8 @@ private:
     QRandomGenerator* rand;
     quint16 siteID;
     QVector<Char> listChar;
-
     quint16 strategy;
     quint16 boundary;
-    //int counter;
     quint16 base;
 
 public:
@@ -32,7 +30,6 @@ public:
     quint16 counter;
     quint16 alignement;
     CRDT();
-
 
     CRDT(quint16 id);
     CRDT(quint16 id, QVector<Char> listChar);
@@ -52,8 +49,9 @@ public:
     void readCRDTfromFile(QString nomeFile);
     void setCharAlign(quint16 alignementType,quint16 index);
 
+
 protected:
-    Char* generateChar(QChar value,QTextCharFormat format, quint16 index);
+    Char generateChar(QChar value,QTextCharFormat format, quint16 index);
     QVector<quint16> findPosBefore(quint16 index);
     QVector<quint16> findPosAfter(quint16 index);
     QVector<quint16> generatePosBetween(QVector<quint16> pos1, QVector<quint16> pos2,QVector<quint16>& newPos,quint16 level);
