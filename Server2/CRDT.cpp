@@ -11,6 +11,7 @@ CRDT::CRDT(){
 
 CRDT::CRDT(quint16 id): siteID(id), strategy(RANDOM_STRATEGY),counter(0),boundary(10),base(32),text(""),alignement(0) {
     this->listChar.clear();
+    QRandomGenerator* rand = new QRandomGenerator();
 }
 CRDT::CRDT(quint16 id, QVector<Char> listChar): siteID(id), strategy(RANDOM_STRATEGY),counter(0),boundary(10),base(32),alignement(0){
     this->listChar = listChar;
@@ -19,6 +20,7 @@ CRDT::CRDT(quint16 id, QVector<Char> listChar): siteID(id), strategy(RANDOM_STRA
         QChar c = ch.getValue();
         this->text.append(c);
     }
+    QRandomGenerator* rand = new QRandomGenerator();
 }
 quint16 CRDT::getSiteID(){return this->siteID;}
 void CRDT::setSiteID(quint16 ID){this->siteID = ID;}
@@ -55,7 +57,6 @@ quint16 CRDT::retrieveStrategy(quint16 level) {
     switch (this->strategy){
         case RANDOM_STRATEGY:
         {
-            QRandomGenerator* rand = new QRandomGenerator();
             quint16 num = quint16( rand->bounded(0,1) );
             returnStrategy = num==0 ? PLUS_STRATEGY : MINUS_STRATEGY;
             break;
@@ -80,7 +81,6 @@ quint16 CRDT::generateIdBetween(quint16 id1, quint16 id2, quint16 strategy) {
         }
     }
     //return floor(random()%(id2-id1))+id1;
-    QRandomGenerator* rand = new QRandomGenerator();
     quint16 num = quint16( rand->bounded(id1,id2) );
     return num;
 }
