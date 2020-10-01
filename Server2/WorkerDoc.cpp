@@ -26,17 +26,16 @@ WorkerDoc::~WorkerDoc(){
 void WorkerDoc::workerDocCreaDoc(QString nomeFile, WorkerSocket* wsP){
     crdt = new CRDT(0); //CRDT vuoto perchè nuovo file
     crdt->localInsert('\0',QTextCharFormat(),0);
-    QFile *newFile = new QFile(nomeFile); //creo nuovo file
+    QFile newFile(nomeFile); //creo nuovo file
     QString esito("");
-    if ( !newFile->open(QIODevice::ReadWrite) ){ //controllo esito dell'operazione di apertura
+    if ( !newFile.open(QIODevice::WriteOnly) ){ //controllo esito dell'operazione di apertura
         esito = "Failed";
     }
     else{
         esito="Success";
-        openedFile = newFile;
         numClients = 1; //ancora nessun client connesso, viene solo richiesto di creare il file
         this->nomeFile = nomeFile;
-        QDataStream outStream(this->openedFile);
+        QDataStream outStream(&newFile);
         outStream<<*crdt;
     }
     emit SigEsitoCreaDoc(esito,*crdt /* passo il CRDT come copia, quindi non il puntatore*/);
@@ -53,14 +52,14 @@ void WorkerDoc::workerDocCreaDoc(QString nomeFile, WorkerSocket* wsP){
      * */
 void WorkerDoc::workerDocPrimaAperturaDoc(QString nomeFile, WorkerSocket* wsP){
     QString esito("");
-    this->openedFile = new QFile(nomeFile);
-    QDataStream fileStream(openedFile); //creo uno stream di dati dal file per leggere direttamente il CRDT
+    QFile file(nomeFile);
+    QDataStream fileStream(&file); //creo uno stream di dati dal file per leggere direttamente il CRDT
     crdt = new CRDT(0);
     QObject::connect(this, &WorkerDoc::SigEsitoApriDoc, wsP, &WorkerSocket::rispondiEsitoApriDoc);
     /*la corrispondente disconnect, necessaria per evitare che il worker doc attivi lo slot indicato in ogni worker socket
      * a cui è collegato, viene fatta qui in fondo*/
     //openedFile deve essere già inizializzato, effettuo un controllo per robustezza
-    if (!openedFile->open(QIODevice::ReadWrite)){ //controllo anche apertura del file
+    if (!file.open(QIODevice::ReadOnly)){ //controllo anche apertura del file
         esito= "Failed";
     }
     else{
@@ -127,7 +126,7 @@ void WorkerDoc::unClientHaChiusoIlDoc(){
     numClients--;
     if (numClients==0){
         delete crdt;
-        delete openedFile;
+
         emit SigNessunClientStaEditando(this->nomeFile);
     }
 }
@@ -135,7 +134,7 @@ void WorkerDoc::unClientHaChiusoIlDoc(){
 void WorkerDoc::opDoc(DocOperation docOp){
 
     QFile file(this->nomeFile);
-    file.open(QIODevice::ReadWrite);
+    file.open(QIODevice::WriteOnly);
 
     // salvataggio su file del crdt ogni operazione che si effettua su di esso
     QDataStream outStream(&file);
@@ -175,7 +174,6 @@ void WorkerDoc::opDoc(DocOperation docOp){
             break;
     }
     }
-    file.close();
     emit SigEsitoOpDoc("Success",docOp);
 }
 
