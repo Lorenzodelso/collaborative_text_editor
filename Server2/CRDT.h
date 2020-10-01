@@ -18,7 +18,6 @@ class CRDT
 {
 
 private:
-    QRandomGenerator* rand;
     quint16 siteID;
     QVector<Char> listChar;
     quint16 strategy;
