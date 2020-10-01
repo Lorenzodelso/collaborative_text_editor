@@ -68,7 +68,6 @@ void WorkerDoc::workerDocPrimaAperturaDoc(QString nomeFile, WorkerSocket* wsP){
         this->nomeFile = nomeFile;
         numClients = 1;
     }
-    qDebug()<<crdt->text;
     emit SigEsitoApriDoc(esito,*crdt /* passo il CRDT come copia, quindi non il puntatore*/);
     QObject::disconnect(this, &WorkerDoc::SigEsitoApriDoc, wsP, &WorkerSocket::rispondiEsitoApriDoc);
 }
@@ -86,7 +85,7 @@ void WorkerDoc::workerDocNsimaAperturaDoc(QUtente user,WorkerSocket* wsP, QMap<Q
     /*la corrispondente disconnect, necessaria per evitare che il worker doc attivi lo slot indicato in ogni worker socket
      * a cui è collegato, viene fatta qui in fondo*/
     //N-esima apertura, quindi sia crdt che openedFile dovrebbero essere inizializzati, faccio controllo robustezza
-    if (crdt == nullptr || openedFile == nullptr){
+    if (crdt == nullptr || nomeFile == nullptr){
         esito = "Failed";
         emit SigEsitoApriDoc(esito, *crdt);
     }
@@ -126,7 +125,6 @@ void WorkerDoc::unClientHaChiusoIlDoc(){
     numClients--;
     if (numClients==0){
         delete crdt;
-
         emit SigNessunClientStaEditando(this->nomeFile);
     }
 }
@@ -135,7 +133,6 @@ void WorkerDoc::opDoc(DocOperation docOp){
 
     QFile file(this->nomeFile);
     file.open(QIODevice::WriteOnly);
-
     // salvataggio su file del crdt ogni operazione che si effettua su di esso
     QDataStream outStream(&file);
     switch(docOp.type){

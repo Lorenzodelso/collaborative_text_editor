@@ -31,7 +31,6 @@ void WorkerSocket::leggiMsgApp() {
         QDataStream in(this->socketConnessoP);
         char* msg;
         uint prova = 3;
-        qDebug()<<socketConnessoP->bytesAvailable();
         in.readBytes(msg, prova);
         if (strcmp(msg,"ope")==0)
         {

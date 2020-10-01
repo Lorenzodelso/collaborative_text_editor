@@ -17,7 +17,6 @@ class WorkerDoc : public QObject{
     Q_OBJECT
 
 private:
-    QFile* openedFile; //riferimento a file per modifiche
     QString nomeFile; //mantengo anche il nome per comodità
     CRDT* crdt; //oggetto che mantiene la logica di ordinamento
     quint16 numClients=0; //contatore dei clients connessi al documento
