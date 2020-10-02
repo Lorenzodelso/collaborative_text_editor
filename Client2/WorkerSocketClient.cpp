@@ -204,6 +204,7 @@ void  WorkerSocketClient::leggiMsgApp(){
             BlockReader(socketConnesso).stream() >> utente;
             emit  SigQuestoUserHaApertoIlDoc(utente);
         }
+        delete [] msg;
     }
 }
 

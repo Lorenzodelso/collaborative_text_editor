@@ -87,11 +87,8 @@
 #include "TextEdit.h"
 
 
-#ifdef Q_OS_MAC
-const QString rsrcPath = ":/images/mac";
-#else
 const QString rsrcPath = ":/images/win";
-#endif
+
 
 
 
@@ -1035,7 +1032,7 @@ void TextEdit::opDocRemota(DocOperation operation){
       cursor->setPosition(index+1,QTextCursor::KeepAnchor);
       cursor->mergeCharFormat(operation.character.getFormat());
       connect(textEdit->document(),&QTextDocument::contentsChange,
-                     this, &TextEdit::CRDTInsertRemove );
+                     this, &TextEdit::CRDTInsertRemove, Qt::QueuedConnection);
       QRect rect_ = textEdit->cursorRect(*cursor);
 
       for(auto label : labelMap->toStdMap())
@@ -1117,7 +1114,7 @@ void TextEdit::opDocRemota(DocOperation operation){
        qDebug()<<textEdit->fontPointSize();
        labelMap->find(operation.getSiteId()).value()->setFixedSize(3,textEdit->fontPointSize());
        connect(textEdit->document(),&QTextDocument::contentsChange,
-                  this, &TextEdit::CRDTInsertRemove);
+                  this, &TextEdit::CRDTInsertRemove, Qt::QueuedConnection);
        break;
    }
 

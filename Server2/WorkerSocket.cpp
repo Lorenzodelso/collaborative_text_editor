@@ -123,6 +123,7 @@ void WorkerSocket::leggiMsgApp() {
         {
            emit SigChiusuraConnessioneDaParteDelClient(this, this->user);
         }
+        delete [] msg;
     }
    //emit  SigChiusuraConnessioneDaParteDelClient(this, this->user);
 }
