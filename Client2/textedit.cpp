@@ -86,12 +86,8 @@
 
 #include "TextEdit.h"
 
-
-#ifdef Q_OS_MAC
-const QString rsrcPath = ":/images/mac";
-#else
 const QString rsrcPath = ":/images/win";
-#endif
+
 
 
 
