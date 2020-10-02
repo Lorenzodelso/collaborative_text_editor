@@ -484,7 +484,10 @@ void TextEdit::setupTextActions()
 
     comboFont = new QFontComboBox(tbFormat);
     tbFormat->addWidget(comboFont);
-
+    int index;
+    index=comboFont->findText("Helvetica");
+    if (index != -1){
+       comboFont->removeItem(index);}
     connect(comboFont, QOverload<const QString &>::of(&QComboBox::activated), this, &TextEdit::textFamily);
 
     comboSize = new QComboBox(tbFormat);
