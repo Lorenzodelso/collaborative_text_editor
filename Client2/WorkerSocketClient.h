@@ -14,6 +14,31 @@
 #include "BlockReader.h"
 #include "BlockWriter.h"
 
+enum inOperation: quint16{
+    Esito_apri_doc = 1,
+    Esito_crea_doc = 2,
+    Esito_login = 3,
+    Esito_modifica_profilo_utente = 4,
+    Esito_operazione_doc = 5,
+    Esito_registrazione = 6,
+    Esito_operazione_colorMode = 7,
+    User_chiudi_doc = 8,
+    User_apri_doc = 9,
+    Esito_chiusura_doc_client = 10
+};
+
+enum outOperation:quint16{
+    Apri_doc = 1,
+    Crea_doc = 2,
+    Login = 3,
+    Registrazione = 4,
+    Operazione_doc = 5,
+    Color_mode = 6,
+    Modifica_profilo_utente = 7,
+    Chiusura_doc_client = 8,
+    Chiusura_conn_client = 9
+};
+
 class WorkerSocketClient : public QObject{
     Q_OBJECT
 
@@ -27,6 +52,17 @@ class WorkerSocketClient : public QObject{
 
     private:
         bool connected=false;
+
+        void EmitSigEsitoApriDoc();
+        void EmitSigEsitoCreaDoc();
+        void EmitSigEsitoLogin();
+        void EmitSigEsitoModificaProfiloUtente();
+        void EmitSigEsitoOpDoc();
+        void EmitSigEsitoRegistrazione();
+        void EmitSigEsitoColorMode();
+        void EmitSigUserChiudiDoc();
+        void EmitSigUserApriDoc();
+        void EmitEsitoChiusuraDocClient();
 
     signals:
 
