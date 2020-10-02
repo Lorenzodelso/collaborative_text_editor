@@ -86,15 +86,19 @@
 
 #include "TextEdit.h"
 
-const QString rsrcPath = ":/images/win";
 
+#ifdef Q_OS_MAC
+const QString rsrcPath = ":/images/mac";
+#else
+const QString rsrcPath = ":/images/win";
+#endif
 
 
 
 TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP,quint16 siteId, QUtente utente)
     : QMainWindow(parent)
 {
-	//Inserisco inizializzazione del CRDT
+    //Inserisco inizializzazione del CRDT
     algoritmoCRDT = new CRDT(siteId);
 
     //inizialmente scrittura normale
@@ -483,10 +487,16 @@ void TextEdit::setupTextActions()
     addToolBar(tbColor);
 
     comboFont = new QFontComboBox(tbFormat);
+
+
     tbFormat->addWidget(comboFont);
+    const QFont fixedFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+
+    QFontComboBox::FontFilters filters;
+    QFont currentFont;
     int index;
     index=comboFont->findText("Helvetica");
-    if (index != -1){
+    if ( index != -1 ) {
        comboFont->removeItem(index);}
     connect(comboFont, QOverload<const QString &>::of(&QComboBox::activated), this, &TextEdit::textFamily);
 
@@ -496,8 +506,10 @@ void TextEdit::setupTextActions()
     comboSize->setEditable(true);
 
     const QList<int> standardSizes = QFontDatabase::standardSizes();
+
     foreach (int size, standardSizes)
         comboSize->addItem(QString::number(size));
+
     comboSize->setCurrentIndex(standardSizes.indexOf(QApplication::font().pointSize()));
 
     connect(comboSize, QOverload<const QString &>::of(&QComboBox::activated), this, &TextEdit::textSize);
@@ -606,8 +618,7 @@ void TextEdit::textFamily(const QString &f)
     disconnect(textEdit->document(),&QTextDocument::contentsChange,this, &TextEdit::CRDTInsertRemove);
     fmt.setFontFamily(f);
     mergeFormatOnWordOrSelection(fmt);
-    connect(textEdit->document(),&QTextDocument::contentsChange,this, &TextEdit::CRDTInsertRemove );
-}
+    connect(textEdit->document(),&QTextDocument::contentsChange,this, &TextEdit::CRDTInsertRemove );}
 
 void TextEdit::textSize(const QString &p)
 {
@@ -1025,6 +1036,16 @@ void TextEdit::opDocRemota(DocOperation operation){
       cursor->mergeCharFormat(operation.character.getFormat());
       connect(textEdit->document(),&QTextDocument::contentsChange,
                      this, &TextEdit::CRDTInsertRemove );
+      QRect rect_ = textEdit->cursorRect(*cursor);
+
+      for(auto label : labelMap->toStdMap())
+      {
+
+            label.second->setFixedSize(2,rect_.bottom()-rect_.top());
+            qDebug() <<"CAMBIO: "<<rect_.bottom()-rect_.top();
+            label.second->adjustSize();
+      }
+
       break;
    }
    case cursorMoved:
@@ -1049,7 +1070,7 @@ void TextEdit::opDocRemota(DocOperation operation){
        QRect rect = textEdit->cursorRect(*cursor);
        labelMap->find(operation.getSiteId()).value()->move(rect.left(),rect.top());
        qDebug()<<textEdit->fontPointSize();
-       labelMap->find(operation.getSiteId()).value()->setFixedSize(3,textEdit->fontPointSize());
+       labelMap->find(operation.getSiteId()).value()->setFixedSize(2,rect.bottom()-rect.top());
 
        //Aggiorno mappa siteId - cursore
        //cursorMap->find(operation.siteId).value().setPosition(operation.cursorPos);
@@ -1125,6 +1146,7 @@ void TextEdit::questoUserHaApertoIlDoc(QUser usr){
     lbl->setFixedSize(3,textEdit->fontPointSize());
     lbl->move(rect.left(),rect.top());
     lbl->raise();
+   // lbl->setFont(textEdit->font());
     lbl->setMargin(3);
     lbl->setStyleSheet("QLabel { background-color: "+QColor::colorNames()[usr.getUserId()]+"; color: "+QColor::colorNames()[usr.getUserId()]+"}");
     lbl->show();
