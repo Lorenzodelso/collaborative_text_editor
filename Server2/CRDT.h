@@ -36,25 +36,25 @@ public:
     void setSiteID(quint16 ID);
     QVector<Char> getListChar();
     void setListChar(QVector<Char> listChar);
-    DocOperation localInsert(QChar value,QTextCharFormat format, quint16 index);
-    DocOperation localErase(quint16 index);
-    DocOperation localFormatChange(QTextCharFormat format, quint16 index);
-    quint16 remoteInsert(Char value);
-    quint16 remoteDelete(Char value);
-    quint16 remoteFormatChange(Char ch);
+    DocOperation localInsert(QChar value,QTextCharFormat format, quint32 index);
+    DocOperation localErase(quint32 index);
+    DocOperation localFormatChange(QTextCharFormat format, quint32 index);
+    quint32 remoteInsert(Char value);
+    quint32 remoteDelete(Char value);
+    quint32 remoteFormatChange(Char ch);
     friend QDataStream& operator<<(QDataStream& out,const CRDT& crdt);
     friend QDataStream& operator>>(QDataStream& in, CRDT& crdt);
     void saveCRDTonFile(QString nomeFile);
     void readCRDTfromFile(QString nomeFile);
-    void setCharAlign(quint16 alignementType,quint16 index);
+    void setCharAlign(quint16 alignementType,quint32 index);
 
 
 protected:
-    Char generateChar(QChar value,QTextCharFormat format, quint16 index);
-    QVector<quint16> findPosBefore(quint16 index);
-    QVector<quint16> findPosAfter(quint16 index);
-    QVector<quint16> generatePosBetween(QVector<quint16> pos1, QVector<quint16> pos2,QVector<quint16>& newPos,quint16 level);
-    quint16 generateIdBetween(quint16 id1, quint16 id2, quint16 strategy);
+    Char generateChar(QChar value,QTextCharFormat format, quint32 index);
+    QVector<quint32> findPosBefore(quint32 index);
+    QVector<quint32> findPosAfter(quint32 index);
+    QVector<quint32> generatePosBetween(QVector<quint32> pos1, QVector<quint32> pos2,QVector<quint32>& newPos,quint16 level);
+    quint32 generateIdBetween(quint32 id1, quint32 id2, quint16 strategy);
     quint16 retrieveStrategy(quint16 level);
     int findInsertIndex(Char ch);
     int findIndexByPosition(Char ch);

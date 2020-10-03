@@ -3,11 +3,11 @@
 #include "Char.h"
 
 Char::Char(){}
-Char::Char(quint16 siteId, quint16 counter, QVector<quint16> position, QChar value,QTextCharFormat format):
+Char::Char(quint16 siteId, quint16 counter, QVector<quint32> position, QChar value,QTextCharFormat format):
 siteId(siteId), counter(counter),position(position),value(value),format(format),alignementType(0) {}
 
 Char::Char(const Char& source):siteId(source.siteId), counter(source.counter), value(source.value),format(source.format),alignementType(source.alignementType){
-    position = QVector<quint16>(source.position);
+    position = QVector<quint32>(source.position);
 }
 
 /*METHOD compareTo: prende i due Char e confronta le due posizioni
@@ -18,7 +18,7 @@ int Char::compareTo(Char other) {
     auto const pos1=this->position;
     auto const pos2=other.position;
 
-    for (quint16 i=0; i<std::min(pos1.size(),pos2.size());i++){
+    for (quint32 i=0; i<std::min(pos1.size(),pos2.size());i++){
         auto id1=pos1[i];
         auto id2=pos2[i];
 
@@ -39,7 +39,7 @@ int Char::compareTo(Char other) {
     }
 }
 
-QVector<quint16> Char::getPos() {
+QVector<quint32> Char::getPos() {
     return this->position;
 }
 
@@ -85,7 +85,7 @@ QDataStream& operator>>(QDataStream& in, Char& ch){
     quint16 counter;
     QChar value;
     quint16 alignementType;
-    QVector<quint16> pos;
+    QVector<quint32> pos;
     QTextCharFormat format;
     in >> siteId;
     in >> counter;

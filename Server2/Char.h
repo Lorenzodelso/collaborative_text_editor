@@ -13,17 +13,17 @@ class Char {
 private:
     quint16 siteId;
     quint16 counter;
-    QVector<quint16> position;
+    QVector<quint32> position;
     QChar value;
     QTextCharFormat format;
     quint16 alignementType;
 
 public:
     Char();
-    Char(quint16 siteId, quint16 counter, QVector<quint16> position, QChar value,QTextCharFormat format);
+    Char(quint16 siteId, quint16 counter, QVector<quint32> position, QChar value,QTextCharFormat format);
     Char(const Char& source);
     int compareTo(Char other);
-    QVector<quint16> getPos();
+    QVector<quint32> getPos();
     QChar getValue();
     void setFormat(QTextCharFormat format);
     QTextCharFormat getFormat();
