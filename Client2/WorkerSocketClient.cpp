@@ -218,7 +218,6 @@ void  WorkerSocketClient::leggiMsgApp(){
         case User_apri_doc:{EmitSigUserApriDoc(); break;}
         case Esito_chiusura_doc_client:{EmitEsitoChiusuraDocClient(); break;}
         }
-        delete [] msg;
     }
 }
 

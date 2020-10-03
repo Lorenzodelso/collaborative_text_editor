@@ -27,7 +27,7 @@ enum inOperation: quint16{
     Esito_chiusura_doc_client = 10
 };
 
-enum outOperation:quint16{
+enum outOperation: quint16{
     Apri_doc = 1,
     Crea_doc = 2,
     Login = 3,
