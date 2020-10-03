@@ -267,10 +267,13 @@ void WorkerSocketClient::modificaProfiloUtente(QUtente user1)
     QBuffer buffer(&arr);
     QBuffer buffer1(&arr1);
     QString val= QString("/");
-    QImage image1;
-    image1.load(user1.getNomeImg());
-    buffer1.open(QIODevice::WriteOnly);
-    image1.save(&buffer1, user1.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
+    QImage *image1 = new QImage();
+    if(user1.getNomeImg() != NULL){
+        image1->load(user1.getNomeImg());
+        buffer1.open(QIODevice::WriteOnly);
+        image1->save(&buffer1, user1.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
+    }
+
     if(this->currentImg != NULL ){
         buffer.open(QIODevice::WriteOnly);
         this->currentImg->save(&buffer,this->user.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());

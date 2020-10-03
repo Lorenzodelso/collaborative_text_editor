@@ -289,12 +289,13 @@ void Server::login(WorkerSocket* wsP, QUtente user) {
             QList<QString> l = {"Failed"};
             emit SigEsitoLogin(user, l);
             /*elimino thread che gestisce quel socket */
-            QThread* qtcP = threadsSocket.value(wsP);
 
+            /*SE IL LOGIN FALLISCE NON ELIMINO IL THREAD
+             * QThread* qtcP = threadsSocket.value(wsP);
             threadsSocket.remove(wsP);
             qtcP->quit();
             qtcP->wait();
-            delete qtcP;
+            delete qtcP;*/
         }
     }
     else{
@@ -303,12 +304,12 @@ void Server::login(WorkerSocket* wsP, QUtente user) {
         QList<QString> l = {"Failed"};
         emit SigEsitoLogin(user, l);
         /*elimino thread che gestisce quel socket */
-        QThread* qtcP = threadsSocket.value(wsP);
-
+        /* SE IL LOGIN FALLISCE NON ELIMINO IL THREAD
+         * QThread* qtcP = threadsSocket.value(wsP);
         threadsSocket.remove(wsP);
         qtcP->quit();
         qtcP->wait();
-        delete qtcP;
+        delete qtcP;*/
     }
 
 
@@ -459,8 +460,11 @@ void Server::modificaProfiloUtente(WorkerSocket *wsP, QUtente userOld, QUtente u
         QMap<quint32, QUtenteServer>::iterator i;
         QTextStream out(&file);
         for (i = users.begin(); i != users.end(); ++i) {
-            out << currUserId << ' ' << userServerSide.getUsername() << ' ' << userServerSide.getPassword() << ' ' << userServerSide.getSalt() << ' '<< userServerSide.getNomeImg() << '\n';
-
+            if(i->getNomeImg() != NULL){
+                out << i->userId << ' ' << i->userName << ' ' << i->password << ' ' << i->salt << ' ' << i->nomeImg << '\n';
+            }else{
+                out << i->userId << ' ' << i->userName << ' ' << i->password << ' ' << i->salt << ' ' << "NULL" << '\n';
+            }
         }
         file.close();
 

@@ -43,6 +43,15 @@ void WorkerSocket::EmitSigApriDoc(){
 }
 
 void WorkerSocket::EmitSigLogin(){
+    //TENTATIVO DI LOGIN
+    //
+    //
+    //
+    qDebug()<< "Tentativo di login";
+    //
+    //
+    //
+    //******************************
     QUtente user;
     BlockReader(socketConnessoP).stream() >> user;
     if (user.getUsername() != NULL && user.getPassword() != NULL /*&& user.getNomeImg() == NULL*/)
@@ -89,16 +98,11 @@ void WorkerSocket::EmitSigModificaProfiloUtente(){
          this->temporaryImage.loadFromData(data,userNEW.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
          userNEW.setNomeImg(var+"."+userNEW.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
     }
-    if ((userOLD.getUsername() !=  userNEW.getUsername() &&
-         userOLD.getPassword() ==  userNEW.getPassword() &&
-         userNEW.getNomeImg()  ==  userOLD.getNomeImg()) ||
-        (userOLD.getUsername() ==  userNEW.getUsername() &&
-         userOLD.getPassword() !=  userNEW.getPassword() &&
-         userNEW.getNomeImg()  ==  userOLD.getNomeImg()) ||
-        (userOLD.getUsername() ==  userNEW.getUsername() &&
-         userOLD.getPassword() ==  userNEW.getPassword() &&
-         userNEW.getNomeImg()  !=  userOLD.getNomeImg()))
+    if (userOLD.getUsername() != userNEW.getUsername() ||
+        userOLD.getPassword() != userNEW.getPassword()||
+        userNEW.getNomeImg() != userOLD.getNomeImg()){
             emit SigModificaProfiloUtente(this, userOLD, userNEW);
+    }
 }
 
 void WorkerSocket::EmitSigChiusuraDocClient(){
@@ -139,7 +143,7 @@ void WorkerSocket::rispondiEsitoLogin(QUtente user, QList<QString> nomiFilesEdit
     {
         uint len=3;
         in.writeBytes("fld",len);
-        socketConnessoP->disconnectFromHost();
+        //socketConnessoP->disconnectFromHost();
     }
     else{
         uint len=3;
