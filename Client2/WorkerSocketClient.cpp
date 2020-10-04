@@ -128,10 +128,11 @@ void WorkerSocketClient::EmitSigEsitoModificaProfiloUtente(){
         BlockReader(socketConnesso).stream() >> data;
 
         this->user=userNew;
-
+        if(dimension>0){
         image->loadFromData(data,this->user.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
         image->save(QDir::currentPath()+val+user.getNomeImg(), user.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
         this->currentImg=image;
+        }
 
         emit SigEsitoModificaProfiloUtente("Success",userNew);
     }
@@ -277,7 +278,7 @@ void WorkerSocketClient::modificaProfiloUtente(QUtente user1)
     if(this->currentImg != NULL ){
         buffer.open(QIODevice::WriteOnly);
         this->currentImg->save(&buffer,this->user.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
-        if(QString(arr).compare(QString(arr1)) == 0){
+        if(arr.compare(arr1) == 0){
              arr1= QByteArray();
         }
     }
