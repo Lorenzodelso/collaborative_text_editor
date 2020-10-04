@@ -20,6 +20,7 @@ QUtenteServer::QUtenteServer(){
 QUtenteServer::QUtenteServer(QUtenteServer const &utente){
     this->userId = utente.userId;
     this->userName = utente.userName;
+    this->salt = utente.salt;
     this->password = utente.password;
     this->nomeImg = utente.nomeImg;
 }

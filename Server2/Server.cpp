@@ -365,7 +365,7 @@ void Server::registrazione(WorkerSocket* wsP, QUtente user) {
             userServerSide.setUserId(currUserId);
             userServerSide.setUsername(user.getUsername());
             userServerSide.setPassword(user.getPassword());
-            userServerSide.setSalt("salt");
+            userServerSide.setSalt(QString("salt"));
 
             if(user.getNomeImg()==NULL){
                 userServerSide.setNomeImg(nullptr);
@@ -443,7 +443,7 @@ void Server::modificaProfiloUtente(WorkerSocket *wsP, QUtente userOld, QUtente u
         userServerSide.setUserId(userNew.getUserId());
         userServerSide.setUsername(userNew.getUsername());
         userServerSide.setPassword(userNew.getPassword());
-        userServerSide.setSalt("salt");
+        userServerSide.setSalt(QString("salt"));
         userServerSide.setNomeImg(userNew.getNomeImg());
         users.insert(userNew.getUserId(),  userServerSide);
 
@@ -461,9 +461,9 @@ void Server::modificaProfiloUtente(WorkerSocket *wsP, QUtente userOld, QUtente u
         QTextStream out(&file);
         for (i = users.begin(); i != users.end(); ++i) {
             if(i->getNomeImg() != NULL){
-                out << i->userId << ' ' << i->userName << ' ' << i->password << ' ' << i->salt << ' ' << i->nomeImg << '\n';
+                out << i->getUserId() << ' ' << i->getUsername() << ' ' << i->getPassword() << ' ' << i->getSalt() << ' ' << i->getNomeImg() << '\n';
             }else{
-                out << i->userId << ' ' << i->userName << ' ' << i->password << ' ' << i->salt << ' ' << "NULL" << '\n';
+                out << i->getUserId() << ' ' << i->getUsername() << ' ' << i->getPassword() << ' ' << i->getSalt() << ' ' << "NULL" << '\n';
             }
         }
         file.close();

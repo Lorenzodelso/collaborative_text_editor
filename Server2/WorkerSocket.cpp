@@ -253,9 +253,10 @@ void WorkerSocket::rispondiEsitoModificaProfiloUtente(QUtente userNew,bool immag
         if(immagineModificata){
             this->temporaryImage.save(QDir::currentPath()+val+userNew.getNomeImg(), userNew.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
             this->image=this->temporaryImage;
+            buffer.open(QIODevice::WriteOnly);
+            this->image.save(&buffer, userNew.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
         }
-        buffer.open(QIODevice::WriteOnly);
-        this->image.save(&buffer, userNew.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
+
 
         BlockWriter(socketConnessoP).stream() << this->user;
         BlockWriter(socketConnessoP).stream() << static_cast<qint64>(arr.size());
