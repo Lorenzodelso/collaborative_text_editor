@@ -90,8 +90,8 @@ QVector<quint32> CRDT::generatePosBetween(QVector<quint32> pos1, QVector<quint32
     quint32 id1;
     quint32 id2;
     auto base = pow(2, level)*this->base;
-    std::cout<<"BASE: "<<base<<"\n";
-    std::cout<<"LVL: "<<level<<"\n";
+//    std::cout<<"BASE: "<<base<<"\n";
+//    std::cout<<"LVL: "<<level<<"\n";
 
 
     if (!pos1.isEmpty()) {

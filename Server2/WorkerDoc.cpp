@@ -67,6 +67,7 @@ void WorkerDoc::workerDocPrimaAperturaDoc(QString nomeFile, WorkerSocket* wsP){
         fileStream >> *crdt; //deserializzo il CRDT interno al file
         this->nomeFile = nomeFile;
         numClients = 1;
+
     }
     emit SigEsitoApriDoc(esito,*crdt /* passo il CRDT come copia, quindi non il puntatore*/);
     QObject::disconnect(this, &WorkerDoc::SigEsitoApriDoc, wsP, &WorkerSocket::rispondiEsitoApriDoc);

@@ -872,6 +872,7 @@ void TextEdit::comunicaCRDTCambioFormat(QTextCharFormat format, int pos, int num
 
 void TextEdit::CRDTInsertRemove(int pos, int rem, int add){
     QTextCursor cursor = textEdit->textCursor();
+    qDebug()<< "Inizio";
     //qDebug()<<"Add: "<<add<<" Rem: "<<rem<< " Pos:"<<pos;
     if(rem==0 && add>0){
         //AGGIUNTA DI UNO O PIU' CARATTERI
@@ -913,6 +914,7 @@ void TextEdit::CRDTInsertRemove(int pos, int rem, int add){
             }
         }
     }
+    qDebug() << "Fine";
 }
 
 void TextEdit::format(const QTextCharFormat &format){
@@ -978,6 +980,7 @@ void TextEdit::opDocRemota(DocOperation operation){
     {
        //Se è attiva la modalità di scrittura a colori devo fare un merge sul formato che mi arriva
        //inserendo anche il colore corretto rispetto al siteId del client che l'ha inserito
+      textEdit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
       quint16 index = algoritmoCRDT->remoteInsert(operation.character);
       disconnect(textEdit->document(),&QTextDocument::contentsChange,
                      this, &TextEdit::CRDTInsertRemove );
@@ -985,10 +988,10 @@ void TextEdit::opDocRemota(DocOperation operation){
       //QTextCursor cursor = textEdit->textCursor();   //MODIFICA TEMPORANEA CURSORE
       //QTextCursor *cursor = new QTextCursor(textEdit->textCursor());
       auto colors = QColor::colorNames();
+      cursor->setPosition(index);
       if (colorWriting == true){
           QTextCharFormat coloredFormat(operation.character.getFormat());
           coloredFormat.setForeground(QBrush(QColor(colors[operation.character.getSiteId()])));
-          cursor->setPosition(index);
           cursor->mergeCharFormat(coloredFormat);
           cursor->insertText(operation.character.getValue());
           textEdit->setTextColor(QColor(colors[this->siteId]));
@@ -998,6 +1001,7 @@ void TextEdit::opDocRemota(DocOperation operation){
           cursor->insertText(operation.character.getValue(),operation.character.getFormat());
           //qDebug()<<"Dopo: "<<textEdit->fontPointSize();
       }
+      textEdit->setTextInteractionFlags(Qt::TextEditorInteraction);
       connect(textEdit->document(),&QTextDocument::contentsChange,
                      this, &TextEdit::CRDTInsertRemove,Qt::QueuedConnection);
       break;
