@@ -332,7 +332,7 @@ void RecentDocsDialogs::esitoApriDoc(QString esito, CRDT doc){
 }
 
 void RecentDocsDialogs::esitoChiudiDoc(QString esito){
-    qDebug() << "dentro esitoChiudiDoc";
+    qDebug() << "dentro esitoChiudiDoc " << esito;
   if (isSuccess(esito)){
       mw->hide();
       mw->cleanTextEdit();

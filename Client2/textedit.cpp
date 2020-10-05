@@ -138,7 +138,7 @@ TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP,quint16 siteId, QUt
     setupEditActions();
     setupTextActions();
 
-    QFont textFont("Helvetica");
+    QFont textFont("Arial");
     textFont.setStyleHint(QFont::SansSerif);
     textEdit->setFont(textFont);
     textEdit->setFontPointSize(13);
@@ -234,6 +234,8 @@ void TextEdit::loadCRDTIntoEditor(CRDT crdt){
   auto lista = crdt.getListChar();
   disconnect(textEdit->document(),&QTextDocument::contentsChange,
           this, &TextEdit::CRDTInsertRemove );
+  disconnect(textEdit, &QTextEdit::cursorPositionChanged,
+          this, &TextEdit::cursorPositionChanged);
   for (auto richChar = lista.cbegin(); richChar!=lista.cend(); richChar++ ){
     QString str = "";
     Char ch = *richChar;
@@ -270,6 +272,8 @@ void TextEdit::loadCRDTIntoEditor(CRDT crdt){
   currentIndex++;
   connect(textEdit->document(),&QTextDocument::contentsChange,
           this, &TextEdit::CRDTInsertRemove,Qt::QueuedConnection );
+  connect(textEdit, &QTextEdit::cursorPositionChanged,
+          this, &TextEdit::cursorPositionChanged);
 }
 
 
@@ -1140,7 +1144,11 @@ void TextEdit::questoUserHaApertoIlDoc(QUser usr){
     //qDebug()<<"Inserito cursore per utente: "<<usr.getUserId();
     QLabel *lbl = new QLabel("",textEdit);
     labelMap->insert(usr.getUserId(),lbl);
+    disconnect(textEdit, &QTextEdit::cursorPositionChanged,
+            this, &TextEdit::cursorPositionChanged);
     cursor->setPosition(0);
+    connect(textEdit, &QTextEdit::cursorPositionChanged,
+            this, &TextEdit::cursorPositionChanged);
     QRect rect = textEdit->cursorRect(*cursor);
     //qDebug()<<textEdit->fontPointSize();
     lbl->setFrameStyle(QFrame::VLine | QFrame::Plain);
