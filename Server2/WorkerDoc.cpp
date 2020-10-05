@@ -125,6 +125,10 @@ void WorkerDoc::workerDocNsimaAperturaDoc(QUtente user,WorkerSocket* wsP, QMap<Q
 void WorkerDoc::unClientHaChiusoIlDoc(){
     numClients--;
     if (numClients==0){
+        QFile file(this->nomeFile);
+        file.open(QIODevice::WriteOnly);
+        QDataStream outStream(&file);
+        outStream << *crdt;
         delete crdt;
         emit SigNessunClientStaEditando(this->nomeFile);
     }
@@ -132,27 +136,27 @@ void WorkerDoc::unClientHaChiusoIlDoc(){
 
 void WorkerDoc::opDoc(DocOperation docOp){
 
-    QFile file(this->nomeFile);
-    file.open(QIODevice::WriteOnly);
+    //QFile file(this->nomeFile);
+    //file.open(QIODevice::WriteOnly);
     // salvataggio su file del crdt ogni operazione che si effettua su di esso
-    QDataStream outStream(&file);
+    //QDataStream outStream(&file);
     switch(docOp.type){
         case remoteDelete:
     {
             this->crdt->remoteDelete(docOp.character);
-            outStream << *crdt;
+            //outStream << *crdt;
             break;
     }
         case remoteInsert:
     {
             this->crdt->remoteInsert(docOp.character);
-            outStream << *crdt;
+            //outStream << *crdt;
             break;
     }
         case changedFormat:
     {
             this->crdt->remoteFormatChange(docOp.character);
-            outStream << *crdt;
+            //outStream << *crdt;
             break;
     }
         case cursorMoved:
@@ -168,10 +172,11 @@ void WorkerDoc::opDoc(DocOperation docOp){
         case alignementChanged:
     {
             this->crdt->setCharAlign(docOp.alignementType,docOp.cursorPos);
-            outStream << *crdt;
+            //outStream << *crdt;
             break;
     }
     }
+    //file.close();
     emit SigEsitoOpDoc("Success",docOp);
 }
 
