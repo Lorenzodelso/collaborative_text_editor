@@ -136,10 +136,11 @@ void WorkerDoc::unClientHaChiusoIlDoc(){
 
 void WorkerDoc::opDoc(DocOperation docOp){
 
-    //QFile file(this->nomeFile);
-    //file.open(QIODevice::WriteOnly);
-    // salvataggio su file del crdt ogni operazione che si effettua su di esso
-    //QDataStream outStream(&file);
+//    QFile file(this->nomeFile);
+//    file.open(QIODevice::WriteOnly);
+//    salvataggio su file del crdt ogni operazione che si effettua su di esso
+//    QDataStream outStream(&file);
+
     /*CONTATORE OPERAZIONI PER SALVATAGGIO*/
     numOps++;
     /*************************************/
@@ -169,8 +170,9 @@ void WorkerDoc::opDoc(DocOperation docOp){
             QTextCursor* cursor = new QTextCursor();
             cursor->setPosition(docOp.cursorPos,QTextCursor::MoveAnchor);
             cursorMap->find(docOp.siteId).value() = *cursor;
+        */
             break;
-            */
+
     }
         case alignementChanged:
     {
@@ -179,7 +181,9 @@ void WorkerDoc::opDoc(DocOperation docOp){
             break;
     }
   }
-    /*Ogni num operazioni, il CRDT viene salvato su file*/
+    /******************************************************/
+   /**Ogni num operazioni, il CRDT viene salvato su file**/
+  /******************************************************/
     if(numOps == /*num=*/ 500){
         QFile file(this->nomeFile);
         file.open(QIODevice::WriteOnly);
@@ -188,7 +192,6 @@ void WorkerDoc::opDoc(DocOperation docOp){
         file.close();
         numOps = 0;
     }
-    /*****************************************************/
 
     emit SigEsitoOpDoc("Success",docOp);
 }
