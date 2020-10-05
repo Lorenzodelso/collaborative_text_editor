@@ -140,7 +140,9 @@ void WorkerDoc::opDoc(DocOperation docOp){
     //file.open(QIODevice::WriteOnly);
     // salvataggio su file del crdt ogni operazione che si effettua su di esso
     //QDataStream outStream(&file);
+    /*CONTATORE OPERAZIONI PER SALVATAGGIO*/
     numOps++;
+    /*************************************/
     switch(docOp.type){
         case remoteDelete:
     {
@@ -177,7 +179,8 @@ void WorkerDoc::opDoc(DocOperation docOp){
             break;
     }
   }
-    if(numOps == 500){
+    /*Ogni num operazioni, il CRDT viene salvato su file*/
+    if(numOps == /*num=*/ 500){
         QFile file(this->nomeFile);
         file.open(QIODevice::WriteOnly);
         QDataStream outStream(&file);
@@ -185,6 +188,7 @@ void WorkerDoc::opDoc(DocOperation docOp){
         file.close();
         numOps = 0;
     }
+    /*****************************************************/
 
     emit SigEsitoOpDoc("Success",docOp);
 }
