@@ -25,7 +25,7 @@ WorkerDoc::~WorkerDoc(){
 //INVECE UN CRDT IDENTICO MA CON SITEID QUELLO DEL CLIENT, QUINDI LA GESTIONE VIENE DELEGATA AL COSTRUTTORE DI COPIA
 void WorkerDoc::workerDocCreaDoc(QString nomeFile, WorkerSocket* wsP){
     crdt = new CRDT(0); //CRDT vuoto perchè nuovo file
-    crdt->localInsert('\0',QTextCharFormat(),0);
+    //crdt->localInsert('\0',QTextCharFormat(),0);
     QFile newFile(nomeFile); //creo nuovo file
     QString esito("");
     if ( !newFile.open(QIODevice::WriteOnly) ){ //controllo esito dell'operazione di apertura
@@ -171,6 +171,7 @@ void WorkerDoc::opDoc(DocOperation docOp){
             cursor->setPosition(docOp.cursorPos,QTextCursor::MoveAnchor);
             cursorMap->find(docOp.siteId).value() = *cursor;
         */
+
             break;
 
     }
