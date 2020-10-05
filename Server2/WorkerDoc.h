@@ -20,6 +20,7 @@ private:
     QString nomeFile; //mantengo anche il nome per comodità
     CRDT* crdt; //oggetto che mantiene la logica di ordinamento
     quint16 numClients=0; //contatore dei clients connessi al documento
+    quint16 numOps = 0;
 
 signals:
     void SigEsitoOpDoc(QString esito, DocOperation docOp);
@@ -27,6 +28,7 @@ signals:
     void SigEsitoApriDoc(QString esito/*esito*/, CRDT doc/*rappresentazione del file*/);
     void SigNessunClientStaEditando(QString nomeFile);
     void SigQuestoUserHaApertoIlDoc(QUser user);
+
 
 public:
     WorkerDoc();
