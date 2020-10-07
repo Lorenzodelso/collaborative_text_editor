@@ -206,7 +206,7 @@ void  WorkerSocketClient::leggiMsgApp(){
     while(socketConnesso->bytesAvailable()){
         quint16 inOperation;
         QDataStream in(this->socketConnesso);
-        in >> inOperation;
+        BlockReader(socketConnesso).stream() >> inOperation;
         switch(inOperation){
         case Esito_apri_doc:{EmitSigEsitoApriDoc(); break;}
         case Esito_crea_doc:{EmitSigEsitoCreaDoc(); break;}
@@ -234,28 +234,28 @@ void  WorkerSocketClient::leggiMsgApp(){
 void WorkerSocketClient::opDocLocale(DocOperation operazione)
 {
     QDataStream in(this->socketConnesso);
-    in << Operazione_doc;
+    BlockWriter(socketConnesso).stream() << Operazione_doc;
     BlockWriter(socketConnesso).stream()<< operazione;
 }
 
 void WorkerSocketClient::apriDoc(QString nomeFile)
 {
     QDataStream in(this->socketConnesso);
-    in << Apri_doc;
+    BlockWriter(socketConnesso).stream() << Apri_doc;
     BlockWriter(socketConnesso).stream() << nomeFile;
 }
 
 void WorkerSocketClient::creaDoc(QString nomeFile)
 {
     QDataStream in(this->socketConnesso);
-    in << Crea_doc;
+    BlockWriter(socketConnesso).stream() << Crea_doc;
     BlockWriter(socketConnesso).stream() << nomeFile;
 }
 
 void WorkerSocketClient::login(QUtente user)
 {
     QDataStream in(this->socketConnesso);
-    in << Login;
+    BlockWriter(socketConnesso).stream() << Login;
     BlockWriter(socketConnesso).stream() << user;
 
 }
@@ -282,7 +282,7 @@ void WorkerSocketClient::modificaProfiloUtente(QUtente user1)
              arr1= QByteArray();
         }
     }
-    in << Modifica_profilo_utente;
+    BlockWriter(socketConnesso).stream() << Modifica_profilo_utente;
     BlockWriter(socketConnesso).stream() << user1;
     BlockWriter(socketConnesso).stream() << static_cast<qint64>(arr1.size());
     BlockWriter(socketConnesso).stream() << arr1;
@@ -300,7 +300,7 @@ void WorkerSocketClient::registrazione(QUtente user)
         buffer.open(QIODevice::WriteOnly);
         image.save(&buffer, user.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
      }
-    in << Registrazione;
+    BlockWriter(socketConnesso).stream() << Registrazione;
     BlockWriter(socketConnesso).stream() << user;
     BlockWriter(socketConnesso).stream() << static_cast<qint64>(arr.size());
     BlockWriter(socketConnesso).stream() << arr;
@@ -309,11 +309,11 @@ void WorkerSocketClient::registrazione(QUtente user)
 void WorkerSocketClient::chiudiDoc(QString nomeFile)
 {
     QDataStream in(this->socketConnesso);
-    in << Chiusura_doc_client;
+    BlockWriter(socketConnesso).stream() << Chiusura_doc_client;
 }
 
 void WorkerSocketClient::opChiHaInseritoCosa()
 {
     QDataStream in(this->socketConnesso);
-    in << Color_mode;
+    BlockWriter(socketConnesso).stream() << Color_mode;
 }

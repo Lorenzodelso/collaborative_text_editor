@@ -167,7 +167,7 @@ TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP,quint16 siteId, QUt
     QObject::connect(wscP, &WorkerSocketClient::SigEsitoOpDocLocale, this,  &TextEdit::esitoOpDocLocale);
 
     /*operazione remota sul documento*/
-    QObject::connect(wscP, &WorkerSocketClient::SigOpDocRemota, this,  &TextEdit::opDocRemota);
+    QObject::connect(wscP, &WorkerSocketClient::SigOpDocRemota, this,  &TextEdit::opDocRemota,Qt::QueuedConnection);
 
     /*op chi ha inserito cosa*/
     QObject::connect(this, &TextEdit::SigOpChiHaInseritoCosa, wscP, &WorkerSocketClient::opChiHaInseritoCosa);
@@ -979,15 +979,17 @@ void TextEdit::esitoOpDocLocale(QString esito, DocOperation operation){
 
 
 void TextEdit::opDocRemota(DocOperation operation){
+   textEdit->setTextInteractionFlags(Qt::NoTextInteraction);
+   disconnect(textEdit->document(),&QTextDocument::contentsChange,
+                  this, &TextEdit::CRDTInsertRemove );
+   disconnect(textEdit, &QTextEdit::cursorPositionChanged,
+           this, &TextEdit::cursorPositionChanged);
    switch(operation.type){
     case remoteInsert:
     {
        //Se è attiva la modalità di scrittura a colori devo fare un merge sul formato che mi arriva
        //inserendo anche il colore corretto rispetto al siteId del client che l'ha inserito
-      textEdit->setTextInteractionFlags(Qt::NoTextInteraction);
       quint16 index = algoritmoCRDT->remoteInsert(operation.character);
-      disconnect(textEdit->document(),&QTextDocument::contentsChange,
-                     this, &TextEdit::CRDTInsertRemove );
       QTextCursor *cursor = cursorMap->find(operation.siteId).value();
       //QTextCursor cursor = textEdit->textCursor();   //MODIFICA TEMPORANEA CURSORE
       //QTextCursor *cursor = new QTextCursor(textEdit->textCursor());
@@ -1005,23 +1007,14 @@ void TextEdit::opDocRemota(DocOperation operation){
           cursor->insertText(operation.character.getValue(),operation.character.getFormat());
           //qDebug()<<"Dopo: "<<textEdit->fontPointSize();
       }
-      connect(textEdit->document(),&QTextDocument::contentsChange,
-                     this, &TextEdit::CRDTInsertRemove);
-      textEdit->setTextInteractionFlags(Qt::TextEditorInteraction);
-
       break;
     }
     case remoteDelete:
     {
-      quint16 index =algoritmoCRDT->remoteDelete(operation.character);
-      disconnect(textEdit->document(),&QTextDocument::contentsChange,
-                     this, &TextEdit::CRDTInsertRemove );
+      quint16 index =algoritmoCRDT->remoteDelete(operation.character);      
       QTextCursor *cursor = cursorMap->find(operation.siteId).value();
-      //QTextCursor cursor = textEdit->textCursor();
       cursor->setPosition(index);
       cursor->deleteChar();
-      connect(textEdit->document(),&QTextDocument::contentsChange,
-                     this, &TextEdit::CRDTInsertRemove);
       break;
    }
     case changedFormat:
@@ -1033,25 +1026,16 @@ void TextEdit::opDocRemota(DocOperation operation){
            operation.character.setFormat(coloredFormat);
        }
       quint16 index = algoritmoCRDT->remoteFormatChange(operation.character);
-      disconnect(textEdit->document(),&QTextDocument::contentsChange,
-                     this, &TextEdit::CRDTInsertRemove );
-      //QTextCursor cursor = textEdit->textCursor();
       QTextCursor *cursor = cursorMap->find(operation.siteId).value();
       cursor->setPosition(index);
       cursor->setPosition(index+1,QTextCursor::KeepAnchor);
       cursor->mergeCharFormat(operation.character.getFormat());
-      connect(textEdit->document(),&QTextDocument::contentsChange,
-                     this, &TextEdit::CRDTInsertRemove);
       QRect rect_ = textEdit->cursorRect(*cursor);
 
-      for(auto label : labelMap->toStdMap())
-      {
-
-            label.second->setFixedSize(2,rect_.bottom()-rect_.top());
-            //qDebug() <<"CAMBIO: "<<rect_.bottom()-rect_.top();
-            label.second->adjustSize();
+      for(auto label : labelMap->toStdMap()){
+        label.second->setFixedSize(2,rect_.bottom()-rect_.top());
+        label.second->adjustSize();
       }
-
       break;
    }
    case cursorMoved:
@@ -1075,7 +1059,6 @@ void TextEdit::opDocRemota(DocOperation operation){
        cursor->setPosition(operation.cursorPos, QTextCursor::MoveAnchor);
        QRect rect = textEdit->cursorRect(*cursor);
        labelMap->find(operation.getSiteId()).value()->move(rect.left(),rect.top());
-       //qDebug()<<textEdit->fontPointSize();
        labelMap->find(operation.getSiteId()).value()->setFixedSize(2,rect.bottom()-rect.top());
 
        //Aggiorno mappa siteId - cursore
@@ -1085,10 +1068,6 @@ void TextEdit::opDocRemota(DocOperation operation){
     }
    case alignementChanged:
    {
-       disconnect(textEdit->document(),&QTextDocument::contentsChange,
-                  this, &TextEdit::CRDTInsertRemove);
-
-       //QTextCursor* cursor = new QTextCursor(textEdit->textCursor());
        QTextCursor *cursor = cursorMap->find(operation.siteId).value();
        QTextCursor oldCursor = textEdit->textCursor();
        cursor->setPosition(operation.cursorPos);
@@ -1120,15 +1099,17 @@ void TextEdit::opDocRemota(DocOperation operation){
 
        QRect rect = textEdit->cursorRect(*cursor);
        labelMap->find(operation.getSiteId()).value()->move(rect.left(),rect.top());
-       //qDebug()<<textEdit->fontPointSize();
        labelMap->find(operation.getSiteId()).value()->setFixedSize(3,textEdit->fontPointSize());
-       connect(textEdit->document(),&QTextDocument::contentsChange,
-                  this, &TextEdit::CRDTInsertRemove);
        break;
    }
 
 
  }
+   connect(textEdit->document(),&QTextDocument::contentsChange,
+                  this, &TextEdit::CRDTInsertRemove);
+   connect(textEdit, &QTextEdit::cursorPositionChanged,
+           this, &TextEdit::cursorPositionChanged);
+   textEdit->setTextInteractionFlags(Qt::TextEditorInteraction);
 }
 
 
