@@ -9,7 +9,7 @@
 /* ENUMERAZIONE UTILE PER DEFINIRE IN MANIERA SIGNIFICATIVA PER L'UTENTE L'OPERAZIONE.
  INCLUDENDO IL FILE SI POSSONO USARE remoteInsert o remoteDelete AL POSTO DEGLI QUINT16 PER UN CODICE PIU' CHIARO.  */
 enum typeList :quint16{
-    remoteInsert = 0,
+    remoteInsert = 5,
     remoteDelete = 1,
     changedFormat = 2,
     cursorMoved = 3,
