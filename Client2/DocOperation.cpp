@@ -93,7 +93,7 @@ QDataStream& operator>>(QDataStream& in, DocOperation& docOp){
 
     in >> alignementType;
     if(alignementType!=0){
-        docOp = *new DocOperation(cursorPos,alignementType,siteId);
+        docOp = DocOperation(cursorPos,alignementType,siteId);
     }else{
         format.setFontFamily(fontFamily);
         format.setFontItalic(isItalic);
@@ -101,7 +101,7 @@ QDataStream& operator>>(QDataStream& in, DocOperation& docOp){
         format.setFontUnderline(isUndelined);
         format.setFontPointSize(fontSize);
 
-        docOp = *new DocOperation(type,character,format,siteId,cursorPos,cursorAnch);
+        docOp = DocOperation(type,character,format,siteId,cursorPos,cursorAnch);
     }
 
     return in;

@@ -876,7 +876,6 @@ void TextEdit::comunicaCRDTCambioFormat(QTextCharFormat format, int pos, int num
 
 void TextEdit::CRDTInsertRemove(int pos, int rem, int add){
     QTextCursor cursor = textEdit->textCursor();
-    qDebug()<< "Inizio";
     //qDebug()<<"Add: "<<add<<" Rem: "<<rem<< " Pos:"<<pos;
     if(rem==0 && add>0){
         //AGGIUNTA DI UNO O PIU' CARATTERI
@@ -918,7 +917,6 @@ void TextEdit::CRDTInsertRemove(int pos, int rem, int add){
             }
         }
     }
-    qDebug() << "Fine";
 }
 
 void TextEdit::format(const QTextCharFormat &format){

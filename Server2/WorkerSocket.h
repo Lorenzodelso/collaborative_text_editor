@@ -88,6 +88,7 @@ void SigOpChiHaInseritoCosa(WorkerSocket* wsP, QUtente user);
 
 
 public slots:
+    void errorOccurred(QAbstractSocket::SocketError error);
     /*
      * creo ogg socketConnesso e gli setto il socket descriptor ricevuto come parametro
      * fa QObject::connect(ogg SocketConnesso, ready read, this,  leggiMsgApp)

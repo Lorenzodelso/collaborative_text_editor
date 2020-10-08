@@ -113,7 +113,7 @@ QDataStream& operator>>(QDataStream& in, Char& ch){
     format.setFontPointSize(fontSize);
 
     //Costruisco il Char anche con il formato
-    ch = *new Char(siteId,counter,pos,value,format);
+    ch = Char(siteId,counter,pos,value,format);
     ch.setAlign(alignementType);
     return in;
 }

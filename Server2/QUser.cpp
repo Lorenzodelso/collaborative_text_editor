@@ -18,7 +18,7 @@ QDataStream& operator>>(QDataStream& in, QUser& user){
     QString Username;
 
     in >> Id >> Username;
-    user =  *new QUser(Id,Username);
+    user = QUser(Id,Username);
 
     return in;
 

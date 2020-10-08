@@ -258,7 +258,7 @@ QDataStream& operator>>(QDataStream& in, CRDT& crdt){
 
    in >> siteID;
    in >> listChar;
-   crdt = *new CRDT(siteID,listChar);
+   crdt = CRDT(siteID,listChar);
    return in;
 }
 

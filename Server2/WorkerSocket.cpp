@@ -26,7 +26,14 @@ void WorkerSocket::WorkerSocketAttivati(quintptr socketDescriptor){
     socketConnessoP->setSocketDescriptor(socketDescriptor);
     socketConnessoP->setSocketOption(QAbstractSocket::LowDelayOption, 1);
     connect(socketConnessoP, &QTcpSocket::readyRead, this, &WorkerSocket::leggiMsgApp);
+    QObject::connect(socketConnessoP, SIGNAL(error(QAbstractSocket::SocketError)),
+    this, SLOT(errorOccurred(QAbstractSocket::SocketError)));
 }
+
+void WorkerSocket::errorOccurred(QAbstractSocket::SocketError error){
+    qDebug()<<socketConnessoP->error();
+}
+
 
 
 /*---------------------------------INPUT OPERATION------------------------------*/
@@ -44,15 +51,6 @@ void WorkerSocket::EmitSigApriDoc(){
 }
 
 void WorkerSocket::EmitSigLogin(){
-    //TENTATIVO DI LOGIN
-    //
-    //
-    //
-    qDebug()<< "Tentativo di login";
-    //
-    //
-    //
-    //******************************
     QUtente user;
     BlockReader(socketConnessoP).stream() >> user;
     if (user.getUsername() != NULL && user.getPassword() != NULL /*&& user.getNomeImg() == NULL*/)

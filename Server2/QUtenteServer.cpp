@@ -51,7 +51,7 @@ QDataStream& operator>>(QDataStream& in, QUtenteServer& user){
     QString Nomeimg;
 
     in >> Id >> Username>>Password>>Nomeimg;
-    user =  *new QUtenteServer(Id,Username,salt,Password,Nomeimg);
+    user = QUtenteServer(Id,Username,salt,Password,Nomeimg);
 
     return in;
 

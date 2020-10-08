@@ -27,6 +27,7 @@ void WorkerSocketClient::socketConnected(){
         emit SigEsitoConnessioneAlServer("Success");
     else  emit SigEsitoConnessioneAlServer("Failed");
     socketConnesso->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+    socketConnesso->
     connect(socketConnesso, &QTcpSocket::readyRead, this,  &WorkerSocketClient::leggiMsgApp,Qt::QueuedConnection);
 }
 
