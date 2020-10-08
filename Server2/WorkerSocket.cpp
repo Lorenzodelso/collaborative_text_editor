@@ -24,6 +24,7 @@ WorkerSocket::~WorkerSocket(){
 
 void WorkerSocket::WorkerSocketAttivati(quintptr socketDescriptor){
     socketConnessoP->setSocketDescriptor(socketDescriptor);
+    socketConnessoP->setSocketOption(QAbstractSocket::LowDelayOption, 1);
     connect(socketConnessoP, &QTcpSocket::readyRead, this, &WorkerSocket::leggiMsgApp);
 }
 
