@@ -13,6 +13,13 @@
 #include <QRandomGenerator>
 #define DEFAULT_SITEID 0
 
+enum opType :quint16{
+    localInsertType = 5,
+    localDeleteType = 1,
+    localChangedFormatType = 2,
+    localCursorMovedType = 3,
+    localAlignementChangedType=4
+};
 
 class CRDT
 {

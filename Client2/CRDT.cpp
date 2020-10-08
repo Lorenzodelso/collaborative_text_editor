@@ -218,7 +218,7 @@ DocOperation CRDT::localInsert(QChar value, QTextCharFormat format, quint32 inde
     oldFormat->setFontUnderline(false);
     oldFormat->setFontPointSize(21.1);
     */
-    return DocOperation(0,Qc,QTextCharFormat(),this->siteID,0,0);
+    return DocOperation(localInsertType,Qc,QTextCharFormat(),this->siteID,0,0);
 }
 
 DocOperation CRDT::localErase(quint32 index) {
@@ -226,7 +226,7 @@ DocOperation CRDT::localErase(quint32 index) {
     this->listChar.remove(index);
     this->text.remove(index,1);
     //Mi occupo qui di segnalare al WorkerSocket dell'operazione
-    return DocOperation(1,Qc,QTextCharFormat(),this->siteID,0,0);
+    return DocOperation(localDeleteType,Qc,QTextCharFormat(),this->siteID,0,0);
 }
 
 quint32 CRDT::remoteInsert(Char value) {
@@ -284,7 +284,7 @@ void CRDT::readCRDTfromFile(QString nomeFile){
 DocOperation CRDT::localFormatChange(QTextCharFormat format, quint32 index){
     QTextCharFormat oldFormat = listChar[index].getFormat();
     this->listChar[index].setFormat(format);
-    return DocOperation(2,listChar[index],oldFormat,this->siteID,0,0);
+    return DocOperation(localChangedFormatType,listChar[index],oldFormat,this->siteID,0,0);
 }
 
 quint32 CRDT::remoteFormatChange(Char ch){
