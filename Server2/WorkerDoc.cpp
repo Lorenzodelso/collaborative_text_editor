@@ -4,8 +4,8 @@
 
 #include "WorkerDoc.h"
 
-WorkerDoc::WorkerDoc(){
-
+WorkerDoc::WorkerDoc(QMap<unsigned int,WorkerSocket*> *socket){
+    this->socketMap = socket;
 }
 
 WorkerDoc::~WorkerDoc(){
@@ -135,32 +135,22 @@ void WorkerDoc::unClientHaChiusoIlDoc(){
 }
 
 void WorkerDoc::opDoc(DocOperation docOp){
-
-//    QFile file(this->nomeFile);
-//    file.open(QIODevice::WriteOnly);
-//    salvataggio su file del crdt ogni operazione che si effettua su di esso
-//    QDataStream outStream(&file);
-
-    /*CONTATORE OPERAZIONI PER SALVATAGGIO*/
     numOps++;
     /*************************************/
     switch(docOp.type){
         case remoteDelete:
     {
             this->crdt->remoteDelete(docOp.character);
-            //outStream << *crdt;
             break;
     }
         case remoteInsert:
     {
             this->crdt->remoteInsert(docOp.character);
-            //outStream << *crdt;
             break;
     }
         case changedFormat:
     {
             this->crdt->remoteFormatChange(docOp.character);
-            //outStream << *crdt;
             break;
     }
         case cursorMoved:
@@ -178,7 +168,6 @@ void WorkerDoc::opDoc(DocOperation docOp){
         case alignementChanged:
     {
             this->crdt->setCharAlign(docOp.alignementType,docOp.cursorPos);
-            //outStream << *crdt;
             break;
     }
   }
@@ -194,6 +183,9 @@ void WorkerDoc::opDoc(DocOperation docOp){
         numOps = 0;
     }
 
+    WorkerSocket* socket = socketMap->value(docOp.getSiteId());
+    disconnect(this,&WorkerDoc::SigEsitoOpDoc,socket,&WorkerSocket::rispondiEsitoOpDoc);
     emit SigEsitoOpDoc("Success",docOp);
+    connect(this,&WorkerDoc::SigEsitoOpDoc,socket,&WorkerSocket::rispondiEsitoOpDoc);
 }
 

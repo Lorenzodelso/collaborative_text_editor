@@ -83,8 +83,6 @@ class WorkerSocketClient : public QObject{
 
     void SigOpDocRemota(/*rappresentazione operazione sul documento*/DocOperation docOp);
 
-    void SigEsitoOpDocLocale(QString esito, DocOperation operazione/*esito*//*rappresentazione operazione sul documento*/);
-
     void SigQuestoUserHaApertoIlDoc(QUser usr);
 
     void SigQuestoUserHaChiusoIlDoc(QUser usr);

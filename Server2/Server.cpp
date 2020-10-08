@@ -140,7 +140,7 @@ void Server::apriDoc(QString nomeFile , WorkerSocket* wsP, QUtente user){
         else { /*non ho ancora oggetto QThread per tale documento*/
             tP = new QThread();
             tP->start();
-            WorkerDoc *wdP = new WorkerDoc();
+            WorkerDoc *wdP = new WorkerDoc(&userConnections);
             wdP->moveToThread(tP);
 
             documents.insert(nomeFile, wdP);
@@ -197,7 +197,7 @@ void Server::creaDoc(QString nomeFile , WorkerSocket* wsP, QUtente user) {
         /*non esiste già un file con quel nome*/
         QThread *tP = new QThread();
         tP->start();
-        WorkerDoc *wdP = new WorkerDoc();
+        WorkerDoc *wdP = new WorkerDoc(&userConnections);
         wdP->moveToThread(tP);
         documents.insert(nomeFile, wdP);
         userEdits.insert(user.getUserId(),wdP);

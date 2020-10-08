@@ -163,15 +163,11 @@ void WorkerSocketClient::EmitSigEsitoOpDoc(){
     DocOperation operazione;
     BlockReader(socketConnesso).stream() >> operazione;
    if(this->user.getUserId()!=operazione.getSiteId()){
-       //in.writeBytes("opd",len);
-       //BlockWriter(socketConnesso).stream()<< operazione;
        emit SigOpDocRemota(operazione);
     }
     else {
-        if (strcmp(controllo,"suc")==0)
-            emit SigEsitoOpDocLocale("Success",operazione);
-        else
-            emit SigEsitoOpDocLocale("Failed",operazione);
+                                //TODO: DA GESTIRE CON ECCEZIONE
+        qDebug()<<"Errore!! Non dovrei mai ricevere indietro la mia operazione!!";
     }
 }
 

@@ -21,6 +21,7 @@ private:
     CRDT* crdt; //oggetto che mantiene la logica di ordinamento
     quint16 numClients=0; //contatore dei clients connessi al documento
     quint16 numOps = 0;
+    QMap<unsigned int,WorkerSocket*> *socketMap;
 
 signals:
     void SigEsitoOpDoc(QString esito, DocOperation docOp);
@@ -31,7 +32,7 @@ signals:
 
 
 public:
-    WorkerDoc();
+    WorkerDoc(QMap<unsigned int,WorkerSocket*> *socket);
     ~WorkerDoc();
     QMap<quint16,QTextCursor>* cursorMap = new QMap<quint16, QTextCursor>();
 

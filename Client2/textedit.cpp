@@ -164,7 +164,6 @@ TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP,quint16 siteId, QUt
 
     /*operazione locale sul documento*/
     QObject::connect(this, &TextEdit::SigOpDocLocale, wscP, &WorkerSocketClient::opDocLocale);
-    QObject::connect(wscP, &WorkerSocketClient::SigEsitoOpDocLocale, this,  &TextEdit::esitoOpDocLocale);
 
     /*operazione remota sul documento*/
     QObject::connect(wscP, &WorkerSocketClient::SigOpDocRemota, this,  &TextEdit::opDocRemota,Qt::QueuedConnection);
@@ -933,48 +932,6 @@ int TextEdit::isSuccess(QString esito){
   else
     return 0;
 }
-
-
-
-
-void TextEdit::esitoOpDocLocale(QString esito, DocOperation operation){
-    if(!isSuccess(esito)){
-    //in caso di esito negativo devo fare UNDO dell'operazione
-    std::cout << "Operazione non andata a buon fine\n" << std::flush;
-    switch(operation.type){
-    case remoteInsert: //caso in cui avessi inserito un carattere -> lo rimuovo per fare UNDO
-        {
-          quint16 index =algoritmoCRDT->remoteDelete(operation.character);
-          disconnect(textEdit->document(),&QTextDocument::contentsChange,
-                     this, &TextEdit::CRDTInsertRemove);
-          QTextCursor cursor = this->textEdit->textCursor();
-          cursor.setPosition(index);
-          cursor.deleteChar();
-          connect(textEdit->document(),&QTextDocument::contentsChange,
-                  this, &TextEdit::CRDTInsertRemove);
-          break;
-        }
-    case remoteDelete: //caso in cui avessi rimosso un carattere -> lo inserisco di nuovo per fare UNDO
-        {
-          quint16 index = algoritmoCRDT->remoteInsert(operation.character);
-          disconnect(textEdit->document(),&QTextDocument::contentsChange,
-                     this, &TextEdit::CRDTInsertRemove);
-          QTextCursor cursor = this->textEdit->textCursor();
-          cursor.setPosition(index);
-          cursor.insertText(operation.character.getValue());
-          connect(textEdit->document(),&QTextDocument::contentsChange,
-                  this, &TextEdit::CRDTInsertRemove);
-          break;
-        }
-    case changedFormat:// mi salvo il vecchio formato dal CRDT prima di cambiarlo
-      operation.character.setFormat(operation.oldFormat);
-      algoritmoCRDT->remoteFormatChange(operation.character);
-      break;
-    }
-  }
-
-}
-
 
 void TextEdit::opDocRemota(DocOperation operation){
    textEdit->setTextInteractionFlags(Qt::NoTextInteraction);
