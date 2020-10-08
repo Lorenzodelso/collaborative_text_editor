@@ -30,6 +30,7 @@ SOURCES += \
         WorkerSocket.cpp \
         QTcpServerMio.cpp \
         QUtenteServer.cpp \
+        operationbroadcaster.cpp \
 
 HEADERS += \
         Char.h \
@@ -44,6 +45,7 @@ HEADERS += \
         WorkerDoc.h \
         WorkerSocket.h \
         QTcpServerMio.h \
+        operationbroadcaster.h \
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

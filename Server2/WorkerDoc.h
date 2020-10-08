@@ -12,14 +12,15 @@
 #include <QTextCursor>
 #include "WorkerSocket.h"
 
+#define OP_BEFORE_SAVING 500
+
 class WorkerDoc : public QObject{
 
     Q_OBJECT
 
 private:
-    QString nomeFile; //mantengo anche il nome per comodità
-    CRDT* crdt; //oggetto che mantiene la logica di ordinamento
-    quint16 numClients=0; //contatore dei clients connessi al documento
+    CRDT* crdt;
+    quint16 numClients=0;
     quint16 numOps = 0;
     QMap<unsigned int,WorkerSocket*> *socketMap;
 
@@ -34,6 +35,7 @@ signals:
 public:
     WorkerDoc(QMap<unsigned int,WorkerSocket*> *socket);
     ~WorkerDoc();
+    QString nomeFile;
     QMap<quint16,QTextCursor>* cursorMap = new QMap<quint16, QTextCursor>();
 
 public slots:

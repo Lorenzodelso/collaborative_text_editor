@@ -198,6 +198,7 @@ TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP,quint16 siteId, QUt
     pal.setColor(QPalette::Text, QColor(Qt::black));
     textEdit->setPalette(pal);
 #endif
+    textEdit->setWordWrapMode(QTextOption::WrapAnywhere);
 
 }
 
@@ -942,14 +943,11 @@ void TextEdit::opDocRemota(DocOperation operation){
    switch(operation.type){
     case remoteInsert:
     {
-       //Se è attiva la modalità di scrittura a colori devo fare un merge sul formato che mi arriva
-       //inserendo anche il colore corretto rispetto al siteId del client che l'ha inserito
       quint16 index = algoritmoCRDT->remoteInsert(operation.character);
       QTextCursor *cursor = cursorMap->find(operation.siteId).value();
-      //QTextCursor cursor = textEdit->textCursor();   //MODIFICA TEMPORANEA CURSORE
-      //QTextCursor *cursor = new QTextCursor(textEdit->textCursor());
       auto colors = QColor::colorNames();
       cursor->setPosition(index);
+      cursor->beginEditBlock();
       if (colorWriting == true){
           QTextCharFormat coloredFormat(operation.character.getFormat());
           coloredFormat.setForeground(QBrush(QColor(colors[operation.character.getSiteId()])));
@@ -958,10 +956,9 @@ void TextEdit::opDocRemota(DocOperation operation){
           textEdit->setTextColor(QColor(colors[this->siteId]));
       }
       else{
-          //qDebug()<<"Prima: "<<textEdit->fontPointSize();
           cursor->insertText(operation.character.getValue(),operation.character.getFormat());
-          //qDebug()<<"Dopo: "<<textEdit->fontPointSize();
       }
+      cursor->endEditBlock();
       break;
     }
     case remoteDelete:
@@ -969,7 +966,9 @@ void TextEdit::opDocRemota(DocOperation operation){
       quint16 index =algoritmoCRDT->remoteDelete(operation.character);      
       QTextCursor *cursor = cursorMap->find(operation.siteId).value();
       cursor->setPosition(index);
+      cursor->beginEditBlock();
       cursor->deleteChar();
+      cursor->endEditBlock();
       break;
    }
     case changedFormat:
@@ -984,7 +983,9 @@ void TextEdit::opDocRemota(DocOperation operation){
       QTextCursor *cursor = cursorMap->find(operation.siteId).value();
       cursor->setPosition(index);
       cursor->setPosition(index+1,QTextCursor::KeepAnchor);
+      cursor->beginEditBlock();
       cursor->mergeCharFormat(operation.character.getFormat());
+      cursor->endEditBlock();
       QRect rect_ = textEdit->cursorRect(*cursor);
 
       for(auto label : labelMap->toStdMap()){
@@ -995,30 +996,11 @@ void TextEdit::opDocRemota(DocOperation operation){
    }
    case cursorMoved:
    {
-       //Il QTextCursor si posiziona sempre in mezzo a due caratteri
-       //Supponiamo quindi che per gestire la visualizzazione del cursore, il carattere '|' si posiziona sempre prima del cursore
-       // Esempio: testo di pro|(cursore)va
-
-       //Rimuovo carattere | dalla vecchia posizione
        QTextCursor *cursor = cursorMap->find(operation.siteId).value();
-
-       /*
-       cursor.movePosition(QTextCursor::PreviousCharacter,QTextCursor::KeepAnchor,1);
-       cursor.removeSelectedText();
-
-       //Inserisco | nella nuova posizione col colore del client
-
-       cursor.insertText("|");
-       */
-
        cursor->setPosition(operation.cursorPos, QTextCursor::MoveAnchor);
        QRect rect = textEdit->cursorRect(*cursor);
        labelMap->find(operation.getSiteId()).value()->move(rect.left(),rect.top());
        labelMap->find(operation.getSiteId()).value()->setFixedSize(2,rect.bottom()-rect.top());
-
-       //Aggiorno mappa siteId - cursore
-       //cursorMap->find(operation.siteId).value().setPosition(operation.cursorPos);
-      // qDebug()<<"Spostato cursore di "<<operation.siteId<<" in posizione "<<operation.cursorPos;
        break;
     }
    case alignementChanged:
@@ -1408,6 +1390,7 @@ void TextEdit::restoreQTextEdit(){
     pal.setColor(QPalette::Text, QColor(Qt::black));
     textEdit->setPalette(pal);
 #endif
+    textEdit->setWordWrapMode(QTextOption::WrapAnywhere);
 }
 
 void TextEdit::removeActions(){

@@ -127,11 +127,6 @@ public slots:
 
 
 
-    /*
-     * manipolazione struttura CRDT conseguente all'esito ricevuto dal server e conseguenti ripercussioni sull'editor
-     * NB se esito negativo devo fare UNDO della operazione locale fatta (qui la ricevo nuovamente, così so di quale si tratta)
-     * */
-    void esitoOpDocLocale(QString esito/*esito*/, DocOperation operation/*rappresentazione operazione sul documento*/);
 
     /*
      * manipolazione struttura CRDT conseguente all'operazione remota ricevuta dal server e conseguenti ripercussioni sull'editor

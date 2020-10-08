@@ -136,7 +136,6 @@ void WorkerDoc::unClientHaChiusoIlDoc(){
 
 void WorkerDoc::opDoc(DocOperation docOp){
     numOps++;
-    /*************************************/
     switch(docOp.type){
         case remoteDelete:
     {
@@ -155,15 +154,7 @@ void WorkerDoc::opDoc(DocOperation docOp){
     }
         case cursorMoved:
     {
-        /*
-            //Aggiorno la mappa dei cursori
-            QTextCursor* cursor = new QTextCursor();
-            cursor->setPosition(docOp.cursorPos,QTextCursor::MoveAnchor);
-            cursorMap->find(docOp.siteId).value() = *cursor;
-        */
-
             break;
-
     }
         case alignementChanged:
     {
@@ -171,21 +162,13 @@ void WorkerDoc::opDoc(DocOperation docOp){
             break;
     }
   }
-    /******************************************************/
-   /**Ogni num operazioni, il CRDT viene salvato su file**/
-  /******************************************************/
-    if(numOps == /*num=*/ 500){
-        QFile file(this->nomeFile);
-        file.open(QIODevice::WriteOnly);
-        QDataStream outStream(&file);
-        outStream << *crdt;
-        file.close();
-        numOps = 0;
-    }
-
-    WorkerSocket* socket = socketMap->value(docOp.getSiteId());
-    disconnect(this,&WorkerDoc::SigEsitoOpDoc,socket,&WorkerSocket::rispondiEsitoOpDoc);
-    emit SigEsitoOpDoc("Success",docOp);
-    connect(this,&WorkerDoc::SigEsitoOpDoc,socket,&WorkerSocket::rispondiEsitoOpDoc);
+    if(numOps == OP_BEFORE_SAVING){
+         QFile file(this->nomeFile);
+         file.open(QIODevice::WriteOnly);
+         QDataStream outStream(&file);
+         outStream << *crdt;
+         file.close();
+         numOps = 0;
+     }
 }
 

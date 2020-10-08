@@ -16,6 +16,7 @@
 #include "QTcpServerMio.h"
 #include "WorkerDoc.h"
 #include "QUtenteServer.h"
+#include "operationbroadcaster.h"
 #include <QThread>
 #include <iostream>
 /*
@@ -53,7 +54,6 @@ class Server : public QObject {
     quint32 currUserId;
 
 
-
     /*
      * se l'operazione di login del client ha successo salvo ANCHE qui il puntatore al WorkerSocket
      * corrispondente
@@ -82,6 +82,8 @@ class Server : public QObject {
      * socket principale su cui arrivano le richieste di connessione dei clients
      * */
     QTcpServerMio* mainSocketP;
+
+    QMap<QString,OperationBroadcaster*> broadcasterMap;
 
 public slots:
 

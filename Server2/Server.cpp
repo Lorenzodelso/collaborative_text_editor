@@ -94,6 +94,8 @@ void Server::apriDoc(QString nomeFile , WorkerSocket* wsP, QUtente user){
 
 
             WorkerDoc *wdP =documents.value(nomeFile) ;
+            OperationBroadcaster *opBroad = broadcasterMap.value(nomeFile);
+            opBroad->insertSocket(user.getUserId(),wsP);
 
             userEdits.insert(user.getUserId(),wdP);
             if(!userEdited[user.getUserId()].contains(nomeFile)){
@@ -109,7 +111,8 @@ void Server::apriDoc(QString nomeFile , WorkerSocket* wsP, QUtente user){
 
 
             QObject::connect(wsP, &WorkerSocket::SigOpDoc, wdP, &WorkerDoc::opDoc);
-            QObject::connect(wdP, &WorkerDoc::SigEsitoOpDoc, wsP, &WorkerSocket::rispondiEsitoOpDoc);
+            connect(wsP,&WorkerSocket::SigOpDoc,opBroad,&OperationBroadcaster::broadcastOperation);
+            connect(opBroad,&OperationBroadcaster::sendOperationToSocket,wsP,&WorkerSocket::rispondiEsitoOpDoc);
 
 
             QList<unsigned int> idUtentiGiaOnline = userEdits.keys(documents.value(nomeFile));
@@ -141,6 +144,9 @@ void Server::apriDoc(QString nomeFile , WorkerSocket* wsP, QUtente user){
             tP = new QThread();
             tP->start();
             WorkerDoc *wdP = new WorkerDoc(&userConnections);
+            OperationBroadcaster *opBroad = new OperationBroadcaster();
+            broadcasterMap.insert(nomeFile,opBroad);
+            opBroad->insertSocket(user.getUserId(),wsP);
             wdP->moveToThread(tP);
 
             documents.insert(nomeFile, wdP);
@@ -150,7 +156,6 @@ void Server::apriDoc(QString nomeFile , WorkerSocket* wsP, QUtente user){
                 userEdited[user.getUserId()].push_back(nomeFile);
             }
 
-
             /*
              * questa connect mi serve solo ora perchè è da this al WorkerDoc
              * quindi se la mantenessi sempre attiva emettendo il segnale
@@ -159,8 +164,9 @@ void Server::apriDoc(QString nomeFile , WorkerSocket* wsP, QUtente user){
             QObject::connect(this, &Server::SigWorkerDocPrimaAperturaDoc, wdP, &WorkerDoc::workerDocPrimaAperturaDoc);
 
             QObject::connect(wsP, &WorkerSocket::SigOpDoc, wdP, &WorkerDoc::opDoc);
-            QObject::connect(wdP, &WorkerDoc::SigEsitoOpDoc, wsP, &WorkerSocket::rispondiEsitoOpDoc);
-
+            //QObject::connect(wdP, &WorkerDoc::SigEsitoOpDoc, wsP, &WorkerSocket::rispondiEsitoOpDoc);
+            connect(wsP,&WorkerSocket::SigOpDoc,opBroad,&OperationBroadcaster::broadcastOperation);
+            connect(opBroad,&OperationBroadcaster::sendOperationToSocket,wsP,&WorkerSocket::rispondiEsitoOpDoc);
 
             QObject::connect(wdP, &WorkerDoc::SigNessunClientStaEditando, this, &Server::nessunClientStaEditando);
 
@@ -198,6 +204,11 @@ void Server::creaDoc(QString nomeFile , WorkerSocket* wsP, QUtente user) {
         QThread *tP = new QThread();
         tP->start();
         WorkerDoc *wdP = new WorkerDoc(&userConnections);
+
+        OperationBroadcaster *opBroad = new OperationBroadcaster();
+        broadcasterMap.insert(nomeFile,opBroad);
+        opBroad->insertSocket(user.getUserId(),wsP);
+
         wdP->moveToThread(tP);
         documents.insert(nomeFile, wdP);
         userEdits.insert(user.getUserId(),wdP);
@@ -216,7 +227,8 @@ void Server::creaDoc(QString nomeFile , WorkerSocket* wsP, QUtente user) {
 
 
         QObject::connect(wsP, &WorkerSocket::SigOpDoc, wdP, &WorkerDoc::opDoc);
-        QObject::connect(wdP, &WorkerDoc::SigEsitoOpDoc, wsP, &WorkerSocket::rispondiEsitoOpDoc);
+        connect(wsP,&WorkerSocket::SigOpDoc,opBroad,&OperationBroadcaster::broadcastOperation);
+        connect(opBroad,&OperationBroadcaster::sendOperationToSocket,wsP,&WorkerSocket::rispondiEsitoOpDoc);
 
 
 
@@ -476,7 +488,6 @@ void Server::modificaProfiloUtente(WorkerSocket *wsP, QUtente userOld, QUtente u
 
 void Server::chiusuraConnessioneDaParteDelClient(WorkerSocket* wsP, QUtente user) {
 
-
     QThread* qtcP = threadsSocket.value(wsP);
     userConnections.remove(user.getUserId());
 
@@ -506,11 +517,13 @@ void Server::chiusuraConnessioneDaParteDelServer(WorkerSocket* wsP) {
 void Server::chiusuraDocumentoDaParteDelClient(WorkerSocket* wsP, QUtente user){
     WorkerDoc* wdP= userEdits.value(user.getUserId());
     QThread* qtdP = threadsDoc.value(wdP);
+    OperationBroadcaster* opBroad = broadcasterMap.value(wdP->nomeFile);
 
     /*da ora in avanti quel workersocket non deve più parlare con quel worker doc*/
     QObject::disconnect(wsP, &WorkerSocket::SigOpDoc, wdP, &WorkerDoc::opDoc);
-    QObject::disconnect(wdP, &WorkerDoc::SigEsitoOpDoc, wsP, &WorkerSocket::rispondiEsitoOpDoc);
-
+    //QObject::disconnect(wdP, &WorkerDoc::SigEsitoOpDoc, wsP, &WorkerSocket::rispondiEsitoOpDoc);
+    disconnect(wsP,&WorkerSocket::SigOpDoc,opBroad,&OperationBroadcaster::broadcastOperation);
+    disconnect(opBroad,&OperationBroadcaster::sendOperationToSocket,wsP,&WorkerSocket::rispondiEsitoOpDoc);
 
     /*
  * questa connect mi serve solo ora perchè è da this al WorkerDoc
@@ -570,6 +583,9 @@ void Server::nessunClientStaEditando(QString nomeFile) {
     qtdP->quit();
     qtdP->wait();
     delete qtdP;
+    OperationBroadcaster *opBroad = broadcasterMap.value(nomeFile);
+    broadcasterMap.remove(nomeFile);
+    delete opBroad;
     threadsDoc.remove(documents.value(nomeFile));
     documents.remove(nomeFile);
 
