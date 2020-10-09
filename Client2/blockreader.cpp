@@ -4,6 +4,7 @@ BlockReader::BlockReader(QIODevice *io){
     buffer.open(QIODevice::ReadWrite);
     _stream.setVersion(QDataStream::Qt_4_8);
     _stream.setDevice(&buffer);
+    _stream.setByteOrder(QDataStream::LittleEndian);
 
     quint64 blockSize;
 

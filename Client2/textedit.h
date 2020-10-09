@@ -63,6 +63,7 @@
 #include <QObject>
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
+#include <QScrollBar>
 #include <QPainter>
 #include "qpainter.h"
 #include <QStringList>
@@ -74,6 +75,7 @@
 #include "QUtente.h"
 #include "QUser.h"
 #include "WorkerSocketClient.h"
+#include <QTextEdit>
 
 //Includo classe per CRDT e rappresentazione dell'operazione sul documento
 #include "CRDT.h"
@@ -103,12 +105,10 @@ public:
     void restoreQTextEdit();
     void removeActions();
 
-
-
 public:
 
      void setCurrentFileName(const QString &fileName);
-     ~TextEdit();
+     ~TextEdit() override;
      void updateUserInfo(QUtente utente);
      void cleanTextEdit();
 
@@ -125,7 +125,7 @@ public slots:
 
 
 
-
+    void updateRemoteCursors();
 
 
     /*

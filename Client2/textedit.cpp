@@ -172,6 +172,8 @@ TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP,quint16 siteId, QUt
     QObject::connect(this, &TextEdit::SigOpChiHaInseritoCosa, wscP, &WorkerSocketClient::opChiHaInseritoCosa);
     QObject::connect(wscP, &WorkerSocketClient::SigEsitoOpChiHaInseritoCosa, this,  &TextEdit::esitoOpChiHaInseritoCosa);
 
+    QObject::connect(textEdit->verticalScrollBar(), &QScrollBar::valueChanged, this, &TextEdit::updateRemoteCursors);
+
 
     setWindowModified(textEdit->document()->isModified());
     actionUndo->setEnabled(textEdit->document()->isUndoAvailable());
@@ -199,6 +201,7 @@ TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP,quint16 siteId, QUt
     textEdit->setPalette(pal);
 #endif
     textEdit->setWordWrapMode(QTextOption::WrapAnywhere);
+
 
 }
 
@@ -1372,6 +1375,9 @@ void TextEdit::restoreQTextEdit(){
     connect(textEdit->document(),&QTextDocument::contentsChange,
             this, &TextEdit::CRDTInsertRemove);
 
+    connect(textEdit->verticalScrollBar(), &QScrollBar::valueChanged, this, &TextEdit::updateRemoteCursors);
+
+
     setWindowModified(textEdit->document()->isModified());
     actionUndo->setEnabled(textEdit->document()->isUndoAvailable());
     actionRedo->setEnabled(textEdit->document()->isRedoAvailable());
@@ -1418,6 +1424,8 @@ void TextEdit::cleanTextEdit(){
             this, &TextEdit::CRDTInsertRemove);
     disconnect(textEdit, &QTextEdit::copyAvailable, actionCut, &QAction::setEnabled);
     disconnect(textEdit, &QTextEdit::copyAvailable, actionCopy, &QAction::setEnabled);
+    disconnect(textEdit->verticalScrollBar(), &QScrollBar::valueChanged, this, &TextEdit::updateRemoteCursors);
+
     removeActions();
     delete algoritmoCRDT;
     delete usersTree;
@@ -1428,4 +1436,8 @@ void TextEdit::cleanTextEdit(){
     delete this->textEdit;
     textEdit = new QTextEdit(this);
     restoreQTextEdit();
+}
+
+void TextEdit::updateRemoteCursors(){
+
 }
