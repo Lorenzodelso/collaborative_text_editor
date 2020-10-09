@@ -143,7 +143,7 @@ void Server::apriDoc(QString nomeFile , WorkerSocket* wsP, QUtente user){
         else { /*non ho ancora oggetto QThread per tale documento*/
             tP = new QThread();
             tP->start();
-            WorkerDoc *wdP = new WorkerDoc(&userConnections);
+            WorkerDoc *wdP = new WorkerDoc();
             OperationBroadcaster *opBroad = new OperationBroadcaster();
             broadcasterMap.insert(nomeFile,opBroad);
             opBroad->insertSocket(user.getUserId(),wsP);
@@ -203,7 +203,7 @@ void Server::creaDoc(QString nomeFile , WorkerSocket* wsP, QUtente user) {
         /*non esiste già un file con quel nome*/
         QThread *tP = new QThread();
         tP->start();
-        WorkerDoc *wdP = new WorkerDoc(&userConnections);
+        WorkerDoc *wdP = new WorkerDoc();
 
         OperationBroadcaster *opBroad = new OperationBroadcaster();
         broadcasterMap.insert(nomeFile,opBroad);
