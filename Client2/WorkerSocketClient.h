@@ -24,7 +24,8 @@ enum inOperation: quint16{
     Esito_operazione_colorMode = 7,
     User_chiudi_doc = 8,
     User_apri_doc = 9,
-    Esito_chiusura_doc_client = 10
+    Esito_chiusura_doc_client = 10,
+    Lettura_buffered = 11
 };
 
 enum outOperation: quint16{
@@ -36,7 +37,8 @@ enum outOperation: quint16{
     Color_mode = 6,
     Modifica_profilo_utente = 7,
     Chiusura_doc_client = 8,
-    Chiusura_conn_client = 9
+    Chiusura_conn_client = 9,
+    Leggi_buffered = 10
 };
 
 class WorkerSocketClient : public QObject{
@@ -46,6 +48,9 @@ class WorkerSocketClient : public QObject{
     QUtente user;
     QImage* currentImg;
     QImage* temporaryImg;
+    int bufferDimension = 0;
+    QList<DocOperation> opList;
+    int numOpTreated = 0;
 
     public:
     ~WorkerSocketClient();
@@ -57,12 +62,13 @@ class WorkerSocketClient : public QObject{
         void EmitSigEsitoCreaDoc();
         void EmitSigEsitoLogin();
         void EmitSigEsitoModificaProfiloUtente();
-        void EmitSigEsitoOpDoc();
+        void EmitSigOpDoc();
         void EmitSigEsitoRegistrazione();
         void EmitSigEsitoColorMode();
         void EmitSigUserChiudiDoc();
         void EmitSigUserApriDoc();
         void EmitEsitoChiusuraDocClient();
+        void IniziaLetturaBuffered();
 
     signals:
 
@@ -82,6 +88,7 @@ class WorkerSocketClient : public QObject{
     void SigEsitoModificaProfiloUtente(QString esito/*esito*/, QUtente userNew);
 
     void SigOpDocRemota(/*rappresentazione operazione sul documento*/DocOperation docOp);
+    void SigOpDocRemotaBuffered(QList<DocOperation> opList);
 
     void SigQuestoUserHaApertoIlDoc(QUser usr);
 
@@ -227,6 +234,7 @@ public slots:
      * manda la richiesta dell'operazione sul documento che ho già fatto localmente
      * */
     void opDocLocale(DocOperation operazione/*rappresentazione richiesta operazione sul documento*/);
+    void opDocLocaleBuffered(QList<DocOperation> opList);
 
     /*
      * manda al server la richiesta di ricevere la lista di oggetti QUser dello storico del documento corrente

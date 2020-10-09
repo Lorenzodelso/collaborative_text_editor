@@ -15,6 +15,7 @@ void WorkerSocketClient::connessioneAlServer(QString ipAddr) {
     qRegisterMetaType<QList<QUser>>();
     qRegisterMetaType<CRDT>();
     qRegisterMetaType<DocOperation>();
+    qRegisterMetaType<QList<DocOperation>>();
 
     this->socketConnesso = new QTcpSocket(this);
     connect(socketConnesso,&QTcpSocket::connected, this, &WorkerSocketClient::socketConnected);
@@ -154,7 +155,7 @@ void WorkerSocketClient::EmitEsitoChiusuraDocClient(){
     else {emit SigEsitoChiudiDoc("Failed");}
 }
 
-void WorkerSocketClient::EmitSigEsitoOpDoc(){
+void WorkerSocketClient::EmitSigOpDoc(){
     char* controllo;
     uint len_controllo = 3;
     QDataStream in(this->socketConnesso);
@@ -163,7 +164,17 @@ void WorkerSocketClient::EmitSigEsitoOpDoc(){
     DocOperation operazione;
     BlockReader(socketConnesso).stream() >> operazione;
    if(this->user.getUserId()!=operazione.getSiteId()){
-       emit SigOpDocRemota(operazione);
+       if (bufferDimension!=0){
+           opList.append(operazione);
+           numOpTreated++;
+           if(numOpTreated>=bufferDimension){
+               numOpTreated = 0;
+               bufferDimension = 0;
+               emit SigOpDocRemotaBuffered(opList);
+               opList.clear();
+           }
+       }else
+            emit SigOpDocRemota(operazione);
     }
     else {
                                 //TODO: DA GESTIRE CON ECCEZIONE
@@ -198,6 +209,12 @@ void WorkerSocketClient::EmitSigUserApriDoc(){
     emit  SigQuestoUserHaApertoIlDoc(utente);
 }
 
+void WorkerSocketClient::IniziaLetturaBuffered(){
+    int bufferDim;
+    BlockReader(socketConnesso).stream() >> bufferDim;
+    bufferDimension = bufferDim;
+}
+
 
 
 void  WorkerSocketClient::leggiMsgApp(){
@@ -210,12 +227,13 @@ void  WorkerSocketClient::leggiMsgApp(){
         case Esito_crea_doc:{EmitSigEsitoCreaDoc(); break;}
         case Esito_login:{EmitSigEsitoLogin(); break;}
         case Esito_modifica_profilo_utente:{EmitSigEsitoModificaProfiloUtente(); break;}
-        case Esito_operazione_doc:{EmitSigEsitoOpDoc(); break;}
+        case Esito_operazione_doc:{EmitSigOpDoc(); break;}
         case Esito_registrazione:{EmitSigEsitoRegistrazione(); break;}
         case Esito_operazione_colorMode:{EmitSigEsitoColorMode(); break;}
         case User_chiudi_doc:{EmitSigUserChiudiDoc(); break;}
         case User_apri_doc:{EmitSigUserApriDoc(); break;}
         case Esito_chiusura_doc_client:{EmitEsitoChiusuraDocClient(); break;}
+        case Lettura_buffered:{IniziaLetturaBuffered(); break;}
         }
     }
 }
@@ -228,6 +246,17 @@ void  WorkerSocketClient::leggiMsgApp(){
 
 
 /*   ------------------------ OUTPUT OPERATION ---------------------------------  */
+
+void WorkerSocketClient::opDocLocaleBuffered(QList<DocOperation> opList){
+    BlockWriter(socketConnesso).stream() << Leggi_buffered;
+    BlockWriter(socketConnesso).stream() << opList.size();
+    qDebug()<<opList.size();
+    while(!opList.isEmpty()){
+        DocOperation op = opList.first();
+        opList.pop_front();
+        opDocLocale(op);
+    }
+}
 
 void WorkerSocketClient::opDocLocale(DocOperation operazione)
 {

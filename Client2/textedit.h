@@ -89,6 +89,9 @@ class QMenu;
 class QPrinter;
 QT_END_NAMESPACE
 
+#define BUFFER_DIMENSION 50
+#define SIGNAL_LIMIT 200
+
 class TextEdit : public QMainWindow
 {
     Q_OBJECT
@@ -115,12 +118,14 @@ public:
 signals:
         void formatChanged(const QTextCharFormat &format);
         void SigChiudiDoc(QString nomeFile);
+        void SigOpDocLocale(DocOperation docOp);
+        void SigOpDocLocaleBuffered(QList<DocOperation> opList);
+        void SigOpChiHaInseritoCosa();
+        void updateRecDocs();
 
 public slots:
-    //void fileNew(QString fileName);
     void format(const QTextCharFormat &format);
     void CRDTInsertRemove(int pos, int rem, int add);
-
     void updateTreeWidget(bool checked);
 
 
@@ -132,6 +137,7 @@ public slots:
      * manipolazione struttura CRDT conseguente all'operazione remota ricevuta dal server e conseguenti ripercussioni sull'editor
      * */
     void opDocRemota(DocOperation operation/*rappresentazione operazione sul documento*/);
+    void opDocRemotaBuffered(QList<DocOperation> opList);
 
     /*
      * mostra tale user come online, ovvero che sta editando ora il documento corrente
@@ -160,15 +166,6 @@ public slots:
 protected:
     void closeEvent(QCloseEvent *e) override;
     int isSuccess(QString esito);
-signals:
-
-
-    void SigOpDocLocale(DocOperation docOp);
-
-    void SigOpChiHaInseritoCosa();
-
-    void updateRecDocs();
-
 
 private slots:
 

@@ -112,6 +112,12 @@ void WorkerSocket::EmitSigChiusuraConnClient(){
     emit SigChiusuraConnessioneDaParteDelClient(this, this->user);
 }
 
+void WorkerSocket::InformaAltriClientLetturaBuffered(){
+    int bufferDim;
+    BlockReader(socketConnessoP).stream() >> bufferDim;
+    emit SigInformaAltriClientLetturaBuffered(bufferDim,user.getUserId());
+}
+
 void WorkerSocket::leggiMsgApp() {
     while(socketConnessoP->bytesAvailable()){
         QDataStream in(this->socketConnessoP);
@@ -127,12 +133,19 @@ void WorkerSocket::leggiMsgApp() {
         case Modifica_profilo_utente:{EmitSigModificaProfiloUtente(); break;}
         case Chiusura_doc_client:{EmitSigChiusuraDocClient(); break;}
         case Chiusura_conn_client:{EmitSigChiusuraConnClient(); break;}
+        case Leggi_buffered:{InformaAltriClientLetturaBuffered(); break;}
         }
     }
 }
 
 
 /*-------------------------------------OUTPUT OPERATION---------------------------------*/
+
+void WorkerSocket::AltroClientScriveBuffered(int bufferDim){
+    BlockWriter(socketConnessoP).stream() << Lettura_buffered;
+    BlockWriter(socketConnessoP).stream() << bufferDim;
+}
+
 
 void WorkerSocket::rispondiEsitoLogin(QUtente user, QList<QString> nomiFilesEditati){
 

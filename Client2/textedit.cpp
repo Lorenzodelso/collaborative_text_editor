@@ -164,9 +164,11 @@ TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP,quint16 siteId, QUt
 
     /*operazione locale sul documento*/
     QObject::connect(this, &TextEdit::SigOpDocLocale, wscP, &WorkerSocketClient::opDocLocale);
+    QObject::connect(this, &TextEdit::SigOpDocLocaleBuffered, wscP, &WorkerSocketClient::opDocLocaleBuffered);
 
     /*operazione remota sul documento*/
     QObject::connect(wscP, &WorkerSocketClient::SigOpDocRemota, this,  &TextEdit::opDocRemota,Qt::QueuedConnection);
+    QObject::connect(wscP, &WorkerSocketClient::SigOpDocRemotaBuffered, this,  &TextEdit::opDocRemotaBuffered,Qt::QueuedConnection);
 
     /*op chi ha inserito cosa*/
     QObject::connect(this, &TextEdit::SigOpChiHaInseritoCosa, wscP, &WorkerSocketClient::opChiHaInseritoCosa);
@@ -833,6 +835,9 @@ void TextEdit::alignmentChanged(Qt::Alignment a)
 
 
 void TextEdit::comunicaCRDTInserimentoLocale(QTextEdit* txe,QTextCursor* cursor, int pos, int numInserted,CRDT* algCRDT){
+    bool bufferMode = numInserted > SIGNAL_LIMIT;
+    QList<DocOperation> opList;
+    int numOperationTreated = 0;
     auto inserted = txe->document()->toPlainText().mid(pos,numInserted);
     cursor->setPosition(pos,QTextCursor::MoveAnchor);
     for (int i=0;i<numInserted;i++){
@@ -850,17 +855,43 @@ void TextEdit::comunicaCRDTInserimentoLocale(QTextEdit* txe,QTextCursor* cursor,
         }
         QChar ch = inserted[i];
         DocOperation docOp = algCRDT->localInsert(ch,format,pos+i);
-        emit SigOpDocLocale(docOp);
+        if (bufferMode){
+            opList.append(docOp);
+            numOperationTreated++;
+            if(numOperationTreated >= BUFFER_DIMENSION || i==numInserted-1){
+                emit SigOpDocLocaleBuffered(opList);
+                opList.clear();
+                numOperationTreated = 0;
+            }
+        }else
+            emit SigOpDocLocale(docOp);
     }
 }
 
 void TextEdit::comunicaCRDTRimozioneLocale(int pos, int numRemoved,CRDT* algCRDT){
+    bool bufferMode = numRemoved > SIGNAL_LIMIT;
+    QList<DocOperation> opList;
+    int numOperationTreated = 0;
     for(int i=0;i<numRemoved;i++){
         DocOperation docOp = algCRDT->localErase(pos);
-        emit SigOpDocLocale(docOp);
-        if (docOp.character.getValue()=='\n'){
-            emit SigOpDocLocale(DocOperation(pos,0,this->siteId));
-        }
+        if (bufferMode){
+            opList.append(docOp);
+            numOperationTreated++;
+            if (docOp.character.getValue()=='\n'){
+                opList.append(DocOperation(pos,0,this->siteId));
+                numOperationTreated++;
+            }
+            if(numOperationTreated >= BUFFER_DIMENSION || i==numRemoved-1){
+                emit SigOpDocLocaleBuffered(opList);
+                opList.clear();
+                numOperationTreated = 0;
+            }
+        }else{
+            emit SigOpDocLocale(docOp);
+            if (docOp.character.getValue()=='\n'){
+                emit SigOpDocLocale(DocOperation(pos,0,this->siteId));
+            }
+          }
     }
 }
 
@@ -876,7 +907,7 @@ void TextEdit::comunicaCRDTCambioFormat(QTextCharFormat format, int pos, int num
 
 void TextEdit::CRDTInsertRemove(int pos, int rem, int add){
     QTextCursor cursor = textEdit->textCursor();
-    //qDebug()<<"Add: "<<add<<" Rem: "<<rem<< " Pos:"<<pos;
+    qDebug()<<"Add: "<<add<<" Rem: "<<rem<< " Pos:"<<pos;
     if(rem==0 && add>0){
         //AGGIUNTA DI UNO O PIU' CARATTERI
         comunicaCRDTInserimentoLocale(textEdit,&cursor,pos,add,algoritmoCRDT);
@@ -932,6 +963,14 @@ int TextEdit::isSuccess(QString esito){
     return 1;
   else
     return 0;
+}
+
+void TextEdit::opDocRemotaBuffered(QList<DocOperation> opList){
+    while(!opList.isEmpty()){
+        DocOperation op = opList.first();
+        opList.pop_front();
+        opDocRemota(op);
+    }
 }
 
 void TextEdit::opDocRemota(DocOperation operation){

@@ -113,7 +113,8 @@ void Server::apriDoc(QString nomeFile , WorkerSocket* wsP, QUtente user){
             QObject::connect(wsP, &WorkerSocket::SigOpDoc, wdP, &WorkerDoc::opDoc);
             connect(wsP,&WorkerSocket::SigOpDoc,opBroad,&OperationBroadcaster::broadcastOperation);
             connect(opBroad,&OperationBroadcaster::sendOperationToSocket,wsP,&WorkerSocket::rispondiEsitoOpDoc);
-
+            connect(wsP,&WorkerSocket::SigInformaAltriClientLetturaBuffered,opBroad,&OperationBroadcaster::broadcastBufferedOperation);
+            connect(opBroad,&OperationBroadcaster::sigBufferedOperation,wsP,&WorkerSocket::AltroClientScriveBuffered);
 
             QList<unsigned int> idUtentiGiaOnline = userEdits.keys(documents.value(nomeFile));
             idUtentiGiaOnline.removeOne(user.getUserId());
@@ -167,6 +168,8 @@ void Server::apriDoc(QString nomeFile , WorkerSocket* wsP, QUtente user){
             //QObject::connect(wdP, &WorkerDoc::SigEsitoOpDoc, wsP, &WorkerSocket::rispondiEsitoOpDoc);
             connect(wsP,&WorkerSocket::SigOpDoc,opBroad,&OperationBroadcaster::broadcastOperation);
             connect(opBroad,&OperationBroadcaster::sendOperationToSocket,wsP,&WorkerSocket::rispondiEsitoOpDoc);
+            connect(wsP,&WorkerSocket::SigInformaAltriClientLetturaBuffered,opBroad,&OperationBroadcaster::broadcastBufferedOperation);
+            connect(opBroad,&OperationBroadcaster::sigBufferedOperation,wsP,&WorkerSocket::AltroClientScriveBuffered);
 
             QObject::connect(wdP, &WorkerDoc::SigNessunClientStaEditando, this, &Server::nessunClientStaEditando);
 
@@ -229,7 +232,8 @@ void Server::creaDoc(QString nomeFile , WorkerSocket* wsP, QUtente user) {
         QObject::connect(wsP, &WorkerSocket::SigOpDoc, wdP, &WorkerDoc::opDoc);
         connect(wsP,&WorkerSocket::SigOpDoc,opBroad,&OperationBroadcaster::broadcastOperation);
         connect(opBroad,&OperationBroadcaster::sendOperationToSocket,wsP,&WorkerSocket::rispondiEsitoOpDoc);
-
+        connect(wsP,&WorkerSocket::SigInformaAltriClientLetturaBuffered,opBroad,&OperationBroadcaster::broadcastBufferedOperation);
+        connect(opBroad,&OperationBroadcaster::sigBufferedOperation,wsP,&WorkerSocket::AltroClientScriveBuffered);
 
 
         QObject::connect(wdP, &WorkerDoc::SigNessunClientStaEditando, this, &Server::nessunClientStaEditando);
@@ -524,6 +528,9 @@ void Server::chiusuraDocumentoDaParteDelClient(WorkerSocket* wsP, QUtente user){
     //QObject::disconnect(wdP, &WorkerDoc::SigEsitoOpDoc, wsP, &WorkerSocket::rispondiEsitoOpDoc);
     disconnect(wsP,&WorkerSocket::SigOpDoc,opBroad,&OperationBroadcaster::broadcastOperation);
     disconnect(opBroad,&OperationBroadcaster::sendOperationToSocket,wsP,&WorkerSocket::rispondiEsitoOpDoc);
+    disconnect(wsP,&WorkerSocket::SigInformaAltriClientLetturaBuffered,opBroad,&OperationBroadcaster::broadcastBufferedOperation);
+    disconnect(opBroad,&OperationBroadcaster::sigBufferedOperation,wsP,&WorkerSocket::AltroClientScriveBuffered);
+
 
     /*
  * questa connect mi serve solo ora perchè è da this al WorkerDoc
