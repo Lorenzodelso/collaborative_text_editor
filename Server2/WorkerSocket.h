@@ -47,7 +47,8 @@ enum outOperation: quint16{
     Esito_operazione_colorMode = 7,
     User_chiudi_doc = 8,
     User_apri_doc = 9,
-    Esito_chiusura_doc_client = 10
+    Esito_chiusura_doc_client = 10,
+    Lettura_buffered = 11
 };
 
 enum inOperation:quint16{
@@ -59,7 +60,8 @@ enum inOperation:quint16{
     Color_mode = 6,
     Modifica_profilo_utente = 7,
     Chiusura_doc_client = 8,
-    Chiusura_conn_client = 9
+    Chiusura_conn_client = 9,
+    Leggi_buffered = 10
 };
 
 
@@ -85,9 +87,11 @@ void SigChiusuraConnessioneDaParteDelServer(WorkerSocket* wsP);
 void SigChiusuraDocumentoDaParteDelClient(WorkerSocket* wsP, QUtente user);
 void SigOpDoc(/*rapprensetazione richiesta operazione sul documento*/DocOperation operation);
 void SigOpChiHaInseritoCosa(WorkerSocket* wsP, QUtente user);
+void SigInformaAltriClientLetturaBuffered(int bufferDim,quint32 siteId);
 
 
 public slots:
+    void AltroClientScriveBuffered(int bufferDim);
     void errorOccurred(QAbstractSocket::SocketError error);
     /*
      * creo ogg socketConnesso e gli setto il socket descriptor ricevuto come parametro
@@ -268,6 +272,7 @@ private:
     void EmitSigModificaProfiloUtente();
     void EmitSigChiusuraDocClient();
     void EmitSigChiusuraConnClient();
+    void InformaAltriClientLetturaBuffered();
 };
 
 

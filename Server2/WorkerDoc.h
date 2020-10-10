@@ -33,7 +33,7 @@ signals:
 
 
 public:
-    WorkerDoc(QMap<unsigned int,WorkerSocket*> *socket);
+    WorkerDoc();
     ~WorkerDoc();
     QString nomeFile;
     QMap<quint16,QTextCursor>* cursorMap = new QMap<quint16, QTextCursor>();

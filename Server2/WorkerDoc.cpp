@@ -4,8 +4,7 @@
 
 #include "WorkerDoc.h"
 
-WorkerDoc::WorkerDoc(QMap<unsigned int,WorkerSocket*> *socket){
-    this->socketMap = socket;
+WorkerDoc::WorkerDoc(){
 }
 
 WorkerDoc::~WorkerDoc(){
