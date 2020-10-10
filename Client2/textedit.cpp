@@ -172,7 +172,8 @@ TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP,quint16 siteId, QUt
     QObject::connect(this, &TextEdit::SigOpChiHaInseritoCosa, wscP, &WorkerSocketClient::opChiHaInseritoCosa);
     QObject::connect(wscP, &WorkerSocketClient::SigEsitoOpChiHaInseritoCosa, this,  &TextEdit::esitoOpChiHaInseritoCosa);
 
-    QObject::connect(textEdit->verticalScrollBar(), &QScrollBar::valueChanged, this, &TextEdit::updateRemoteCursors);
+    connect(textEdit->verticalScrollBar(), &QScrollBar::valueChanged, this, &TextEdit::updateRemoteCursor);
+
 
 
     setWindowModified(textEdit->document()->isModified());
@@ -1375,7 +1376,7 @@ void TextEdit::restoreQTextEdit(){
     connect(textEdit->document(),&QTextDocument::contentsChange,
             this, &TextEdit::CRDTInsertRemove);
 
-    connect(textEdit->verticalScrollBar(), &QScrollBar::valueChanged, this, &TextEdit::updateRemoteCursors);
+    connect(textEdit->verticalScrollBar(), &QScrollBar::valueChanged, this, &TextEdit::updateRemoteCursor);
 
 
     setWindowModified(textEdit->document()->isModified());
@@ -1424,7 +1425,7 @@ void TextEdit::cleanTextEdit(){
             this, &TextEdit::CRDTInsertRemove);
     disconnect(textEdit, &QTextEdit::copyAvailable, actionCut, &QAction::setEnabled);
     disconnect(textEdit, &QTextEdit::copyAvailable, actionCopy, &QAction::setEnabled);
-    disconnect(textEdit->verticalScrollBar(), &QScrollBar::valueChanged, this, &TextEdit::updateRemoteCursors);
+    disconnect(textEdit->verticalScrollBar(), &QScrollBar::valueChanged, this, &TextEdit::updateRemoteCursor);
 
     removeActions();
     delete algoritmoCRDT;
@@ -1438,6 +1439,14 @@ void TextEdit::cleanTextEdit(){
     restoreQTextEdit();
 }
 
-void TextEdit::updateRemoteCursors(){
 
+void TextEdit::updateRemoteCursor(){
+    auto userIterator = onlineUsers->begin();
+    while(userIterator!=onlineUsers->end()){
+        QTextCursor *cursor = cursorMap->find(userIterator->getUserId()).value();
+        QRect rect = textEdit->cursorRect(*cursor);
+        labelMap->find(userIterator->getUserId()).value()->move(rect.left(),rect.top());
+        labelMap->find(userIterator->getUserId()).value()->setFixedSize(2,rect.bottom()-rect.top());
+        userIterator++;
+    }
 }

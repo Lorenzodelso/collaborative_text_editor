@@ -71,6 +71,7 @@
 #include <QBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
+#include <QScrollBar>
 #include "qlabel.h"
 #include "QUtente.h"
 #include "QUser.h"
@@ -120,12 +121,8 @@ public slots:
     //void fileNew(QString fileName);
     void format(const QTextCharFormat &format);
     void CRDTInsertRemove(int pos, int rem, int add);
-
     void updateTreeWidget(bool checked);
-
-
-
-    void updateRemoteCursors();
+    void updateRemoteCursor();
 
 
     /*
