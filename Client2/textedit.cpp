@@ -1156,6 +1156,18 @@ void TextEdit::questoUserHaApertoIlDoc(QUser usr){
         offlineUsers->removeAll(usr);
     updateTreeWidget(colorWriting);
 
+    auto colors = QColor::colorNames();
+    auto *noWhiteyColors = new QStringList();
+    auto colorIterator = colors.begin();
+    while(colorIterator != colors.end()){
+        if(QString("#%1").arg(QColor(*colorIterator).rgba(), 8, 16) < "#ff555555" && *colorIterator != "black"){
+            noWhiteyColors->append(*colorIterator);
+        }
+        colorIterator++;
+    }
+    colors = *noWhiteyColors;
+    delete noWhiteyColors;
+
     //Cursore dell'utente appena loggato al documento
     QTextCursor *cursor =  new QTextCursor(textEdit->document());
     cursorMap->insert(usr.getUserId(),cursor);
@@ -1175,7 +1187,7 @@ void TextEdit::questoUserHaApertoIlDoc(QUser usr){
     lbl->raise();
    // lbl->setFont(textEdit->font());
     lbl->setMargin(3);
-    lbl->setStyleSheet("QLabel { background-color: "+QColor::colorNames()[usr.getUserId()]+"; color: "+QColor::colorNames()[usr.getUserId()]+"}");
+    lbl->setStyleSheet("QLabel { background-color: "+colors[usr.getUserId()]+"; color: "+colors[usr.getUserId()]+"}");
     lbl->show();
 }
 
