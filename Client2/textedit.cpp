@@ -141,13 +141,13 @@ TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP,quint16 siteId, QUt
     QFont textFont("Arial");
     textFont.setStyleHint(QFont::SansSerif);
     textEdit->setFont(textFont);
-    textEdit->setFontPointSize(13);
+    textEdit->setFontPointSize(12);
     fontChanged(textEdit->font());
     colorChanged(textEdit->textColor());
     alignmentChanged(textEdit->alignment());
     defaultFmt.setFont(textEdit->font());
     defaultFmt.setForeground(textEdit->textColor());
-    defaultFmt.setFontPointSize(13);
+    defaultFmt.setFontPointSize(12);
 
     connect(textEdit->document(), &QTextDocument::undoAvailable,
             actionUndo, &QAction::setEnabled);
@@ -499,12 +499,6 @@ void TextEdit::setupTextActions()
     tbFormat->addWidget(comboFont);
     const QFont fixedFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
 
-    QFontComboBox::FontFilters filters;
-    QFont currentFont;
-    int index;
-    index=comboFont->findText("Helvetica");
-    if ( index != -1 ) {
-       comboFont->removeItem(index);}
     connect(comboFont, QOverload<const QString &>::of(&QComboBox::activated), this, &TextEdit::textFamily);
 
     comboSize = new QComboBox(tbFormat);
@@ -760,9 +754,28 @@ void TextEdit::textAlign(QAction *a)
 }
 
 void TextEdit::currentCharFormatChanged(const QTextCharFormat &format)
-{
+    {
+   // qDebug() << cursor->charFormat().foreground() << " pre cur char";
     fontChanged(format.font());
     colorChanged(format.foreground().color());
+    if(colorWriting){
+        auto colors = QColor::colorNames();
+        auto *noWhiteyColors = new QStringList();
+        auto colorIterator = colors.begin();
+        while(colorIterator != colors.end()){
+            if(QString("#%1").arg(QColor(*colorIterator).rgba(), 8, 16) < "#ff555555" && *colorIterator != "black"){
+                noWhiteyColors->append(*colorIterator);
+            }
+            colorIterator++;
+        }
+        colors = *noWhiteyColors;
+        delete noWhiteyColors;
+        QTextCharFormat fmt;
+        fmt.setForeground(QColor(colors[utente.getUserId()]));
+        cursor->mergeCharFormat(fmt);
+        //mergeFormatOnWordOrSelection(fmt);
+    }
+    //qDebug() << cursor->charFormat().foreground() << " post cur char";
 }
 
 /*
@@ -777,6 +790,23 @@ void TextEdit::segnalaMovimentoCursore(QTextCursor cursor){
 
 void TextEdit::cursorPositionChanged()
 {
+    if(colorWriting){
+        auto colors = QColor::colorNames();
+        auto *noWhiteyColors = new QStringList();
+        auto colorIterator = colors.begin();
+        while(colorIterator != colors.end()){
+            if(QString("#%1").arg(QColor(*colorIterator).rgba(), 8, 16) < "#ff555555" && *colorIterator != "black"){
+                noWhiteyColors->append(*colorIterator);
+            }
+            colorIterator++;
+        }
+        colors = *noWhiteyColors;
+        delete noWhiteyColors;
+        QTextCharFormat fmt;
+        fmt.setForeground(QBrush(QColor(colors[this->utente.getUserId()])));
+        textEdit->textCursor().setCharFormat(fmt);
+        textEdit->mergeCurrentCharFormat(fmt);
+    }
     alignmentChanged(textEdit->alignment());
     segnalaMovimentoCursore(textEdit->textCursor());
 }
@@ -804,7 +834,6 @@ void TextEdit::mergeFormatOnWordOrSelection(const QTextCharFormat &format)
     int posAnchor = cursor.anchor();
     int changed = abs(cursor.anchor() - cursor.position());
     comunicaCRDTCambioFormat(format,posCursor<posAnchor ? posCursor:posAnchor,changed,algoritmoCRDT);
-
     textEdit->mergeCurrentCharFormat(format);
 }
 
@@ -826,6 +855,8 @@ void TextEdit::colorChanged(const QColor &c)
 
 void TextEdit::alignmentChanged(Qt::Alignment a)
 {
+    qDebug() << textEdit->textCursor().charFormat().foreground() << " pre align";
+
     if (a & Qt::AlignLeft)
         actionAlignLeft->setChecked(true);
     else if (a & Qt::AlignHCenter)
@@ -834,6 +865,9 @@ void TextEdit::alignmentChanged(Qt::Alignment a)
         actionAlignRight->setChecked(true);
     else if (a & Qt::AlignJustify)
         actionAlignJustify->setChecked(true);
+
+    qDebug() << textEdit->textCursor().charFormat().foreground() << " post align";
+
 }
 
 
@@ -910,6 +944,7 @@ void TextEdit::comunicaCRDTCambioFormat(QTextCharFormat format, int pos, int num
 }
 
 void TextEdit::CRDTInsertRemove(int pos, int rem, int add){
+
     QTextCursor cursor = textEdit->textCursor();
     qDebug()<<"Add: "<<add<<" Rem: "<<rem<< " Pos:"<<pos;
     if(rem==0 && add>0){
@@ -989,6 +1024,16 @@ void TextEdit::opDocRemota(DocOperation operation){
       quint16 index = algoritmoCRDT->remoteInsert(operation.character);
       QTextCursor *cursor = cursorMap->find(operation.siteId).value();
       auto colors = QColor::colorNames();
+      auto *noWhiteyColors = new QStringList();
+      auto colorIterator = colors.begin();
+      while(colorIterator != colors.end()){
+          if(QString("#%1").arg(QColor(*colorIterator).rgba(), 8, 16) < "#ff555555" && *colorIterator != "black"){
+              noWhiteyColors->append(*colorIterator);
+          }
+          colorIterator++;
+      }
+      colors = *noWhiteyColors;
+      delete noWhiteyColors;
       cursor->setPosition(index);
       cursor->beginEditBlock();
       if (colorWriting == true){
@@ -1018,6 +1063,17 @@ void TextEdit::opDocRemota(DocOperation operation){
    {
        if (colorWriting == true){
            auto colors = QColor::colorNames();
+           auto *noWhiteyColors = new QStringList();
+           auto colorIterator = colors.begin();
+           while(colorIterator != colors.end()){
+               if(QString("#%1").arg(QColor(*colorIterator).rgba(), 8, 16) < "#ff555555" && *colorIterator != "black"){
+                   noWhiteyColors->append(*colorIterator);
+               }
+               colorIterator++;
+           }
+           colors = *noWhiteyColors;
+           delete noWhiteyColors;
+
            QTextCharFormat coloredFormat(operation.character.getFormat());
            coloredFormat.setForeground(QBrush(QColor(colors[operation.character.getSiteId()])));
            operation.character.setFormat(coloredFormat);
@@ -1135,13 +1191,24 @@ void TextEdit::questoUserHaChiusoIlDoc(QUser usr){
     labelMap->remove(usr.getUserId());
 }
 
-void TextEdit::enteringColorMode(){
+void TextEdit:: enteringColorMode(){
     if (colorWriting==false){
         //non dovrebbe mai entrare qui perchè deve essere attivata solo quando la variabile è true
         std::cerr << "Expected variable value:true, while it's false"<<std::flush;
         return;
     }
     auto colors = QColor::colorNames();
+    auto *noWhiteyColors = new QStringList();
+    auto colorIterator = colors.begin();
+    while(colorIterator != colors.end()){
+        if(QString("#%1").arg(QColor(*colorIterator).rgba(), 8, 16) < "#ff555555" && *colorIterator != "black"){
+            noWhiteyColors->append(*colorIterator);
+        }
+        colorIterator++;
+    }
+    colors = *noWhiteyColors;
+    delete noWhiteyColors;
+
     QTextCursor* colorCursor = new QTextCursor(textEdit->textCursor());
     colorCursor->setPosition(0);
 
@@ -1178,6 +1245,17 @@ void TextEdit::quittingColorMode(){
         return;
     }
     auto colors = QColor::colorNames();
+    auto *noWhiteyColors = new QStringList();
+    auto colorIterator = colors.begin();
+    while(colorIterator != colors.end()){
+        if(QString("#%1").arg(QColor(*colorIterator).rgba(), 8, 16) < "#ff555555" && *colorIterator != "black"){
+            noWhiteyColors->append(*colorIterator);
+        }
+        colorIterator++;
+    }
+    colors = *noWhiteyColors;
+    delete noWhiteyColors;
+
     QTextCursor* colorCursor = new QTextCursor(textEdit->textCursor());
     QObject::disconnect(textEdit->document(),&QTextDocument::contentsChange,
             this, &TextEdit::CRDTInsertRemove );
@@ -1254,6 +1332,16 @@ void TextEdit::updateTreeWidget(bool checked){
 
     if(checked){
         auto colors = QColor::colorNames();
+        auto *noWhiteyColors = new QStringList();
+        auto colorIterator = colors.begin();
+        while(colorIterator != colors.end()){
+            if(QString("#%1").arg(QColor(*colorIterator).rgba(), 8, 16) < "#ff555555" && *colorIterator != "black"){
+                noWhiteyColors->append(*colorIterator);
+            }
+            colorIterator++;
+        }
+        colors = *noWhiteyColors;
+        delete noWhiteyColors;
         usersTree->setColumnCount(1);
 
         QList<QString> *usernameOnline = new QList<QString>();
@@ -1311,6 +1399,17 @@ void TextEdit::updateTreeWidget(bool checked){
         }
     }else{
         auto colors = QColor::colorNames();
+        auto *noWhiteyColors = new QStringList();
+        auto colorIterator = colors.begin();
+        while(colorIterator != colors.end()){
+            if(QString("#%1").arg(QColor(*colorIterator).rgba(), 8, 16) < "#ff555555" && *colorIterator != "black"){
+                noWhiteyColors->append(*colorIterator);
+            }
+            colorIterator++;
+        }
+        colors = *noWhiteyColors;
+        delete noWhiteyColors;
+
         usersTree->setColumnCount(1);
 
         QList<QString> *usernameOnline = new QList<QString>();
@@ -1399,10 +1498,11 @@ void TextEdit::restoreQTextEdit(){
     QFont textFont("Helvetica");
     textFont.setStyleHint(QFont::SansSerif);
     textEdit->setFont(textFont);
-    textEdit->setFontPointSize(13);
+    textEdit->setFontPointSize(12);
     fontChanged(textEdit->font());
     colorChanged(textEdit->textColor());
     alignmentChanged(textEdit->alignment());
+    defaultFmt.setFontPointSize(12);
     defaultFmt.setFont(textEdit->font());
     defaultFmt.setForeground(textEdit->textColor());
 

@@ -269,3 +269,7 @@ build-PdsServer-Desktop_Qt_5_15_1_MSVC2019_32bit-Debug/Prova7
 build-PdsServer-Desktop_Qt_5_15_1_MSVC2019_32bit-Debug/Prova8
 build-PdsServer-Desktop_Qt_5_15_1_MSVC2019_32bit-Debug/Prova9
 build-PdsServer-Desktop_Qt_5_15_1_MSVC2019_32bit-Debug/Prova14
+Client2/PdsClient.pro.user
+Server2/PdsServer.pro.user
+*.user
+*.user
