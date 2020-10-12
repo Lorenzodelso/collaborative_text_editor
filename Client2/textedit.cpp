@@ -1021,7 +1021,7 @@ void TextEdit::opDocRemota(DocOperation operation){
    switch(operation.type){
     case remoteInsert:
     {
-      quint16 index = algoritmoCRDT->remoteInsert(operation.character);
+      quint32 index = algoritmoCRDT->remoteInsert(operation.character);
       QTextCursor *cursor = cursorMap->find(operation.siteId).value();
       auto colors = QColor::colorNames();
       auto *noWhiteyColors = new QStringList();
@@ -1051,7 +1051,7 @@ void TextEdit::opDocRemota(DocOperation operation){
     }
     case remoteDelete:
     {
-      quint16 index =algoritmoCRDT->remoteDelete(operation.character);      
+      quint32 index =algoritmoCRDT->remoteDelete(operation.character);
       QTextCursor *cursor = cursorMap->find(operation.siteId).value();
       cursor->setPosition(index);
       cursor->beginEditBlock();
@@ -1078,7 +1078,7 @@ void TextEdit::opDocRemota(DocOperation operation){
            coloredFormat.setForeground(QBrush(QColor(colors[operation.character.getSiteId()])));
            operation.character.setFormat(coloredFormat);
        }
-      quint16 index = algoritmoCRDT->remoteFormatChange(operation.character);
+      quint32 index = algoritmoCRDT->remoteFormatChange(operation.character);
       QTextCursor *cursor = cursorMap->find(operation.siteId).value();
       cursor->setPosition(index);
       cursor->setPosition(index+1,QTextCursor::KeepAnchor);

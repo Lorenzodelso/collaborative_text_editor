@@ -300,8 +300,3 @@ void CRDT::setCharAlign(quint16 alignementType, quint32 index){
         alignement = alignementType;
     }
 }
-
-
-
-
-
