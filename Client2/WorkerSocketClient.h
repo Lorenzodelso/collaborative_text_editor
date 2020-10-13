@@ -58,17 +58,17 @@ class WorkerSocketClient : public QObject{
     private:
         bool connected=false;
 
-        void EmitSigEsitoApriDoc();
-        void EmitSigEsitoCreaDoc();
-        void EmitSigEsitoLogin();
-        void EmitSigEsitoModificaProfiloUtente();
-        void EmitSigOpDoc();
-        void EmitSigEsitoRegistrazione();
-        void EmitSigEsitoColorMode();
-        void EmitSigUserChiudiDoc();
-        void EmitSigUserApriDoc();
-        void EmitEsitoChiusuraDocClient();
-        void IniziaLetturaBuffered();
+        void EmitSigEsitoApriDoc(QDataStream& in);
+        void EmitSigEsitoCreaDoc(QDataStream& in);
+        void EmitSigEsitoLogin(QDataStream& in);
+        void EmitSigEsitoModificaProfiloUtente(QDataStream& in);
+        void EmitSigOpDoc(QDataStream& in);
+        void EmitSigEsitoRegistrazione(QDataStream& in);
+        void EmitSigEsitoColorMode(QDataStream& in);
+        void EmitSigUserChiudiDoc(QDataStream& in);
+        void EmitSigUserApriDoc(QDataStream& in);
+        void EmitEsitoChiusuraDocClient(QDataStream& in);
+        void IniziaLetturaBuffered(QDataStream& in);
 
     signals:
 

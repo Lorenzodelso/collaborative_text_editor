@@ -263,16 +263,16 @@ public slots:
      * */
 
 private:
-    void EmitSigCreaDoc();
-    void EmitSigApriDoc();
-    void EmitSigLogin();
-    void EmitSigRegistrazione();
-    void EmitSigOperazioneDoc();
-    void EmitSigColorMode();
-    void EmitSigModificaProfiloUtente();
-    void EmitSigChiusuraDocClient();
-    void EmitSigChiusuraConnClient();
-    void InformaAltriClientLetturaBuffered();
+    void EmitSigCreaDoc(QDataStream& in);
+    void EmitSigApriDoc(QDataStream& in);
+    void EmitSigLogin(QDataStream& in);
+    void EmitSigRegistrazione(QDataStream& in);
+    void EmitSigOperazioneDoc(QDataStream& in);
+    void EmitSigColorMode(QDataStream& in);
+    void EmitSigModificaProfiloUtente(QDataStream& in);
+    void EmitSigChiusuraDocClient(QDataStream& in);
+    void EmitSigChiusuraConnClient(QDataStream& in);
+    void InformaAltriClientLetturaBuffered(QDataStream& in);
 };
 
 

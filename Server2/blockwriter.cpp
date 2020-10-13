@@ -7,7 +7,7 @@ BlockWriter::BlockWriter(QIODevice *io){
     this->io = io;
     _stream.setVersion(QDataStream::Qt_4_8);
     _stream.setDevice(&buffer);
-    _stream.setByteOrder(QDataStream::LittleEndian);
+    _stream.setByteOrder(QDataStream::BigEndian);
 
     // Placeholder for the size. We will get the value
     // at the end.

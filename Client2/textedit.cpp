@@ -944,9 +944,14 @@ void TextEdit::comunicaCRDTCambioFormat(QTextCharFormat format, int pos, int num
 }
 
 void TextEdit::CRDTInsertRemove(int pos, int rem, int add){
-
+   // QClipboard* clipboard = QApplication::clipboard();
     QTextCursor cursor = textEdit->textCursor();
+     //cursor.select(QTextCursor::WordUnderCursor);
+    //QString text = cursor.selectedText();
+    //QString selectedText = clipboard->text(QClipboard::Selection);
+   // qDebug()<< selectedText;
     qDebug()<<"Add: "<<add<<" Rem: "<<rem<< " Pos:"<<pos;
+
     if(rem==0 && add>0){
         //AGGIUNTA DI UNO O PIU' CARATTERI
         comunicaCRDTInserimentoLocale(textEdit,&cursor,pos,add,algoritmoCRDT);
@@ -963,12 +968,18 @@ void TextEdit::CRDTInsertRemove(int pos, int rem, int add){
             auto selection = cursor.selectedText();
             //auto position = cursor.position();
             //std::cout<<"Posizione del cursore: "<<position<<"\n"<<std::flush;
-            //std::cout<<"Testo selezionato: "<< selection.toStdString().c_str()<<"\n"<<std::flush;
+           // std::cout<<"Testo selezionato: "<< selection.toStdString().c_str()<<"\n"<<std::flush;
             if(!(selection.isEmpty())){
+               // qDebug()<<"vuoto ";
+
                 //Si tratta di un cambio di formato, quindi ottengo il formato e lo comunico al CRDT
                 //comunicaCRDTCambioFormat(&cursor,pos,add);
             }
             else{
+               // cursor.select(QTextCursor::WordUnderCursor);
+               // pos= cursor.selectedText().size()-1;
+                //rem= cursor.selectedText().size();
+
                 //Caso in cui si incolla su una selezione una stringa della stessa lunghezza
                 //Non gestisco il caso particolare in cui la stringa incollata sia la stessa di quella cancellata
                 //Pros: rimuovo controllo           Cons: faccio cancellazione e inserimento anche in quel caso
