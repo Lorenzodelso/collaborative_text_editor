@@ -74,6 +74,8 @@
 #include "QUtente.h"
 #include "QUser.h"
 #include "WorkerSocketClient.h"
+#include "workerdocclient.h"
+#include <QThread>
 
 //Includo classe per CRDT e rappresentazione dell'operazione sul documento
 #include "CRDT.h"
@@ -122,22 +124,14 @@ signals:
         void SigOpDocLocaleBuffered(QList<DocOperation> opList);
         void SigOpChiHaInseritoCosa();
         void updateRecDocs();
+        void sigEnteringColorMode();
+        void sigExitingColorMode();
+        void sigCrdtInsertRemove(int pos, int rem, int add);
 
 public slots:
     void format(const QTextCharFormat &format);
-    void CRDTInsertRemove(int pos, int rem, int add);
+
     void updateTreeWidget(bool checked);
-
-
-
-
-
-
-    /*
-     * manipolazione struttura CRDT conseguente all'operazione remota ricevuta dal server e conseguenti ripercussioni sull'editor
-     * */
-    void opDocRemota(DocOperation operation/*rappresentazione operazione sul documento*/);
-    void opDocRemotaBuffered(QList<DocOperation> opList);
 
     /*
      * mostra tale user come online, ovvero che sta editando ora il documento corrente
@@ -162,6 +156,7 @@ public slots:
 
     //Non mi serve nessuna lista
     void esitoOpChiHaInseritoCosa(QList<QUser> users);
+    void stampaCarattereASchermo(QChar ch, int pos, QTextCharFormat format);
 
 protected:
     void closeEvent(QCloseEvent *e) override;
@@ -190,6 +185,7 @@ private slots:
 
     //slot che riceve segnale premuto bottone di Color Mode
     void pressedButtonTrigger(bool checked);
+    void CRDTInsertRemove(int pos, int rem, int add);
 
 private:
     void setupFileActions();
@@ -279,6 +275,9 @@ private:
     QTextCharFormat defaultFmt;
 
     WorkerSocketClient *wscP;
+
+    WorkerDocClient* workerDoc;
+    QThread* docThread;
 
 };
 

@@ -37,6 +37,7 @@ SOURCES += \
     QUtente.cpp \
     WorkerSocketClient.cpp \
     ServerSelection.cpp \
+    workerdocclient.cpp
 
 HEADERS += \
     Char.h \
@@ -54,6 +55,7 @@ HEADERS += \
     TextEdit.h \
     WorkerSocketClient.h \
     ServerSelection.h \
+    workerdocclient.h
 
 RESOURCES += textedit.qrc
 build_all:!build_pass {

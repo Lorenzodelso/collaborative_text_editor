@@ -126,10 +126,21 @@ TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP,quint16 siteId, QUt
     labelMap = new QMap<quint16,QLabel*>();
     textEdit = new QTextEdit(this);
 
+    workerDoc = new WorkerDocClient(algoritmoCRDT,siteId,cursorMap);
+    docThread = new QThread();
+    docThread->start();
+    workerDoc->moveToThread(docThread);
+    textEdit->document()->setParent(0);
+    textEdit->document()->moveToThread(docThread);
+
     connect(textEdit, &QTextEdit::currentCharFormatChanged,
-            this, &TextEdit::currentCharFormatChanged);
-    connect(textEdit, &QTextEdit::cursorPositionChanged,
-            this, &TextEdit::cursorPositionChanged);
+            workerDoc, &WorkerDocClient::editorFormatChanged);
+    connect(this, &TextEdit::sigEnteringColorMode,
+            workerDoc, &WorkerDocClient::colorWritingStarted);
+    connect(this, &TextEdit::sigExitingColorMode,
+            workerDoc, &WorkerDocClient::colorWritingEnded);
+
+    connect(textEdit, &QTextEdit::cursorPositionChanged,this, &TextEdit::cursorPositionChanged);
     setCentralWidget(textEdit);
     addDockWidget(Qt::RightDockWidgetArea, dockUsersTree);
 
@@ -155,20 +166,20 @@ TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP,quint16 siteId, QUt
             actionRedo, &QAction::setEnabled);
 
     //connetto signal e slot che servono
-    connect(textEdit->document(),&QTextDocument::contentsChange,
-            this, &TextEdit::CRDTInsertRemove);
+    connect(textEdit->document(),&QTextDocument::contentsChange,this, &TextEdit::CRDTInsertRemove);
 
     /*chiusura documento*/
     QObject::connect(this, &TextEdit::SigChiudiDoc, wscP, &WorkerSocketClient::chiudiDoc);
 
-
     /*operazione locale sul documento*/
-    QObject::connect(this, &TextEdit::SigOpDocLocale, wscP, &WorkerSocketClient::opDocLocale);
-    QObject::connect(this, &TextEdit::SigOpDocLocaleBuffered, wscP, &WorkerSocketClient::opDocLocaleBuffered);
+    QObject::connect(workerDoc, &WorkerDocClient::SigOpDocLocale, wscP, &WorkerSocketClient::opDocLocale);
+    QObject::connect(workerDoc, &WorkerDocClient::SigOpDocLocaleBuffered, wscP, &WorkerSocketClient::opDocLocaleBuffered);
+    QObject::connect(this, &TextEdit::sigCrdtInsertRemove, workerDoc, &WorkerDocClient::CRDTInsertRemove);
+
 
     /*operazione remota sul documento*/
-    QObject::connect(wscP, &WorkerSocketClient::SigOpDocRemota, this,  &TextEdit::opDocRemota,Qt::QueuedConnection);
-    QObject::connect(wscP, &WorkerSocketClient::SigOpDocRemotaBuffered, this,  &TextEdit::opDocRemotaBuffered,Qt::QueuedConnection);
+    QObject::connect(wscP, &WorkerSocketClient::SigOpDocRemota, workerDoc,  &WorkerDocClient::opDocRemota);
+    QObject::connect(wscP, &WorkerSocketClient::SigOpDocRemotaBuffered, workerDoc,  &WorkerDocClient::opDocRemotaBuffered);
 
     /*op chi ha inserito cosa*/
     QObject::connect(this, &TextEdit::SigOpChiHaInseritoCosa, wscP, &WorkerSocketClient::opChiHaInseritoCosa);
@@ -229,13 +240,14 @@ void TextEdit::loadCRDTIntoEditor(CRDT crdt){
         algoritmoCRDT=nullptr;
     }
   algoritmoCRDT = new CRDT(this->siteId,crdt.getListChar()); //salvo nel CRDT la rappresentazione del file
+  workerDoc->algoritmoCRDT = new CRDT(this->siteId,crdt.getListChar());
   // devo andare ad aggiornare il contenuto del QTextEdit tramite l'uso di cursori sulla base di quello che c'� scritto nel CRDT
   int currentIndex = 0;
   this->cursor = new QTextCursor(textEdit->textCursor());
   this->cursor->setPosition(currentIndex);
   auto lista = crdt.getListChar();
   disconnect(textEdit->document(),&QTextDocument::contentsChange,
-          this, &TextEdit::CRDTInsertRemove );
+          workerDoc, &WorkerDocClient::CRDTInsertRemove );
   disconnect(textEdit, &QTextEdit::cursorPositionChanged,
           this, &TextEdit::cursorPositionChanged);
   for (auto richChar = lista.cbegin(); richChar!=lista.cend(); richChar++ ){
@@ -270,10 +282,11 @@ void TextEdit::loadCRDTIntoEditor(CRDT crdt){
             }
         }
    // }
+        currentIndex++;
   }
-  currentIndex++;
+
   connect(textEdit->document(),&QTextDocument::contentsChange,
-          this, &TextEdit::CRDTInsertRemove);
+          workerDoc, &WorkerDocClient::CRDTInsertRemove);
   connect(textEdit, &QTextEdit::cursorPositionChanged,
           this, &TextEdit::cursorPositionChanged);
 }
@@ -591,42 +604,34 @@ void TextEdit::filePrintPdf()
 void TextEdit::textBold()
 {
     QTextCharFormat fmt;
-    disconnect(textEdit->document(),&QTextDocument::contentsChange,this, &TextEdit::CRDTInsertRemove);
     fmt.setFontWeight(actionTextBold->isChecked() ? QFont::Bold : QFont::Normal);
     mergeFormatOnWordOrSelection(fmt);
-    connect(textEdit->document(),&QTextDocument::contentsChange,this, &TextEdit::CRDTInsertRemove);
 }
 
 void TextEdit::textUnderline()
 {
     QTextCharFormat fmt;
-    disconnect(textEdit->document(),&QTextDocument::contentsChange,this, &TextEdit::CRDTInsertRemove);
     fmt.setFontUnderline(actionTextUnderline->isChecked());
     mergeFormatOnWordOrSelection(fmt);
-    connect(textEdit->document(),&QTextDocument::contentsChange,this, &TextEdit::CRDTInsertRemove);
 }
 
 void TextEdit::textItalic()
 {
     QTextCharFormat fmt;
-    disconnect(textEdit->document(),&QTextDocument::contentsChange,this, &TextEdit::CRDTInsertRemove);
     fmt.setFontItalic(actionTextItalic->isChecked());
     mergeFormatOnWordOrSelection(fmt);
-    connect(textEdit->document(),&QTextDocument::contentsChange,this, &TextEdit::CRDTInsertRemove);
 }
 
 void TextEdit::textFamily(const QString &f)
 {
     QTextCharFormat fmt;
-    disconnect(textEdit->document(),&QTextDocument::contentsChange,this, &TextEdit::CRDTInsertRemove);
     fmt.setFontFamily(f);
     mergeFormatOnWordOrSelection(fmt);
-    connect(textEdit->document(),&QTextDocument::contentsChange,this, &TextEdit::CRDTInsertRemove);}
+}
 
 void TextEdit::textSize(const QString &p)
 {
     qreal pointSize = p.toFloat();
-    disconnect(textEdit->document(),&QTextDocument::contentsChange,this, &TextEdit::CRDTInsertRemove);
     if (p.toFloat() > 0) {
         QTextCharFormat fmt;
         fmt.setFontPointSize(pointSize);
@@ -635,12 +640,10 @@ void TextEdit::textSize(const QString &p)
     for (auto lbl:labelMap->values()){
         lbl->setFixedSize(3,pointSize);
     }
-    connect(textEdit->document(),&QTextDocument::contentsChange,this, &TextEdit::CRDTInsertRemove);
 }
 
 void TextEdit::textStyle(int styleIndex)
 {
-    disconnect(textEdit->document(),&QTextDocument::contentsChange,this, &TextEdit::CRDTInsertRemove);
     QTextCursor cursor = textEdit->textCursor();
     QTextListFormat::Style style = QTextListFormat::ListStyleUndefined;
 
@@ -704,12 +707,10 @@ void TextEdit::textStyle(int styleIndex)
     }
 
     cursor.endEditBlock();
-    connect(textEdit->document(),&QTextDocument::contentsChange,this, &TextEdit::CRDTInsertRemove);
 }
 
 void TextEdit::textColor()
 {
-    disconnect(textEdit->document(),&QTextDocument::contentsChange,this, &TextEdit::CRDTInsertRemove);
     QColor col = QColorDialog::getColor(textEdit->textColor(), this);
     if (!col.isValid())
         return;
@@ -717,12 +718,10 @@ void TextEdit::textColor()
     fmt.setForeground(col);
     mergeFormatOnWordOrSelection(fmt);
     colorChanged(col);
-    connect(textEdit->document(),&QTextDocument::contentsChange,this, &TextEdit::CRDTInsertRemove);
 }
 
 void TextEdit::textAlign(QAction *a)
 {
-    disconnect(textEdit->document(),&QTextDocument::contentsChange,this, &TextEdit::CRDTInsertRemove);
     quint16 alignementType=0;
     auto cursorPos = textEdit->textCursor().block().position();
     if (a == actionAlignLeft){
@@ -752,7 +751,6 @@ void TextEdit::textAlign(QAction *a)
     }
 
     emit SigOpDocLocale(DocOperation(cursorPos,alignementType,this->siteId));
-    connect(textEdit->document(),&QTextDocument::contentsChange,this, &TextEdit::CRDTInsertRemove);
 }
 
 void TextEdit::currentCharFormatChanged(const QTextCharFormat &format)
@@ -788,6 +786,7 @@ void TextEdit::clipboardDataChanged()
 
 void TextEdit::mergeFormatOnWordOrSelection(const QTextCharFormat &format)
 {
+    disconnect(textEdit->document(),&QTextDocument::contentsChange,workerDoc, &WorkerDocClient::CRDTInsertRemove);
     QTextCursor cursor = textEdit->textCursor();
 
     if (!cursor.hasSelection())
@@ -802,6 +801,7 @@ void TextEdit::mergeFormatOnWordOrSelection(const QTextCharFormat &format)
     comunicaCRDTCambioFormat(format,posCursor<posAnchor ? posCursor:posAnchor,changed,algoritmoCRDT);
 
     textEdit->mergeCurrentCharFormat(format);
+    connect(textEdit->document(),&QTextDocument::contentsChange,workerDoc, &WorkerDocClient::CRDTInsertRemove);
 }
 
 void TextEdit::fontChanged(const QFont &f)
@@ -905,50 +905,6 @@ void TextEdit::comunicaCRDTCambioFormat(QTextCharFormat format, int pos, int num
     }
 }
 
-void TextEdit::CRDTInsertRemove(int pos, int rem, int add){
-    QTextCursor cursor = textEdit->textCursor();
-    qDebug()<<"Add: "<<add<<" Rem: "<<rem<< " Pos:"<<pos;
-    if(rem==0 && add>0){
-        //AGGIUNTA DI UNO O PIU' CARATTERI
-        comunicaCRDTInserimentoLocale(textEdit,&cursor,pos,add,algoritmoCRDT);
-    }
-    else if(rem>0 && add==0){
-        //CANCELLAZIONE DI UNO O PIU' CARATTERI
-        comunicaCRDTRimozioneLocale(pos,rem,algoritmoCRDT);
-    }
-    else if(add>0 && rem>0){
-        if(add==rem){
-            //DOPO IL PASTE DA PARTE DI UN UTENTE SU UNA SELEZIONE, LA SELEZIONE DEL CURSORE SCOMPARE
-            //Controllando questa quindi possiamo capire se si tratta di una di un copia/incolla sopra una selezione oppure di un cambio format.
-
-            auto selection = cursor.selectedText();
-            //auto position = cursor.position();
-            //std::cout<<"Posizione del cursore: "<<position<<"\n"<<std::flush;
-            //std::cout<<"Testo selezionato: "<< selection.toStdString().c_str()<<"\n"<<std::flush;
-            if(!(selection.isEmpty())){
-                //Si tratta di un cambio di formato, quindi ottengo il formato e lo comunico al CRDT
-                //comunicaCRDTCambioFormat(&cursor,pos,add);
-            }
-            else{
-                //Caso in cui si incolla su una selezione una stringa della stessa lunghezza
-                //Non gestisco il caso particolare in cui la stringa incollata sia la stessa di quella cancellata
-                //Pros: rimuovo controllo           Cons: faccio cancellazione e inserimento anche in quel caso
-                comunicaCRDTRimozioneLocale(pos,rem,algoritmoCRDT);
-                comunicaCRDTInserimentoLocale(textEdit,&cursor,pos,add,algoritmoCRDT);
-            }
-        }
-        else{
-            if(pos==0){
-                comunicaCRDTInserimentoLocale(textEdit,&cursor,pos,add-rem,algoritmoCRDT);
-            }
-            else{
-                //Caso in cui si incolla una stringa sopra una selezione
-                comunicaCRDTRimozioneLocale(pos,rem,algoritmoCRDT);
-                comunicaCRDTInserimentoLocale(textEdit,&cursor,pos,add,algoritmoCRDT);
-            }
-        }
-    }
-}
 
 void TextEdit::format(const QTextCharFormat &format){
     /*QTextCursor cursor = textEdit->textCursor();
@@ -965,13 +921,7 @@ int TextEdit::isSuccess(QString esito){
     return 0;
 }
 
-void TextEdit::opDocRemotaBuffered(QList<DocOperation> opList){
-    while(!opList.isEmpty()){
-        DocOperation op = opList.first();
-        opList.pop_front();
-        opDocRemota(op);
-    }
-}
+/*
 
 void TextEdit::opDocRemota(DocOperation operation){
    textEdit->setTextInteractionFlags(Qt::NoTextInteraction);
@@ -1088,6 +1038,8 @@ void TextEdit::opDocRemota(DocOperation operation){
    textEdit->setTextInteractionFlags(Qt::TextEditorInteraction);
 }
 
+*/
+
 
 
 void TextEdit::questoUserHaApertoIlDoc(QUser usr){
@@ -1144,7 +1096,7 @@ void TextEdit::enteringColorMode(){
     //Devo disconnettere e riconnettere il segnale per non far arrivare un segnale allo slot
     //che sto modificando il formato del testo
     QObject::disconnect(textEdit->document(),&QTextDocument::contentsChange,
-            this, &TextEdit::CRDTInsertRemove );
+            workerDoc, &WorkerDocClient::CRDTInsertRemove );
 
     updateTreeWidget(colorWriting); //deve essere true per forza
     for (auto character:algoritmoCRDT->getListChar()){
@@ -1164,7 +1116,7 @@ void TextEdit::enteringColorMode(){
 
     delete colorCursor;
     QObject::connect(textEdit->document(),&QTextDocument::contentsChange,
-            this, &TextEdit::CRDTInsertRemove);
+            workerDoc, &WorkerDocClient::CRDTInsertRemove);
 }
 
 void TextEdit::quittingColorMode(){
@@ -1176,7 +1128,7 @@ void TextEdit::quittingColorMode(){
     auto colors = QColor::colorNames();
     QTextCursor* colorCursor = new QTextCursor(textEdit->textCursor());
     QObject::disconnect(textEdit->document(),&QTextDocument::contentsChange,
-            this, &TextEdit::CRDTInsertRemove );
+            workerDoc, &WorkerDocClient::CRDTInsertRemove );
     //deve essere false per forza
     updateTreeWidget(colorWriting);
     offlineUsers->clear();
@@ -1194,7 +1146,7 @@ void TextEdit::quittingColorMode(){
 
     delete colorCursor;
     QObject::connect(textEdit->document(),&QTextDocument::contentsChange,
-        this, &TextEdit::CRDTInsertRemove);
+        workerDoc, &WorkerDocClient::CRDTInsertRemove);
 }
 
 
@@ -1379,10 +1331,27 @@ void TextEdit::restoreQTextEdit(){
     cursorMap = new QMap<quint16, QTextCursor*>();
     labelMap->clear();
 
+    workerDoc = new WorkerDocClient(algoritmoCRDT,textEdit->document(),siteId,cursorMap);
+    docThread = new QThread();
+    docThread->start();
+    workerDoc->moveToThread(docThread);
+    textEdit->document()->setParent(0);
+    textEdit->document()->moveToThread(docThread);
+
     connect(textEdit, &QTextEdit::currentCharFormatChanged,
-            this, &TextEdit::currentCharFormatChanged);
-    connect(textEdit, &QTextEdit::cursorPositionChanged,
-            this, &TextEdit::cursorPositionChanged);
+            workerDoc, &WorkerDocClient::editorFormatChanged);
+    connect(this, &TextEdit::sigEnteringColorMode,
+            workerDoc, &WorkerDocClient::colorWritingStarted);
+    connect(this, &TextEdit::sigExitingColorMode,
+            workerDoc, &WorkerDocClient::colorWritingEnded);
+    /*operazione locale sul documento*/
+    QObject::connect(workerDoc, &WorkerDocClient::SigOpDocLocale, wscP, &WorkerSocketClient::opDocLocale);
+    QObject::connect(workerDoc, &WorkerDocClient::SigOpDocLocaleBuffered, wscP, &WorkerSocketClient::opDocLocaleBuffered);
+    /*operazione remota sul documento*/
+    QObject::connect(wscP, &WorkerSocketClient::SigOpDocRemota, workerDoc,  &WorkerDocClient::opDocRemota);
+    QObject::connect(wscP, &WorkerSocketClient::SigOpDocRemotaBuffered, workerDoc,  &WorkerDocClient::opDocRemotaBuffered);
+
+    //connect(textEdit, &QTextEdit::cursorPositionChanged,this, &TextEdit::cursorPositionChanged);
     setCentralWidget(textEdit);
     addDockWidget(Qt::RightDockWidgetArea, dockUsersTree);
 
@@ -1409,7 +1378,7 @@ void TextEdit::restoreQTextEdit(){
 
     //connetto signal e slot che servono
     connect(textEdit->document(),&QTextDocument::contentsChange,
-            this, &TextEdit::CRDTInsertRemove);
+            workerDoc, &WorkerDocClient::CRDTInsertRemove);
 
     setWindowModified(textEdit->document()->isModified());
     actionUndo->setEnabled(textEdit->document()->isUndoAvailable());
@@ -1447,16 +1416,21 @@ void TextEdit::cleanTextEdit(){
 
     disconnect(textEdit, &QTextEdit::currentCharFormatChanged,
                 this, &TextEdit::currentCharFormatChanged);
-    disconnect(textEdit, &QTextEdit::cursorPositionChanged,
-                this, &TextEdit::cursorPositionChanged);
+    //disconnect(textEdit, &QTextEdit::cursorPositionChanged,this, &TextEdit::cursorPositionChanged);
     disconnect(textEdit->document(), &QTextDocument::undoAvailable,
             actionUndo, &QAction::setEnabled);
     disconnect(textEdit->document(), &QTextDocument::redoAvailable,
             actionRedo, &QAction::setEnabled);
     disconnect(textEdit->document(),&QTextDocument::contentsChange,
-            this, &TextEdit::CRDTInsertRemove);
+            workerDoc, &WorkerDocClient::CRDTInsertRemove);
     disconnect(textEdit, &QTextEdit::copyAvailable, actionCut, &QAction::setEnabled);
     disconnect(textEdit, &QTextEdit::copyAvailable, actionCopy, &QAction::setEnabled);
+    disconnect(textEdit, &QTextEdit::currentCharFormatChanged,
+            workerDoc, &WorkerDocClient::editorFormatChanged);
+    disconnect(this, &TextEdit::sigEnteringColorMode,
+            workerDoc, &WorkerDocClient::colorWritingStarted);
+    disconnect(this, &TextEdit::sigExitingColorMode,
+            workerDoc, &WorkerDocClient::colorWritingEnded);
     removeActions();
     delete algoritmoCRDT;
     delete usersTree;
@@ -1465,6 +1439,10 @@ void TextEdit::cleanTextEdit(){
     delete offlineUsers;
     delete cursorMap;
     delete this->textEdit;
+    delete workerDoc;
     textEdit = new QTextEdit(this);
+    docThread->quit();
+    docThread->wait();
+    delete docThread;
     restoreQTextEdit();
 }

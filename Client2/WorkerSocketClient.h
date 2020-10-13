@@ -13,6 +13,7 @@
 #include "QUser.h"
 #include "BlockReader.h"
 #include "BlockWriter.h"
+#include <QTextCursor>
 
 enum inOperation: quint16{
     Esito_apri_doc = 1,
@@ -244,5 +245,6 @@ public slots:
 
 };
 
-
+ Q_DECLARE_METATYPE(QTextCharFormat);
+ Q_DECLARE_METATYPE(QTextCursor);
 #endif //PDS1_WORKERSOCKETCLIENT_H

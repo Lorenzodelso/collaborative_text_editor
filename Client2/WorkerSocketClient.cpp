@@ -16,6 +16,8 @@ void WorkerSocketClient::connessioneAlServer(QString ipAddr) {
     qRegisterMetaType<CRDT>();
     qRegisterMetaType<DocOperation>();
     qRegisterMetaType<QList<DocOperation>>();
+    qRegisterMetaType<QTextCharFormat>();
+    qRegisterMetaType<QTextCursor>();
 
     this->socketConnesso = new QTcpSocket(this);
     connect(socketConnesso,&QTcpSocket::connected, this, &WorkerSocketClient::socketConnected);
