@@ -1,9 +1,6 @@
 #include "RecentDocsDialogs.h"
 
 
-RecentDocsDialogs::RecentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP,quint32 siteId, QUtente utente, QList<QString> docList):QWidget(parent)
-{
-
 //*********************************************************************
 //
 //Creazione del dialog dei documenti recenti. C'è anche la possibilità
@@ -14,6 +11,8 @@ RecentDocsDialogs::RecentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP,q
 //server in fase di login
 //
 //*********************************************************************
+
+RecentDocsDialogs::RecentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP,quint32 siteId, QUtente utente, QList<QString> docList):QWidget(parent){
 
     this-> setWindowTitle("Recent Docs");
     setParent(parent);
@@ -33,8 +32,6 @@ RecentDocsDialogs::RecentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP,q
     /*un altro user ha chiuso il doc*/
     QObject::connect(wscP, &WorkerSocketClient::SigQuestoUserHaChiusoIlDoc, mw,  &TextEdit::questoUserHaChiusoIlDoc);
 
-
-
     if(!this->docList.isEmpty())
          for(i=this->docList.begin(); i!=this->docList.end(); i++)
              new QListWidgetItem(*i, recentDocs);
@@ -42,7 +39,6 @@ RecentDocsDialogs::RecentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP,q
         recentDocs->clear();
 
     recentDocs->setSelectionMode(QAbstractItemView::SingleSelection);
-
     create = new QPushButton(tr("&New File"));
     create->setDisabled(true);
     create->setFixedSize(90,25);
@@ -137,11 +133,9 @@ RecentDocsDialogs::RecentDocsDialogs(QWidget *parent, WorkerSocketClient* wscP,q
 //*********************************************************************
 
 void RecentDocsDialogs::openPressed(){
-
     fileName = recentDocs->selectedItems().first()->text();
     if(!fileName.isNull() || !fileName.isEmpty())
         emit(SigApriDoc(fileName.remove('\n')));
-
 }
 
 //*********************************************************************
@@ -161,6 +155,7 @@ void RecentDocsDialogs::abortPressed(){
 //da URL
 //
 //*********************************************************************
+
 void RecentDocsDialogs::openUrlPressed(){
     fileName = URL->text();
     emit(SigApriDoc(fileName));
@@ -172,6 +167,7 @@ void RecentDocsDialogs::openUrlPressed(){
 //di un nuovo file
 //
 //*********************************************************************
+
 void RecentDocsDialogs::newFilePressed(){
     fileName = newFileName->text();
     emit(SigCreaDoc(fileName));
@@ -183,13 +179,12 @@ void RecentDocsDialogs::newFilePressed(){
 //il campo "url" sia pieno o vuoto
 //
 //*********************************************************************
+
 void RecentDocsDialogs::urlChanged(const QString &url){
-    if(url.isEmpty() || url.isNull()){
+    if(url.isEmpty() || url.isNull())
         openUrl->setDisabled(true);
-    }
-    else{
+    else
         openUrl->setDisabled(false);
-    }
 }
 
 
@@ -199,12 +194,12 @@ void RecentDocsDialogs::urlChanged(const QString &url){
 //il campo "newFileName" sia pieno o vuoto
 //
 //*********************************************************************
+
 void RecentDocsDialogs::newFileChanged(const QString &newFileName){
-    if(newFileName.isEmpty() || newFileName.isNull()){
+    if(newFileName.isEmpty() || newFileName.isNull())
         create->setDisabled(true);
-    }else{
+    else
         create->setDisabled(false);
-    }
 }
 
 //*********************************************************************
@@ -213,6 +208,7 @@ void RecentDocsDialogs::newFileChanged(const QString &newFileName){
 //selezionato dalla lista
 //
 //*********************************************************************
+
 void RecentDocsDialogs::listItemSelected(){
     open->setDisabled(false);
 
@@ -233,6 +229,7 @@ void RecentDocsDialogs::launchEditProfile(){
 //Aggiorna il contenuto del widget
 //
 //*********************************************************************
+
 void RecentDocsDialogs::updateRecDocs(){
 
     recentDocs->clear();
@@ -240,9 +237,7 @@ void RecentDocsDialogs::updateRecDocs(){
     newFileName->clear();
     create->setDisabled(true);
     openUrl->setDisabled(true);
-
     QList<QString>::iterator i;
-
     if(!this->docList.isEmpty())
          for(i=this->docList.begin(); i!=this->docList.end(); i++)
              new QListWidgetItem(*i, recentDocs);
@@ -251,14 +246,6 @@ void RecentDocsDialogs::updateRecDocs(){
 
 
 }
-
-int isSuccess(QString esito){
-  if (esito.compare("Success") == 0)
-    return 1;
-  else
-    return 0;
-}
-
 
 //*************************************************
 //
@@ -273,20 +260,18 @@ int isSuccess(QString esito){
 
 void RecentDocsDialogs::esitoCreaDoc(QString esito, CRDT doc){
 
-    if (isSuccess(esito)){ //se esito positivo creo un CRDT vuoto perché il documento é stato appena creato
+    if (esito.compare("Success") == 0){
         mw->updateUserInfo(this->utente);
         mw->loadCRDTIntoEditor(doc);
-    const QRect availableGeometry = QApplication::desktop()->availableGeometry(mw);
-    mw->resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);
-    mw->move((availableGeometry.width() - mw->width()) / 2,
-            (availableGeometry.height() - mw->height()) / 2);
-    mw->setCurrentFileName(fileName);
-    this->docList.append(fileName);
-    mw->show();
-    this->hide();
+        const QRect availableGeometry = QApplication::desktop()->availableGeometry(mw);
+        mw->resize(availableGeometry.width() / 2, (availableGeometry.height() * 2) / 3);
+        mw->move((availableGeometry.width() - mw->width()) / 2, (availableGeometry.height() - mw->height()) / 2);
+        mw->setCurrentFileName(fileName);
+        this->docList.append(fileName);
+        mw->show();
+        this->hide();
   }
-  else
-  {
+  else{
       QMessageBox msgBox;
       msgBox.setText(tr("A problem occured while creating a new doc. Please, try again"));
       msgBox.setIcon(QMessageBox::Critical);
@@ -304,9 +289,9 @@ void RecentDocsDialogs::esitoCreaDoc(QString esito, CRDT doc){
 //del problema.
 //
 //******************************************
-void RecentDocsDialogs::esitoApriDoc(QString esito, CRDT doc){
 
-    if (isSuccess(esito)){
+void RecentDocsDialogs::esitoApriDoc(QString esito, CRDT doc){
+    if (esito.compare("Success") == 0){
       mw->updateUserInfo(this->utente);
       mw->loadCRDTIntoEditor(doc);
       const QRect availableGeometry = QApplication::desktop()->availableGeometry(mw);
@@ -314,25 +299,26 @@ void RecentDocsDialogs::esitoApriDoc(QString esito, CRDT doc){
       mw->move((availableGeometry.width() - mw->width()) / 2,
               (availableGeometry.height() - mw->height()) / 2);
       mw->setCurrentFileName(fileName);
-      if(!docList.contains(fileName)){
+      if(!docList.contains(fileName))
           docList.append(fileName);
-      }
       mw->show();
       this->hide();
-
-    }
-  else
-  {
+   }else{
       QMessageBox msgBox;
       msgBox.setText(tr("A problem occured while opening the selected doc. Please, try again"));
       msgBox.setIcon(QMessageBox::Critical);
       msgBox.exec();
-
   }
 }
 
+//******************************************************************
+//
+//If esito is "Success", the text editor is closed and cleaned.
+//If esito is "Failed", an error message box will show up.
+//
+//******************************************************************
 void RecentDocsDialogs::esitoChiudiDoc(QString esito){
-  if (isSuccess(esito)){
+  if (esito.compare("Success") == 0){
       mw->hide();
       mw->cleanTextEdit();
       this->show();

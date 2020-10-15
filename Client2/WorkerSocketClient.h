@@ -52,48 +52,35 @@ class WorkerSocketClient : public QObject{
     QList<DocOperation> opList;
     int numOpTreated = 0;
 
-    public:
+public:
     ~WorkerSocketClient();
 
-    private:
-        bool connected=false;
+private:
+    bool connected=false;
+    void EmitSigEsitoApriDoc();
+    void EmitSigEsitoCreaDoc();
+    void EmitSigEsitoLogin();
+    void EmitSigEsitoModificaProfiloUtente();
+    void EmitSigOpDoc();
+    void EmitSigEsitoRegistrazione();
+    void EmitSigEsitoColorMode();
+    void EmitSigUserChiudiDoc();
+    void EmitSigUserApriDoc();
+    void EmitEsitoChiusuraDocClient();
+    void IniziaLetturaBuffered();
 
-        void EmitSigEsitoApriDoc();
-        void EmitSigEsitoCreaDoc();
-        void EmitSigEsitoLogin();
-        void EmitSigEsitoModificaProfiloUtente();
-        void EmitSigOpDoc();
-        void EmitSigEsitoRegistrazione();
-        void EmitSigEsitoColorMode();
-        void EmitSigUserChiudiDoc();
-        void EmitSigUserApriDoc();
-        void EmitEsitoChiusuraDocClient();
-        void IniziaLetturaBuffered();
-
-    signals:
-
-
+signals:
     void SigEsitoConnessioneAlServer(QString esito/*esito*/);
-
     void SigEsitoRegistrazione(QString esito/*esito*/);
-
     void SigEsitoLogin(QString esito/*esito*/, QUtente user, QList<QString> nomiFilesEditati);
-
     void SigEsitoCreaDoc(QString esito/*esito*/, CRDT doc/*rappresentazione del file*/);
-
     void SigEsitoApriDoc(QString esito/*esito*/, CRDT doc/*rappresentazione del file*/);
-
     void SigEsitoChiudiDoc(QString esito/*esito*/);
-
     void SigEsitoModificaProfiloUtente(QString esito/*esito*/, QUtente userNew);
-
     void SigOpDocRemota(/*rappresentazione operazione sul documento*/DocOperation docOp);
     void SigOpDocRemotaBuffered(QList<DocOperation> opList);
-
     void SigQuestoUserHaApertoIlDoc(QUser usr);
-
     void SigQuestoUserHaChiusoIlDoc(QUser usr);
-
     void SigEsitoOpChiHaInseritoCosa(QList<QUser> users/*lista degli utenti che hanno editato in passato e/o stanno editando questo doc*/);
 
 public slots:

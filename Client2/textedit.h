@@ -101,16 +101,13 @@ class TextEdit : public QMainWindow
 
 public:
     TextEdit(QWidget *parent, WorkerSocketClient *wscP,quint16 siteId, QUtente utente);
-
     void load(const QString &f);
-
     CRDT* getStrutturaCRDT();
     void loadCRDTIntoEditor(CRDT crdt);
     void restoreQTextEdit();
     void removeActions();
 
 public:
-
      void setCurrentFileName(const QString &fileName);
      ~TextEdit() override;
      void updateUserInfo(QUtente utente);
@@ -125,52 +122,22 @@ signals:
         void updateRecDocs();
 
 public slots:
-    void format(const QTextCharFormat &format);
     void CRDTInsertRemove(int pos, int rem, int add);
     void updateTreeWidget(bool checked);
     void updateRemoteCursor();
-
-
-    /*
-     * manipolazione struttura CRDT conseguente all'operazione remota ricevuta dal server e conseguenti ripercussioni sull'editor
-     * */
-    void opDocRemota(DocOperation operation/*rappresentazione operazione sul documento*/);
+    void opDocRemota(DocOperation operation);
     void opDocRemotaBuffered(QList<DocOperation> opList);
-
-    /*
-     * mostra tale user come online, ovvero che sta editando ora il documento corrente
-     * note:
-     * va fatto altro, sulla base di come implementiamo le funzionalità di "mostrami gli username di chi ha inserito cosa" e
-     * "mostrami gli username degli utenti ora online"
-     */
     void questoUserHaApertoIlDoc(QUser usr);
-
-    /*
-     * smette di mostrare tale user come online
-     * note:
-     * va fatto altro, sulla base di come implementiamo le funzionalità di "mostrami gli username di chi ha inserito cosa" e
-     * "mostrami gli username degli utenti ora online"
-     */
     void questoUserHaChiusoIlDoc(QUser usr);
-
-
-    /*
-     * usa l'informazione ricevuta per implementare la funzione corrispondente
-     * */
-
-    //Non mi serve nessuna lista
     void esitoOpChiHaInseritoCosa(QList<QUser> users);
 
 protected:
     void closeEvent(QCloseEvent *e) override;
-    int isSuccess(QString esito);
 
 private slots:
-
     void filePrint();
     void filePrintPreview();
     void filePrintPdf();
-
     void textBold();
     void textUnderline();
     void textItalic();
@@ -179,22 +146,16 @@ private slots:
     void textStyle(int styleIndex);
     void textColor();
     void textAlign(QAction *a);
-
     void currentCharFormatChanged(const QTextCharFormat &format);
     void cursorPositionChanged();
-
     void clipboardDataChanged();
     void printPreview(QPrinter *);
-
-    //slot che riceve segnale premuto bottone di Color Mode
     void pressedButtonTrigger(bool checked);
 
 private:
     void setupFileActions();
     void setupEditActions();
     void setupTextActions();
-
-
     void launchProfileEditor();
     void mergeFormatOnWordOrSelection(const QTextCharFormat &format);
     void fontChanged(const QFont &f);
@@ -203,16 +164,11 @@ private:
     void remoteUserConnected(QString username);
     void remoteCursorMoved(QString username, int pos);
     void remoteUserDisconnected(QString username);
-
     void comunicaCRDTInserimentoLocale(QTextEdit* txe,QTextCursor* cursor, int pos, int numInserted,CRDT* algCRDT);
     void comunicaCRDTRimozioneLocale(int pos, int numRemoved,CRDT* algCRDT);
     void comunicaCRDTCambioFormat(QTextCharFormat format, int pos, int numCar,CRDT* algCRDT);
-
-    //entrata e uscita dalla color mode
     void enteringColorMode();
     void quittingColorMode();
-
-    //emissione del segnale con DocOperation per movimento cursore
     void segnalaMovimentoCursore(QTextCursor cursor);
 
     QAction *actionSave;
@@ -233,7 +189,6 @@ private:
     QAction *actionPaste;
 #endif
     const QString rsrc = ":/images/win";
-
     QComboBox *comboStyle;
     QFontComboBox *comboFont;
     QBoxLayout *userInfo;
@@ -258,26 +213,18 @@ private:
     QToolBar *tbText;
     QToolBar *tbColor;
     QToolBar *tbFormat;
-
-     //Aggiungo CRDT
+    //Aggiungo CRDT
     CRDT* algoritmoCRDT;
-
     quint16 siteId;
-
     //Aggiungo una lista di utenti online
     QList<QUser> *onlineUsers;
-
     //Lista utenti offline
     QList<QUser> *offlineUsers;
-
     //modalità scrittura a colori
     bool colorWriting;
-
     //Default format
     QTextCharFormat defaultFmt;
-
     WorkerSocketClient *wscP;
-
 };
 
 #endif // TEXTEDIT_H

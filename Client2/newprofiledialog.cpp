@@ -41,6 +41,7 @@ NewProfileDialog::NewProfileDialog(QWidget *parent, WorkerSocketClient* wscP)
     profilePic = new QPixmap();
     profilePic->load(rsrc+"/colored-edit-profile.png");
     userPic->setPixmap(*profilePic);
+
     userErr = new QLabel("");
     passErr = new QLabel("");
 
@@ -80,15 +81,6 @@ NewProfileDialog::NewProfileDialog(QWidget *parent, WorkerSocketClient* wscP)
     setLayout(layout);
     setFixedSize(300,450);
     utente = new QUtente(0,"","","");
-
-//    //**********************************************************
-//    QUtente *utenteTest = new QUtente(1234, "mario", "mariogrdn", "password", "");
-//    QList<QString> *listaTest = new QList<QString>();
-//    listaTest->append("ciao");
-//    listaTest->append("come");
-//    listaTest->append("stai");
-//    esitoRegistrazione("Success", *utenteTest, *listaTest);
-//    //**********************************************************
 }
 
 //*********************************************************************
@@ -129,6 +121,7 @@ void NewProfileDialog::userWhitespaces(){
 //e il campo username non sia vuoto.
 //
 //*********************************************************************
+
 void NewProfileDialog::registerPressed(){
     QString user = userEdit->text();
     QString pass = passEdit->text();
@@ -157,6 +150,7 @@ void NewProfileDialog::registerPressed(){
 //e comparirà un messaggio d'errore.
 //
 //*********************************************************************
+
 void NewProfileDialog::comparePasswords(){
     QString pass = passEdit->text();
     QString repPass = repPassEdit->text();
@@ -194,6 +188,7 @@ void NewProfileDialog::comparePasswords(){
 //toccata dal puntatore del mouse
 //
 //*********************************************************************
+
 void NewProfileDialog::imageHovered(){
     profilePic->load(rsrc+"/add-profile-image.png");
     userPic->setPixmap(*profilePic);
@@ -207,17 +202,17 @@ void NewProfileDialog::imageHovered(){
 //mouse non tocca più l'immagine
 //
 //*********************************************************************
+
 void NewProfileDialog::imageUnhovered(){
 
     if(utente->getNomeImg().isEmpty() || utente->getNomeImg().isNull()){
-            profilePic->load(rsrc+"/colored-edit-profile.png");
-            userPic->setPixmap(*profilePic);
+        profilePic->load(rsrc+"/colored-edit-profile.png");
+        userPic->setPixmap(*profilePic);
     }else{
-            profilePic->load(utente->getNomeImg());
-            QPixmap scaled = profilePic->scaled(147, 200, Qt::AspectRatioMode::KeepAspectRatio);
-            userPic->setPixmap(scaled);
+        profilePic->load(utente->getNomeImg());
+        QPixmap scaled = profilePic->scaled(147, 200, Qt::AspectRatioMode::KeepAspectRatio);
+        userPic->setPixmap(scaled);
     }
-
 }
 
 //*********************************************************************
@@ -227,10 +222,10 @@ void NewProfileDialog::imageUnhovered(){
 //oggetto QUtente verrà aggiornato con il nuovo "nomeImg"
 //
 //*********************************************************************
+
 void NewProfileDialog::selectImagePressed(){
     QUrl imageUrl = QFileDialog::getOpenFileUrl(this, tr("Open Image"), QStandardPaths::writableLocation(QStandardPaths::PicturesLocation), tr("Image Files (*.png *.jpg *.bmp)"));
     if(!imageUrl.isEmpty()){
-
         QString imagePath = imageUrl.path();
         #ifndef Q_OS_MAC
         imagePath.remove(0,1);
@@ -240,39 +235,40 @@ void NewProfileDialog::selectImagePressed(){
         QPixmap scaled = profilePic->scaled(147, 200, Qt::AspectRatioMode::KeepAspectRatio);
         userPic->setPixmap(scaled);
     }
-
 }
 
 
-/*
- * fa la cosa opportuna sulla base dell'esito ricevuto
- *
- * nota:
- * se esito = "Failed" allora gli altri parametri sono oggetti vuoti costruiti localmente sul client chiamando
- * il costruttore senza paramteri
- * se esito = "Success" allora gli altri paramteri sono la deserializzazione di oggetti mandati dal server
- *
- * */
-void NewProfileDialog::esitoRegistrazione(QString esito/*esito*/){
+//*********************************************************************************
+// fa la cosa opportuna sulla base dell'esito ricevuto
+//
+// nota:
+// se esito = "Failed" allora gli altri parametri sono oggetti vuoti costruiti localmente sul client chiamando
+// il costruttore senza paramteri
+// se esito = "Success" allora gli altri paramteri sono la deserializzazione di oggetti mandati dal server
+//
+//*********************************************************************************
+void NewProfileDialog::esitoRegistrazione(QString esito){
     if(esito == "Failed"){
-
         QMessageBox msgBox;
         msgBox.setText("An error occured while signing up. Please, try again.");
         msgBox.setIcon(QMessageBox::Critical);
         msgBox.exec();
-
     }else{
-
         QMessageBox msgBox;
         msgBox.setText("Successful Registration");
         msgBox.setIcon(QMessageBox::Information);
         msgBox.exec();
         parentWidget()->show();
         this->close();
-
     }
-
 }
+
+//*********************************************************
+//
+//Checks whether arg contains whitespaces. If it does, it
+//returns false. True otherwise
+//
+//*********************************************************
 
 bool NewProfileDialog::checkString(QString arg){
     auto it = arg.begin();
@@ -281,7 +277,6 @@ bool NewProfileDialog::checkString(QString arg){
             return false;
         it++;
     }
-
     return true;
 }
 

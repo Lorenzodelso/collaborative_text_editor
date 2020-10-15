@@ -38,21 +38,11 @@ public slots:
     void imageUnhovered();
     void selectImagePressed();
     void userWhitespaces();
-   /*
-    * fa la cosa opportuna sulla base dell'esito ricevuto
-    *
-    * nota:
-    * se esito = "Failed" allora gli altri parametri sono oggetti vuoti costruiti localmente sul client chiamando
-    * il costruttore senza paramteri
-    * se esito = "Success" allora gli altri paramteri sono la deserializzazione di oggetti mandati dal server
-    *
-    * */
     void esitoRegistrazione(QString esito/*esito*/);
 
 
 private:
     const QString rsrc = ":/images/win";
-
     WorkerSocketClient *wscP;
     QUtente *utente;
     QLabel *username;

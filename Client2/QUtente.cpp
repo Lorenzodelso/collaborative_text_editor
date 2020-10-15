@@ -38,19 +38,14 @@ QDataStream& operator<<(QDataStream& out,QUtente& user){
 }
 
 QDataStream& operator>>(QDataStream& in, QUtente& user){
-
     quint32 Id;
-
     QString Username;
     QString Password;
-
     QString Nomeimg;
 
     in >> Id >> Username>> Password>>Nomeimg;
     user =  QUtente(Id,Username,Password,Nomeimg);
-
     return in;
-
 }
 
 quint32 QUtente::getUserId(){

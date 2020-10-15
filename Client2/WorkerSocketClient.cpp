@@ -170,10 +170,6 @@ void WorkerSocketClient::EmitSigOpDoc(){
        }else
             emit SigOpDocRemota(operazione);
     }
-    else {
-                                //TODO: DA GESTIRE CON ECCEZIONE
-        qDebug()<<"Errore!! Non dovrei mai ricevere indietro la mia operazione!!";
-    }
 }
 
 void WorkerSocketClient::EmitSigEsitoRegistrazione(){
@@ -244,7 +240,6 @@ void  WorkerSocketClient::leggiMsgApp(){
 void WorkerSocketClient::opDocLocaleBuffered(QList<DocOperation> opList){
     BlockWriter(socketConnesso).stream() << Leggi_buffered;
     BlockWriter(socketConnesso).stream() << opList.size();
-    qDebug()<<opList.size();
     while(!opList.isEmpty()){
         DocOperation op = opList.first();
         opList.pop_front();

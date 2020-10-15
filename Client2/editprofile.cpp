@@ -37,21 +37,19 @@ EditProfile::EditProfile(QWidget *parent, WorkerSocketClient* wscP, QUtente* ute
     username->setBuddy(usernameEdit);
     newPass->setBuddy(newPassEdit);
     newRepPass->setBuddy(newRepPassEdit);
+    usernameEdit->setText(utente->getUsername());
+    usernameEdit->setEnabled(true);
+    if(!QFileInfo::exists(QDir::currentPath()+"/"+utente->getNomeImg()) ||
+       !QFileInfo(QDir::currentPath()+"/"+utente->getNomeImg()).isFile()){
 
+        profilePic->load(rsrc+"/colored-edit-profile.png");
+       userPic->setPixmap(*profilePic);
 
-        usernameEdit->setText(utente->getUsername());
-        usernameEdit->setEnabled(true);
-
-        qDebug()<< QDir::currentPath()+"/"+utente->getNomeImg();
-        if(!QFileInfo::exists(QDir::currentPath()+"/"+utente->getNomeImg()) || !QFileInfo(QDir::currentPath()+"/"+utente->getNomeImg()).isFile()){
-                profilePic->load(rsrc+"/colored-edit-profile.png");
-                userPic->setPixmap(*profilePic);
-        }else{
-            profilePic->load(QDir::currentPath()+"/"+utente->getNomeImg());
-            QPixmap scaled = profilePic->scaled(147, 200, Qt::AspectRatioMode::KeepAspectRatio);
-            userPic->setPixmap(scaled);
-        }
-
+    }else{
+       profilePic->load(QDir::currentPath()+"/"+utente->getNomeImg());
+       QPixmap scaled = profilePic->scaled(147, 200, Qt::AspectRatioMode::KeepAspectRatio);
+       userPic->setPixmap(scaled);
+    }
 
     save = new QPushButton(tr("&Save"));
     save->setFixedSize(60,25);
@@ -94,13 +92,6 @@ EditProfile::EditProfile(QWidget *parent, WorkerSocketClient* wscP, QUtente* ute
     /*modifica profilo utente*/
     QObject::connect(this, &EditProfile::SigModificaProfiloUtente, wscP, &WorkerSocketClient::modificaProfiloUtente);
     QObject::connect(wscP, &WorkerSocketClient::SigEsitoModificaProfiloUtente,this,  &EditProfile::esitoModificaProfiloUtente);
-
-
-//    //**********************************************************
-//    QUtente *utenteTest = new QUtente(1234, "mario", "grdnmario", "password", "");
-//    esitoModificaProfiloUtente("Success", *utenteTest);
-//    //**********************************************************
-
 
 }
 
@@ -218,15 +209,15 @@ void EditProfile::imageUnhovered(){
     }
 }
 
-/*
- * fa la cosa opportuna sulla base dell'esito ricevuto
- *
- * nota:
- * se esito = "Failed" allora gli altri parametri sono oggetti vuoti costruiti localmente sul client chiamando
- * il costruttore senza paramteri
- * se esito = "Success" allora gli altri paramteri sono la deserializzazione di oggetti mandati dal server
- *
- * */
+//**********************************************************************
+// fa la cosa opportuna sulla base dell'esito ricevuto
+//
+// nota:
+// se esito = "Failed" allora gli altri parametri sono oggetti vuoti costruiti localmente sul client chiamando
+// il costruttore senza paramteri
+// se esito = "Success" allora gli altri paramteri sono la deserializzazione di oggetti mandati dal server
+//
+//**********************************************************************
 void EditProfile::esitoModificaProfiloUtente(QString esito/*esito*/, QUtente userNew){
     if(esito == "Failed"){
         QMessageBox msgBox;
@@ -241,9 +232,8 @@ void EditProfile::esitoModificaProfiloUtente(QString esito/*esito*/, QUtente use
         recDocsUtente->setPassword(userNew.getPassword());
         close();
     }
-
-
 }
+
 //**********************************************************
 //Compare the password and password repetition.
 //If they're equal and without whitespaces, it sets
@@ -271,6 +261,7 @@ void EditProfile::comparePasswords(){
             this->repaint();
             passFlag = 1;
         }
+
         if(!checkString(pass) || !checkString(repPass)){
             passErr->setText("Password cannot contain whitespaces");
             passErr->setStyleSheet("QLabel {color: #FF0000}");
@@ -295,6 +286,5 @@ bool EditProfile::checkString(QString arg){
             return false;
         it++;
     }
-
     return true;
 }

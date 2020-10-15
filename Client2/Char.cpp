@@ -70,7 +70,7 @@ QDataStream& operator<<(QDataStream& out,const Char& ch){
     bool isItalic=ch.format.fontItalic();
     //Font weight (bold or normal)
     quint32 fontWeight = ch.format.fontWeight();
-    //undelined?
+    //underlined?
     bool isUndelined = ch.format.fontUnderline();
     //font size
     qreal fontSize = ch.format.fontPointSize();

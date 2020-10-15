@@ -90,9 +90,6 @@ QVector<quint32> CRDT::generatePosBetween(QVector<quint32> pos1, QVector<quint32
     quint32 id1;
     quint32 id2;
     auto base = pow(2, level)*this->base;
-//    std::cout<<"BASE: "<<base<<"\n";
-//    std::cout<<"LVL: "<<level<<"\n";
-
 
     if (!pos1.isEmpty()) {
         id1 = pos1[0];
@@ -210,14 +207,6 @@ DocOperation CRDT::localInsert(QChar value, QTextCharFormat format, quint32 inde
     }
     this->listChar.insert(index,Qc);
     this->text.insert(index, Qc.getValue());
-    /*
-    QTextCharFormat* oldFormat = new QTextCharFormat();
-    oldFormat->setFontFamily("fontFamily");
-    oldFormat->setFontItalic(true);
-    oldFormat->setFontWeight(777);
-    oldFormat->setFontUnderline(false);
-    oldFormat->setFontPointSize(21.1);
-    */
     return DocOperation(localInsertType,Qc,QTextCharFormat(),this->siteID,0,0);
 }
 

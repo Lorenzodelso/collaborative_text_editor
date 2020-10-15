@@ -3,16 +3,17 @@
 #include "TextEdit.h"
 #include "RecentDocsDialogs.h"
 
-
-LoginDialog::LoginDialog(QWidget *parent, WorkerSocketClient* wscP)
-    :QWidget(parent){
-    this->setWindowTitle("Login");
 //********************************************************************************************
 //
 //Creazione del dialog di login, aggiungendo buttons e lineEdit.
 //Connessione di slot e segnali necessari per il funzionamento.
 //
 //********************************************************************************************
+
+LoginDialog::LoginDialog(QWidget *parent, WorkerSocketClient* wscP)
+    :QWidget(parent){
+
+    this->setWindowTitle("Login");
     setParent(parent);
     setObjectName("login");
     this->wscP = wscP;
@@ -36,7 +37,6 @@ LoginDialog::LoginDialog(QWidget *parent, WorkerSocketClient* wscP)
     QDialogButtonBox *buttonBox = new QDialogButtonBox(Qt::Horizontal);
     buttonBox->addButton(loginButton, QDialogButtonBox::ActionRole);
     buttonBox->addButton(cancelButton, QDialogButtonBox::ActionRole);
-    //setModal(true);
 
     connect(usernameEdit, &QLineEdit::textChanged, this, &LoginDialog::enableLoginButton);
     connect(passwordEdit, &QLineEdit::textChanged, this, &LoginDialog::enableLoginButton);
@@ -44,11 +44,9 @@ LoginDialog::LoginDialog(QWidget *parent, WorkerSocketClient* wscP)
     connect(cancelButton, &QPushButton::clicked, this, &LoginDialog::cancelClicked);
     connect(newProfileButton, &QPushButton::clicked, this, &LoginDialog::registerClicked);
 
-
     /*login*/
     QObject::connect(this, &LoginDialog::SigLogin, wscP, &WorkerSocketClient::login);
     QObject::connect(wscP, &WorkerSocketClient::SigEsitoLogin, this,  &LoginDialog::esitoLogin);
-
 
     QVBoxLayout *layout = new QVBoxLayout();
     QFormLayout *loginForm = new QFormLayout;
@@ -64,15 +62,6 @@ LoginDialog::LoginDialog(QWidget *parent, WorkerSocketClient* wscP)
     setLayout(layout);
     setFixedSize(sizeHint());
     setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowTitleHint);
-
-//    //**********************************************************
-//    QUtente *utenteTest = new QUtente(1234, "mario", "mariogrdn", "password", "");
-//    QList<QString> *listaTest = new QList<QString>();
-//    listaTest->append("ciao");
-//    listaTest->append("come");
-//    listaTest->append("stai");
-//    esitoLogin("Success", *utenteTest, *listaTest);
-//    //**********************************************************
 }
 
 
@@ -84,6 +73,7 @@ LoginDialog::LoginDialog(QWidget *parent, WorkerSocketClient* wscP)
 //mediante il segnale SigLogin()
 //
 //*********************************************************************
+
 void LoginDialog::loginClicked(){
     QString username = usernameEdit->text();
     QString password = passwordEdit->text();
@@ -97,10 +87,9 @@ void LoginDialog::loginClicked(){
 //Chiusura dell'applicazione
 //
 //*********************************************************************
+
 void LoginDialog::cancelClicked(){
-
     QCoreApplication::quit();
-
 }
 
 
@@ -110,8 +99,8 @@ void LoginDialog::cancelClicked(){
 //a seconda del fatto che i campi "Username" e "Password" siano
 //pieni o no
 //
-//
 //*********************************************************************
+
 void LoginDialog::enableLoginButton(){
     if(!usernameEdit->text().isEmpty() && !passwordEdit->text().isEmpty())
         loginButton->setEnabled(true);
@@ -124,21 +113,22 @@ void LoginDialog::enableLoginButton(){
 //Creazione e avvio del dialog di registrazione di un nuovo profilo
 //
 //*********************************************************************
+
 void LoginDialog::registerClicked(){
     newProfile = new NewProfileDialog(this, this->wscP);
     newProfile->show();
     this->hide();
 }
 
-/*
- * fa la cosa opportuna sulla base dell'esito ricevuto
- *
- * nota:
- * se esito = "Failed" allora gli altri parametri sono oggetti vuoti costruiti localmente sul client chiamando
- * il costruttore senza paramteri
- * se esito = "Success" allora gli altri paramteri sono la deserializzazione di oggetti mandati dal server
- *
- * */
+//*********************************************************************
+// fa la cosa opportuna sulla base dell'esito ricevuto
+//
+// nota:
+// se esito = "Failed" allora gli altri parametri sono oggetti vuoti costruiti localmente sul client chiamando
+// il costruttore senza paramteri
+// se esito = "Success" allora gli altri paramteri sono la deserializzazione di oggetti mandati dal server
+//
+//*********************************************************************
 
 void LoginDialog::esitoLogin(QString esito/*esito*/, QUtente user, QList<QString> nomiFilesEditati){
     if(esito == "Failed"){
@@ -152,6 +142,5 @@ void LoginDialog::esitoLogin(QString esito/*esito*/, QUtente user, QList<QString
         recDoc->show();
         this->close();
     }
-
 }
 

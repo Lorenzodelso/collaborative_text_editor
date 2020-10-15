@@ -6,7 +6,6 @@
 #include <QChar>
 #include <QDataStream>
 #include <QTextCharFormat>
-//#include "Identifier.h"
 
 class Char {
 
@@ -32,7 +31,6 @@ public:
     void setAlign(quint16 alignementType);
     friend QDataStream& operator<<(QDataStream& out,const Char& ch);
     friend QDataStream& operator>>(QDataStream& in, Char& ch);
-
 };
 
 

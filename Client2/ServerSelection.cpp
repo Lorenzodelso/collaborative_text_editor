@@ -1,5 +1,12 @@
 #include "ServerSelection.h"
 
+//*****************************************************************
+//
+//Creates the server selection widget and connects all the signals
+//with the respective slots.
+//
+//*****************************************************************
+
 ServerSelection::ServerSelection(QWidget *parent, WorkerSocketClient *wscP):QWidget(parent), wscP(wscP)
 {
     setWindowTitle("Connect");
@@ -41,6 +48,13 @@ ServerSelection::ServerSelection(QWidget *parent, WorkerSocketClient *wscP):QWid
 
 }
 
+//*************************************************
+//
+//Activates the connect button based on the fact
+//that the "address" line edit contains an IPv4
+//address, or not
+//
+//*************************************************
 void ServerSelection::activateConnect(){
     if(std::regex_match(address->text().toStdString(), ipv4))
         connectButton->setEnabled(true);
@@ -48,13 +62,35 @@ void ServerSelection::activateConnect(){
         connectButton->setEnabled(false);
 }
 
+//****************************************************
+//
+//Closes the application
+//
+//****************************************************
+
 void ServerSelection::closePressed(){
     QCoreApplication::quit();
 }
 
+//**************************************************
+//
+//Emits the necessary signal in order to connect to
+//the server listening on the "address" IPv4 address
+//
+//**************************************************
+
 void ServerSelection::attivaSocket(){
     emit SigConnessioneAlServer(address->text());
 }
+
+
+//****************************************************
+//
+//If esito is "Success", a LoginDialog is created and
+//showed, ready for the user to insert its credentials.
+//If esito is "Failed", an error message box will show up.
+//
+//****************************************************
 
 void ServerSelection::esitoConnessioneAlServer(QString esito){
     if(esito.compare("Success") == 0){

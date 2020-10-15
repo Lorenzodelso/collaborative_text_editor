@@ -42,17 +42,7 @@ private slots:
     void comparePasswords();
     void userWhitespaces();
     void imageUnhovered();
-
-   /*
-    * fa la cosa opportuna sulla base dell'esito ricevuto
-    *
-    * nota:
-    * se esito = "Failed" allora gli altri parametri sono oggetti vuoti costruiti localmente sul client chiamando
-    * il costruttore senza paramteri
-    * se esito = "Success" allora gli altri paramteri sono la deserializzazione di oggetti mandati dal server
-    *
-    * */
-    void esitoModificaProfiloUtente(QString esito/*esito*/, QUtente userNew);
+    void esitoModificaProfiloUtente(QString esito, QUtente userNew);
 
 private:
     const QString rsrc = ":/images/win";
@@ -72,8 +62,6 @@ private:
     QLabel *passErr;
     QUtente *recDocsUtente;
     int userFlag = 1, passFlag = 1;
-
-
 };
 
 #endif // EDITPROFILE_H

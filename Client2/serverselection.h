@@ -16,22 +16,20 @@
 class ServerSelection : public QWidget
 {
     Q_OBJECT
+
 public:
     ServerSelection(QWidget *parent, WorkerSocketClient *wscP);
-
-
     LoginDialog *ld;
-
 
 signals:
     void SigConnessioneAlServer(QString ipAddr);
 
 public slots:
     void attivaSocket();
-
     void activateConnect();
     void closePressed();
     void esitoConnessioneAlServer(QString esito);
+
 private:
     QPushButton *connectButton;
     WorkerSocketClient *wscP;
