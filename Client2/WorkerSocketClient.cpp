@@ -46,8 +46,7 @@ WorkerSocketClient::~WorkerSocketClient(){
 /* -------------------------------- INPUT OPERATION ------------------------------------------*/
 void WorkerSocketClient::EmitSigEsitoApriDoc(){
     char* controllo;
-    uint len_controllo = 3;
-    BlockReader(socketConnesso).stream() >> controllo;
+    BlockReader(socketConnesso).stream() >>controllo;
     if (strcmp(controllo,"ope")==0)
     {
         CRDT doc;
@@ -61,9 +60,8 @@ void WorkerSocketClient::EmitSigEsitoApriDoc(){
 }
 
 void WorkerSocketClient::EmitSigEsitoCreaDoc(){
-    char* controllo;
-    uint len_controllo = 3;
-    BlockReader(socketConnesso).stream() >> controllo;
+    char*controllo;
+    BlockReader(socketConnesso).stream() >>controllo;
     if (strcmp(controllo,"crt")==0){
       CRDT doc;
       BlockReader(socketConnesso).stream() >> doc;
@@ -78,8 +76,8 @@ void WorkerSocketClient::EmitSigEsitoCreaDoc(){
 void WorkerSocketClient::EmitSigEsitoLogin(){
     char* controllo;
     uint len_controllo = 3;
-    BlockReader(socketConnesso).stream() >> controllo;
-
+    QDataStream in(this->socketConnesso);
+     BlockReader(socketConnesso).stream() >>controllo;
     if(strcmp(controllo,"suc")==0){
         QList<QString> nomiFilesEditati;
         QUtente user;
@@ -112,8 +110,8 @@ void WorkerSocketClient::EmitSigEsitoLogin(){
 void WorkerSocketClient::EmitSigEsitoModificaProfiloUtente(){
     char* controllo;
     uint len_controllo = 3;
-    BlockReader(socketConnesso).stream() >> controllo;
-
+    QDataStream in(this->socketConnesso);
+     BlockReader(socketConnesso).stream() >>controllo;
     QString val= QString("/");
     if (strcmp(controllo,"suc")==0)
     {
@@ -155,8 +153,8 @@ void WorkerSocketClient::EmitEsitoChiusuraDocClient(){
 void WorkerSocketClient::EmitSigOpDoc(){
     char* controllo;
     uint len_controllo = 3;
-    BlockReader(socketConnesso).stream() >> controllo;
-
+    QDataStream in(this->socketConnesso);
+    BlockReader(socketConnesso).stream() >>controllo;
     DocOperation operazione;
     BlockReader(socketConnesso).stream() >> operazione;
    if(this->user.getUserId()!=operazione.getSiteId()){
@@ -181,8 +179,8 @@ void WorkerSocketClient::EmitSigOpDoc(){
 void WorkerSocketClient::EmitSigEsitoRegistrazione(){
     char* controllo;
     uint len_controllo = 3;
-    BlockReader(socketConnesso).stream() >> controllo;
-
+    QDataStream in(this->socketConnesso);
+     BlockReader(socketConnesso).stream() >>controllo;
     if (strcmp(controllo,"r_a")==0){ emit SigEsitoRegistrazione("Success");}
     else  emit SigEsitoRegistrazione("Failed");
 }
@@ -216,6 +214,7 @@ void WorkerSocketClient::IniziaLetturaBuffered(){
 void  WorkerSocketClient::leggiMsgApp(){
     while(socketConnesso->bytesAvailable()){
         quint16 inOperation;
+        QDataStream in(this->socketConnesso);
         BlockReader(socketConnesso).stream() >> inOperation;
         switch(inOperation){
         case Esito_apri_doc:{EmitSigEsitoApriDoc(); break;}
@@ -255,24 +254,28 @@ void WorkerSocketClient::opDocLocaleBuffered(QList<DocOperation> opList){
 
 void WorkerSocketClient::opDocLocale(DocOperation operazione)
 {
+    QDataStream in(this->socketConnesso);
     BlockWriter(socketConnesso).stream() << Operazione_doc;
     BlockWriter(socketConnesso).stream()<< operazione;
 }
 
 void WorkerSocketClient::apriDoc(QString nomeFile)
 {
+    QDataStream in(this->socketConnesso);
     BlockWriter(socketConnesso).stream() << Apri_doc;
     BlockWriter(socketConnesso).stream() << nomeFile;
 }
 
 void WorkerSocketClient::creaDoc(QString nomeFile)
 {
+    QDataStream in(this->socketConnesso);
     BlockWriter(socketConnesso).stream() << Crea_doc;
     BlockWriter(socketConnesso).stream() << nomeFile;
 }
 
 void WorkerSocketClient::login(QUtente user)
 {
+    QDataStream in(this->socketConnesso);
     BlockWriter(socketConnesso).stream() << Login;
     BlockWriter(socketConnesso).stream() << user;
 
@@ -280,6 +283,7 @@ void WorkerSocketClient::login(QUtente user)
 
 void WorkerSocketClient::modificaProfiloUtente(QUtente user1)
 {
+    QDataStream in(this->socketConnesso);
     QByteArray arr;
     QByteArray arr1;
     QBuffer buffer(&arr);
@@ -307,6 +311,7 @@ void WorkerSocketClient::modificaProfiloUtente(QUtente user1)
 
 void WorkerSocketClient::registrazione(QUtente user)
 {
+    QDataStream in(this->socketConnesso);
     QByteArray arr;
     QBuffer buffer(&arr);
     QImage image;
@@ -324,10 +329,12 @@ void WorkerSocketClient::registrazione(QUtente user)
 
 void WorkerSocketClient::chiudiDoc(QString nomeFile)
 {
+    QDataStream in(this->socketConnesso);
     BlockWriter(socketConnesso).stream() << Chiusura_doc_client;
 }
 
 void WorkerSocketClient::opChiHaInseritoCosa()
 {
+    QDataStream in(this->socketConnesso);
     BlockWriter(socketConnesso).stream() << Color_mode;
 }

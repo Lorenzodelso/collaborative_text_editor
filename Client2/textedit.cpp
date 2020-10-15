@@ -944,9 +944,13 @@ void TextEdit::comunicaCRDTCambioFormat(QTextCharFormat format, int pos, int num
 }
 
 void TextEdit::CRDTInsertRemove(int pos, int rem, int add){
-
+//    QClipboard* clipboard = QApplication::clipboard();
     QTextCursor cursor = textEdit->textCursor();
+//    QString text = cursor.selectedText();
+//    QString selectedText = clipboard->text(QClipboard::Selection);
+//    qDebug()<< selectedText;
     qDebug()<<"Add: "<<add<<" Rem: "<<rem<< " Pos:"<<pos;
+
     if(rem==0 && add>0){
         //AGGIUNTA DI UNO O PIU' CARATTERI
         comunicaCRDTInserimentoLocale(textEdit,&cursor,pos,add,algoritmoCRDT);
@@ -959,12 +963,14 @@ void TextEdit::CRDTInsertRemove(int pos, int rem, int add){
         if(add==rem){
             //DOPO IL PASTE DA PARTE DI UN UTENTE SU UNA SELEZIONE, LA SELEZIONE DEL CURSORE SCOMPARE
             //Controllando questa quindi possiamo capire se si tratta di una di un copia/incolla sopra una selezione oppure di un cambio format.
-
+            cursor.select(QTextCursor::WordUnderCursor);
             auto selection = cursor.selectedText();
             //auto position = cursor.position();
             //std::cout<<"Posizione del cursore: "<<position<<"\n"<<std::flush;
-            //std::cout<<"Testo selezionato: "<< selection.toStdString().c_str()<<"\n"<<std::flush;
-            if(!(selection.isEmpty())){
+            std::cout<<"Testo selezionato: "<< selection.toStdString().c_str()<<"\n"<<std::flush;
+            if((selection.isEmpty())){
+                qDebug()<<"vuoto ";
+
                 //Si tratta di un cambio di formato, quindi ottengo il formato e lo comunico al CRDT
                 //comunicaCRDTCambioFormat(&cursor,pos,add);
             }
@@ -972,18 +978,18 @@ void TextEdit::CRDTInsertRemove(int pos, int rem, int add){
                 //Caso in cui si incolla su una selezione una stringa della stessa lunghezza
                 //Non gestisco il caso particolare in cui la stringa incollata sia la stessa di quella cancellata
                 //Pros: rimuovo controllo           Cons: faccio cancellazione e inserimento anche in quel caso
-                comunicaCRDTRimozioneLocale(pos,rem,algoritmoCRDT);
                 comunicaCRDTInserimentoLocale(textEdit,&cursor,pos,add,algoritmoCRDT);
-            }
+                comunicaCRDTRimozioneLocale(pos+add-1,rem,algoritmoCRDT);            }
         }
         else{
             if(pos==0){
-                comunicaCRDTInserimentoLocale(textEdit,&cursor,pos,add-rem,algoritmoCRDT);
+                comunicaCRDTInserimentoLocale(textEdit,&cursor,pos,add,algoritmoCRDT);
+                comunicaCRDTRimozioneLocale(pos+add-1,rem,algoritmoCRDT);
             }
             else{
                 //Caso in cui si incolla una stringa sopra una selezione
-                comunicaCRDTRimozioneLocale(pos,rem,algoritmoCRDT);
                 comunicaCRDTInserimentoLocale(textEdit,&cursor,pos,add,algoritmoCRDT);
+                comunicaCRDTRimozioneLocale(pos+add,rem,algoritmoCRDT);
             }
         }
     }
