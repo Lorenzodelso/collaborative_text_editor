@@ -75,6 +75,7 @@
 #include "qlabel.h"
 #include "QUtente.h"
 #include "QUser.h"
+#include "QPrinter"
 #include "WorkerSocketClient.h"
 #include <QTextEdit>
 
@@ -135,8 +136,6 @@ protected:
     void closeEvent(QCloseEvent *e) override;
 
 private slots:
-    void filePrint();
-    void filePrintPreview();
     void filePrintPdf();
     void textBold();
     void textUnderline();
@@ -149,7 +148,6 @@ private slots:
     void currentCharFormatChanged(const QTextCharFormat &format);
     void cursorPositionChanged();
     void clipboardDataChanged();
-    void printPreview(QPrinter *);
     void pressedButtonTrigger(bool checked);
 
 private:

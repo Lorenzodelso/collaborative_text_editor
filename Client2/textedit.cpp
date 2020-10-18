@@ -70,18 +70,6 @@
 #include <QCloseEvent>
 #include <QMessageBox>
 #include <QMimeData>
-#if defined(QT_PRINTSUPPORT_LIB)
-#include <QtPrintSupport/qtprintsupportglobal.h>
-#if QT_CONFIG(printer)
-#if QT_CONFIG(printdialog)
-#include <QPrintDialog>
-#endif
-#include <QPrinter>
-#if QT_CONFIG(printpreviewdialog)
-#include <QPrintPreviewDialog>
-#endif
-#endif
-#endif
 #include <QDebug>
 #include "TextEdit.h"
 const QString rsrcPath = ":/images/win";
@@ -142,9 +130,10 @@ TextEdit::TextEdit(QWidget *parent, WorkerSocketClient* wscP,quint16 siteId, QUt
     fontChanged(textEdit->font());
     colorChanged(textEdit->textColor());
     alignmentChanged(textEdit->alignment());
-    defaultFmt.setFont(textEdit->font());
-    defaultFmt.setForeground(textEdit->textColor());
+    defaultFmt.setFont(QFont("Arial"));
+    defaultFmt.setForeground(QColor("black"));
     defaultFmt.setFontPointSize(12);
+    mergeFormatOnWordOrSelection(defaultFmt);
 
     connect(textEdit->document(), &QTextDocument::undoAvailable, actionUndo, &QAction::setEnabled);
     connect(textEdit->document(), &QTextDocument::redoAvailable, actionRedo, &QAction::setEnabled);
@@ -303,15 +292,6 @@ void TextEdit::setupFileActions()
     QAction *a;
 
 #ifndef QT_NO_PRINTER
-    const QIcon printIcon = QIcon::fromTheme("document-print", QIcon(rsrcPath + "/fileprint.png"));
-    a = menu->addAction(printIcon, tr("&Print..."), this, &TextEdit::filePrint);
-    a->setPriority(QAction::LowPriority);
-    a->setShortcut(QKeySequence::Print);
-    tbFile->addAction(a);
-
-    const QIcon filePrintIcon = QIcon::fromTheme("fileprint", QIcon(rsrcPath + "/fileprint.png"));
-    menu->addAction(filePrintIcon, tr("Print Preview..."), this, &TextEdit::filePrintPreview);
-
     const QIcon exportPdfIcon = QIcon::fromTheme("exportpdf", QIcon(rsrcPath + "/exportpdf.png"));
     a = menu->addAction(exportPdfIcon, tr("&Export PDF..."), this, &TextEdit::filePrintPdf);
     a->setPriority(QAction::LowPriority);
@@ -540,39 +520,6 @@ void TextEdit::setCurrentFileName(const QString &fileName)
 
     setWindowTitle(tr("%1[*] - %2").arg(shownName, QCoreApplication::applicationName()));
     setWindowModified(false);
-}
-
-void TextEdit::filePrint()
-{
-#if QT_CONFIG(printdialog)
-    QPrinter printer(QPrinter::HighResolution);
-    QPrintDialog *dlg = new QPrintDialog(&printer, this);
-    if (textEdit->textCursor().hasSelection())
-        dlg->addEnabledOption(QAbstractPrintDialog::PrintSelection);
-    dlg->setWindowTitle(tr("Print Document"));
-    if (dlg->exec() == QDialog::Accepted)
-        textEdit->print(&printer);
-    delete dlg;
-#endif
-}
-
-void TextEdit::filePrintPreview()
-{
-#if QT_CONFIG(printpreviewdialog)
-    QPrinter printer(QPrinter::HighResolution);
-    QPrintPreviewDialog preview(&printer, this);
-    connect(&preview, &QPrintPreviewDialog::paintRequested, this, &TextEdit::printPreview);
-    preview.exec();
-#endif
-}
-
-void TextEdit::printPreview(QPrinter *printer)
-{
-#ifdef QT_NO_PRINTER
-    Q_UNUSED(printer);
-#else
-    textEdit->print(printer);
-#endif
 }
 
 //************************************
@@ -830,8 +777,18 @@ void TextEdit::textAlign(QAction *a)
 //***************************************
 
 void TextEdit::currentCharFormatChanged(const QTextCharFormat &format){
-    fontChanged(format.font());
-    colorChanged(format.foreground().color());
+
+    if(textEdit->document()->characterCount() == 1){
+        if(format.fontPointSize() != 0)
+            defaultFmt.setFont(format.font());
+        defaultFmt.setFontPointSize(12);
+        fontChanged(defaultFmt.font());
+        colorChanged(defaultFmt.foreground().color());
+        mergeFormatOnWordOrSelection(defaultFmt);
+    }else{
+        fontChanged(format.font());
+        colorChanged(format.foreground().color());
+    }
     if(colorWriting){
         auto colors = QColor::colorNames();
         auto *noWhiteyColors = new QStringList();
@@ -1353,6 +1310,7 @@ void TextEdit:: enteringColorMode(){
         std::cerr << "Expected variable value:true, while it's false"<<std::flush;
         return;
     }
+    actionTextColor->setDisabled(true);
     auto colors = QColor::colorNames();
     auto *noWhiteyColors = new QStringList();
     auto colorIterator = colors.begin();
@@ -1404,6 +1362,7 @@ void TextEdit::quittingColorMode(){
         std::cerr << "Expected variable value:false, while it's true"<<std::flush;
         return;
     }
+    actionTextColor->setEnabled(true);
     auto colors = QColor::colorNames();
     auto *noWhiteyColors = new QStringList();
     auto colorIterator = colors.begin();
