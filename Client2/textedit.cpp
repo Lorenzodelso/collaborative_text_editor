@@ -789,22 +789,6 @@ void TextEdit::currentCharFormatChanged(const QTextCharFormat &format){
         fontChanged(format.font());
         colorChanged(format.foreground().color());
     }
-    if(colorWriting){
-        auto colors = QColor::colorNames();
-        auto *noWhiteyColors = new QStringList();
-        auto colorIterator = colors.begin();
-        while(colorIterator != colors.end()){
-            if(QString("#%1").arg(QColor(*colorIterator).rgba(), 8, 16) < "#ff555555" && *colorIterator != "black"){
-                noWhiteyColors->append(*colorIterator);
-            }
-            colorIterator++;
-        }
-        colors = *noWhiteyColors;
-        delete noWhiteyColors;
-        QTextCharFormat fmt;
-        fmt.setForeground(QColor(colors[utente.getUserId()]));
-        cursor->mergeCharFormat(fmt);
-    }
 }
 
 //********************************************************************************
@@ -828,23 +812,6 @@ void TextEdit::segnalaMovimentoCursore(QTextCursor cursor){
 
 void TextEdit::cursorPositionChanged()
 {
-    if(colorWriting){
-        auto colors = QColor::colorNames();
-        auto *noWhiteyColors = new QStringList();
-        auto colorIterator = colors.begin();
-        while(colorIterator != colors.end()){
-            if(QString("#%1").arg(QColor(*colorIterator).rgba(), 8, 16) < "#ff555555" && *colorIterator != "black"){
-                noWhiteyColors->append(*colorIterator);
-            }
-            colorIterator++;
-        }
-        colors = *noWhiteyColors;
-        delete noWhiteyColors;
-        QTextCharFormat fmt;
-        fmt.setForeground(QBrush(QColor(colors[this->utente.getUserId()])));
-        textEdit->textCursor().setCharFormat(fmt);
-        textEdit->mergeCurrentCharFormat(fmt);
-    }
     alignmentChanged(textEdit->alignment());
     segnalaMovimentoCursore(textEdit->textCursor());
 }
@@ -942,8 +909,8 @@ void TextEdit::comunicaCRDTInserimentoLocale(QTextEdit* txe,QTextCursor* cursor,
     QList<DocOperation> opList;
     int numOperationTreated = 0;
     auto inserted = txe->document()->toPlainText().mid(pos,numInserted);
-    cursor->setPosition(pos,QTextCursor::MoveAnchor);
     for (int i=0;i<numInserted;i++){
+        cursor->setPosition(pos+i,QTextCursor::MoveAnchor);
         QTextCharFormat format = textEdit->currentCharFormat();
         if (format.isEmpty()){
             format = defaultFmt;
@@ -955,6 +922,21 @@ void TextEdit::comunicaCRDTInserimentoLocale(QTextEdit* txe,QTextCursor* cursor,
         }
         if (colorWriting){
             format.setForeground(QBrush(QColor("black")));
+            auto colors = QColor::colorNames();
+            auto *noWhiteyColors = new QStringList();
+            auto colorIterator = colors.begin();
+            while(colorIterator != colors.end()){
+                if(QString("#%1").arg(QColor(*colorIterator).rgba(), 8, 16) < "#ff555555" && *colorIterator != "black"){
+                    noWhiteyColors->append(*colorIterator);
+                }
+                colorIterator++;
+            }
+            colors = *noWhiteyColors;
+            delete noWhiteyColors;
+            QTextCharFormat fmt;
+            fmt.setForeground(QColor(colors[utente.getUserId()]));
+            cursor->movePosition(QTextCursor::NextCharacter,QTextCursor::KeepAnchor);
+            cursor->mergeCharFormat(fmt);
         }
         QChar ch = inserted[i];
         DocOperation docOp = algCRDT->localInsert(ch,format,pos+i);
