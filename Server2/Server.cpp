@@ -13,7 +13,6 @@ Server::Server() {
     QFile file("utenti.txt");
     if (!file.open(QIODevice::ReadWrite | QIODevice::Text)) /*apro il file con le informazioni sugli utenti (se non esiste lo creo)*/
         {
-        /*TO DO gestione errore*/
         std::cerr << "Non sono riuscito a creare/aprire il file 'utenti.txt'" <<std::flush;
         }
 
@@ -291,7 +290,7 @@ void Server::login(WorkerSocket* wsP, QUtente user) {
         /*esiste un utente con quello username quindi controllo password*/
         if(found.value().getPassword().compare(user.getPassword())==0){
 
-            /*salt*/
+
             /*stessa password*/
 
             user.setUserId(found.value().getUserId());
@@ -304,14 +303,6 @@ void Server::login(WorkerSocket* wsP, QUtente user) {
             /*password diverse*/
             QList<QString> l = {"Failed"};
             emit SigEsitoLogin(user, l);
-            /*elimino thread che gestisce quel socket */
-
-            /*SE IL LOGIN FALLISCE NON ELIMINO IL THREAD
-             * QThread* qtcP = threadsSocket.value(wsP);
-            threadsSocket.remove(wsP);
-            qtcP->quit();
-            qtcP->wait();
-            delete qtcP;*/
         }
     }
     else{
@@ -319,13 +310,6 @@ void Server::login(WorkerSocket* wsP, QUtente user) {
 
         QList<QString> l = {"Failed"};
         emit SigEsitoLogin(user, l);
-        /*elimino thread che gestisce quel socket */
-        /* SE IL LOGIN FALLISCE NON ELIMINO IL THREAD
-         * QThread* qtcP = threadsSocket.value(wsP);
-        threadsSocket.remove(wsP);
-        qtcP->quit();
-        qtcP->wait();
-        delete qtcP;*/
     }
 
 
@@ -336,9 +320,6 @@ void Server::login(WorkerSocket* wsP, QUtente user) {
 }
 
 void Server::registrazione(WorkerSocket* wsP, QUtente user) {
-    //DEBUG
-    std::cout<<"\nSlot registrazione"<<std::flush;
-    //DEBUG
 
     /*
     * questa connect mi serve solo ora perchè è da this al WorkerSocket
@@ -398,7 +379,6 @@ void Server::registrazione(WorkerSocket* wsP, QUtente user) {
             QFile file("utenti.txt");
             if (!file.open(QIODevice::Append | QIODevice::Text))
             {
-                /*TO DO gestione errore*/
                 std::cerr << "Non sono riuscito ad aprire il file 'utenti.txt'" <<std::flush;
             }
             QTextStream out(&file);
@@ -410,7 +390,6 @@ void Server::registrazione(WorkerSocket* wsP, QUtente user) {
             }
             file.close();
 
-            /*se non trova la chiave detta crea un value di default ovvero una lista senza elementi all'interno*/
             emit SigEsitoRegistrazione("OK",userServerSide.getNomeImg());
 
         }
@@ -470,7 +449,7 @@ void Server::modificaProfiloUtente(WorkerSocket *wsP, QUtente userOld, QUtente u
         QFile file("utenti.txt");
         if (!file.open(QIODevice::ReadWrite | QIODevice::Text |
                        QIODevice::Truncate)) /*apro il file con le informazioni sugli utenti e ne cancello il contenuto*/
-        {/*TO DO gestione errore*/
+        {
             std::cerr << "Non sono riuscito ad aprire il file 'utenti.txt'" <<std::flush;}
 
         QMap<quint32, QUtenteServer>::iterator i;
@@ -555,8 +534,6 @@ void Server::chiusuraDocumentoDaParteDelClient(WorkerSocket* wsP, QUtente user){
     /*infatti qui la disattivo*/
     QObject::disconnect(this, &Server::SigEsitoChiusuraDocumentoDaParteDelClient, wsP, &WorkerSocket::rispondiEsitoChiusuraDocumentoDaParteDelClient);
 
- /*TO DO rivedere caso fallimento*/
-
 
     /*recupero il nome del documento di interesse*/
 
@@ -567,7 +544,7 @@ void Server::chiusuraDocumentoDaParteDelClient(WorkerSocket* wsP, QUtente user){
     /*mando ad ogni workerSocket associato a questo documento (tranne quello di questo user)
      * il segnale che dice che questo user da ora non è più online*/
 
-    //TO DO dovrebbe essere una lista di qint32
+
     QList<unsigned int> usrs = userEdits.keys(documents.value(nomeFile));
     /*utenti ora online per questo documento*/
     QList<unsigned int>::iterator i;
