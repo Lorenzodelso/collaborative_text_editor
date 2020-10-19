@@ -910,7 +910,6 @@ void TextEdit::comunicaCRDTInserimentoLocale(QTextEdit* txe,QTextCursor* cursor,
     int numOperationTreated = 0;
     auto inserted = txe->document()->toPlainText().mid(pos,numInserted);
     for (int i=0;i<numInserted;i++){
-        cursor->setPosition(pos+i,QTextCursor::MoveAnchor);
         QTextCharFormat format = textEdit->currentCharFormat();
         if (format.isEmpty()){
             format = defaultFmt;
@@ -920,6 +919,18 @@ void TextEdit::comunicaCRDTInserimentoLocale(QTextEdit* txe,QTextCursor* cursor,
             if(format.fontPointSize()<=0)
                 format.setFontPointSize(defaultFmt.fontPointSize());
         }
+        QChar ch = inserted[i];
+        DocOperation docOp = algCRDT->localInsert(ch,format,pos+i);
+        if (bufferMode){
+            opList.append(docOp);
+            numOperationTreated++;
+            if(numOperationTreated >= BUFFER_DIMENSION || i==numInserted-1){
+                emit SigOpDocLocaleBuffered(opList);
+                opList.clear();
+                numOperationTreated = 0;
+            }
+        }else
+            emit SigOpDocLocale(docOp);
         if (colorWriting){
             format.setForeground(QBrush(QColor("black")));
             auto colors = QColor::colorNames();
@@ -935,21 +946,10 @@ void TextEdit::comunicaCRDTInserimentoLocale(QTextEdit* txe,QTextCursor* cursor,
             delete noWhiteyColors;
             QTextCharFormat fmt;
             fmt.setForeground(QColor(colors[utente.getUserId()]));
+            cursor->setPosition(pos+i,QTextCursor::MoveAnchor);
             cursor->movePosition(QTextCursor::NextCharacter,QTextCursor::KeepAnchor);
             cursor->mergeCharFormat(fmt);
         }
-        QChar ch = inserted[i];
-        DocOperation docOp = algCRDT->localInsert(ch,format,pos+i);
-        if (bufferMode){
-            opList.append(docOp);
-            numOperationTreated++;
-            if(numOperationTreated >= BUFFER_DIMENSION || i==numInserted-1){
-                emit SigOpDocLocaleBuffered(opList);
-                opList.clear();
-                numOperationTreated = 0;
-            }
-        }else
-            emit SigOpDocLocale(docOp);
     }
 }
 
@@ -1080,7 +1080,6 @@ void TextEdit::opDocRemotaBuffered(QList<DocOperation> opList){
 void TextEdit::opDocRemota(DocOperation operation){
    textEdit->setTextInteractionFlags(Qt::NoTextInteraction);
    disconnect(textEdit->document(), &QTextDocument::contentsChange, this, &TextEdit::CRDTInsertRemove );
-   disconnect(textEdit, &QTextEdit::cursorPositionChanged, this, &TextEdit::cursorPositionChanged);
    switch(operation.type){
     case remoteInsert:
     {
@@ -1104,7 +1103,7 @@ void TextEdit::opDocRemota(DocOperation operation){
           coloredFormat.setForeground(QBrush(QColor(colors[operation.character.getSiteId()])));
           cursor->mergeCharFormat(coloredFormat);
           cursor->insertText(operation.character.getValue());
-          textEdit->setTextColor(QColor(colors[this->siteId]));
+          //textEdit->setTextColor(QColor(colors[this->siteId]));
       }
       else{
           cursor->insertText(operation.character.getValue(),operation.character.getFormat());
@@ -1206,8 +1205,6 @@ void TextEdit::opDocRemota(DocOperation operation){
  }
    connect(textEdit->document(),&QTextDocument::contentsChange,
                   this, &TextEdit::CRDTInsertRemove);
-   connect(textEdit, &QTextEdit::cursorPositionChanged,
-           this, &TextEdit::cursorPositionChanged);
    textEdit->setTextInteractionFlags(Qt::TextEditorInteraction);
 }
 
