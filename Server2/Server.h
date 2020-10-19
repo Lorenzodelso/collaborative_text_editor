@@ -66,7 +66,6 @@ class Server : public QObject {
 
     /*
      * salvo qui l'informazione per ogni utente ATTIVO di quale WorkerDoc (=documento) sta modificando in questo momento
-     * TO DO aggiornarlo se l'utente cambia documento
      * */
     QMap<quint32/*clientId*/, WorkerDoc*> userEdits;
 
