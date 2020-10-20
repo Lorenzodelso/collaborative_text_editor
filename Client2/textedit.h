@@ -54,6 +54,8 @@
 #include <QMainWindow>
 #include <QMap>
 #include <QPointer>
+#include <QTextDocumentFragment>
+#include <QTextBlock>
 #include <QFile>
 #include <QTextStream>
 #include <QStandardPaths>

@@ -764,7 +764,21 @@ void TextEdit::textAlign(QAction *a)
         labelMap->find(key).value()->move(rect.left(),rect.top());
         labelMap->find(key).value()->setFixedSize(3,textEdit->fontPointSize());
     }
-    emit SigOpDocLocale(DocOperation(cursorPos,alignementType,this->siteId));
+    if(textEdit->textCursor().hasSelection()){
+        QTextCursor tmp = textEdit->textCursor();
+        int end = textEdit->textCursor().selectionEnd();
+        int start = textEdit->textCursor().selectionStart();
+        tmp.setPosition(start);
+        int prevPos = -100;
+        while(tmp.position() < end && prevPos != tmp.position()){
+            emit SigOpDocLocale(DocOperation(tmp.position(),alignementType,this->siteId));
+            prevPos = tmp.position();
+            tmp.movePosition(tmp.NextBlock);
+        }
+    }else{
+        emit SigOpDocLocale(DocOperation(cursorPos,alignementType,this->siteId));
+    }
+
     connect(textEdit->document(),&QTextDocument::contentsChange,this, &TextEdit::CRDTInsertRemove);
 }
 
