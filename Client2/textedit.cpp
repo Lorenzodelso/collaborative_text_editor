@@ -756,7 +756,7 @@ void TextEdit::textAlign(QAction *a)
         textEdit->setAlignment(Qt::AlignJustify);
         alignementType=4;
     }
-    cursorPos = textEdit->textCursor().position();
+    //cursorPos = textEdit->textCursor().position();
     algoritmoCRDT->setCharAlign(alignementType,cursorPos);
     for(auto cursor: cursorMap->values()){
         QRect rect = textEdit->cursorRect(*cursor);
