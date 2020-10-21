@@ -149,16 +149,13 @@ void WorkerSocket::AltroClientScriveBuffered(int bufferDim){
 
 void WorkerSocket::rispondiEsitoLogin(QUtente user, QList<QString> nomiFilesEditati){
 
-    QDataStream in(socketConnessoP);
     BlockWriter(socketConnessoP).stream() << Esito_login;
     if(nomiFilesEditati.contains("Failed"))
     {
-        uint len=3;
         BlockWriter(socketConnessoP).stream() <<"fld";
         //socketConnessoP->disconnectFromHost();
     }
-    else{
-        uint len=3;
+    else{        
         BlockWriter(socketConnessoP).stream() <<"suc";
         QByteArray arr;
         QBuffer buffer(&arr);
@@ -182,8 +179,7 @@ void WorkerSocket::rispondiEsitoLogin(QUtente user, QList<QString> nomiFilesEdit
 
 
 void WorkerSocket::rispondiEsitoApriDoc(QString esito/*esito*/, CRDT doc/*rappresentazione del file*/){
-    QDataStream in(socketConnessoP);
-    uint len=3;
+
     BlockWriter(socketConnessoP).stream() << Esito_apri_doc;
     if (esito.compare("Success")==0){
         BlockWriter(socketConnessoP).stream() <<"ope";
@@ -196,8 +192,7 @@ void WorkerSocket::rispondiEsitoApriDoc(QString esito/*esito*/, CRDT doc/*rappre
 
 
 void WorkerSocket::rispondiEsitoCreaDoc(QString esito, CRDT doc){
-    QDataStream in(socketConnessoP);
-    uint len=3;
+
     BlockWriter(socketConnessoP).stream() << Esito_crea_doc;
     if (esito.compare("Success")==0){
         BlockWriter(socketConnessoP).stream() <<"crt";
@@ -209,8 +204,7 @@ void WorkerSocket::rispondiEsitoCreaDoc(QString esito, CRDT doc){
 
 void WorkerSocket::rispondiEsitoRegistrazione(QString esito, QString nomeImg)
 {
-    QDataStream in(socketConnessoP);
-    uint len=3;
+
     BlockWriter(socketConnessoP).stream() << Esito_registrazione;
     QString val= QString("/");
     if (esito.compare("OK")==0)
@@ -229,9 +223,7 @@ void WorkerSocket::rispondiEsitoRegistrazione(QString esito, QString nomeImg)
 
 
 void WorkerSocket::rispondiEsitoOpDoc(QString esito, DocOperation operazione)
-{
-    QDataStream in(socketConnessoP);
-    uint len=3;
+{    
     BlockWriter(socketConnessoP).stream() << Esito_operazione_doc;
     if (esito.compare("Success")==0) {
         BlockWriter(socketConnessoP).stream() <<"suc";
@@ -246,9 +238,7 @@ void WorkerSocket::rispondiEsitoOpDoc(QString esito, DocOperation operazione)
 
 void WorkerSocket::rispondiEsitoModificaProfiloUtente(QUtente userNew,bool immagineModificata)
 {
-    QUtente userOLD = this->user;
-    QDataStream in(socketConnessoP);
-    uint len=3;
+    QUtente userOLD = this->user;   
     QByteArray arr;
     QBuffer buffer(&arr);
     QString val= QString("/");
@@ -277,32 +267,28 @@ void WorkerSocket::rispondiEsitoModificaProfiloUtente(QUtente userNew,bool immag
 }
 
 void WorkerSocket::rispondiEsitoChiusuraDocumentoDaParteDelClient(QString esito)
-{
-    QDataStream in(socketConnessoP);
+{    
     BlockWriter(socketConnessoP).stream() << Esito_chiusura_doc_client;
     BlockWriter(socketConnessoP).stream() << esito;
 }
 
 
 void WorkerSocket::questoUserHaApertoIlDoc(QUser user)
-{
-    QDataStream in(socketConnessoP);
+{    
     BlockWriter(socketConnessoP).stream() << User_apri_doc;
     BlockWriter(socketConnessoP).stream() << user;
 }
 
 
 void WorkerSocket::questoUserHaChiusoIlDoc(QUser user)
-{
-    QDataStream in(socketConnessoP);
+{    
     BlockWriter(socketConnessoP).stream() << User_chiudi_doc;
     BlockWriter(socketConnessoP).stream() << user;
 }
 
 
 void WorkerSocket::rispondiChiHaInseritoCosa(QList<QUser> users)
-{
-    QDataStream in(socketConnessoP);
+{    
     BlockWriter(socketConnessoP).stream() << Esito_operazione_colorMode;
     BlockWriter(socketConnessoP).stream() << users;
 }
