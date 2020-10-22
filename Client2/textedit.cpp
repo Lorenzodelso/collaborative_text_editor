@@ -924,7 +924,9 @@ void TextEdit::comunicaCRDTInserimentoLocale(QTextEdit* txe,QTextCursor* cursor,
     int numOperationTreated = 0;
     auto inserted = txe->document()->toPlainText().mid(pos,numInserted);
     for (int i=0;i<numInserted;i++){
-        QTextCharFormat format = textEdit->currentCharFormat();
+        QTextCursor cursor2 = textEdit->textCursor();
+        cursor2.setPosition(pos+i);
+        QTextCharFormat format = cursor2.charFormat();
         if (format.isEmpty()){
             format = defaultFmt;
         }else{
