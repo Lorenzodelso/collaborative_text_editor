@@ -79,7 +79,6 @@ quint32 CRDT::generateIdBetween(quint32 id1, quint32 id2, quint16 strategy) {
             id2 = id1 + this->boundary;
         }
     }
-    //return floor(random()%(id2-id1))+id1;
     quint32 num = quint32( rand.bounded(id1,id2) );
     return num;
 }

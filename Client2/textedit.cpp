@@ -1039,21 +1039,9 @@ void TextEdit::CRDTInsertRemove(int pos, int rem, int add){
     }
     else if(add>0 && rem>0){
         if(add==rem){
-            //DOPO IL PASTE DA PARTE DI UN UTENTE SU UNA SELEZIONE, LA SELEZIONE DEL CURSORE SCOMPARE
-            //Controllando questa quindi possiamo capire se si tratta di una di un copia/incolla sopra una selezione oppure di un cambio format.
-//            cursor.select(QTextCursor::WordUnderCursor);
             auto selection = cursor.selectedText();
-            std::cout<<"Testo selezionato: "<< selection.toStdString().c_str()<<"\n"<<std::flush;
-            if((selection.isEmpty())){
-                //Si tratta di un cambio di formato, quindi ottengo il formato e lo comunico al CRDT
-                //comunicaCRDTCambioFormat(&cursor,pos,add);
-            }
-            else{
-                //Caso in cui si incolla su una selezione una stringa della stessa lunghezza
-                //Non gestisco il caso particolare in cui la stringa incollata sia la stessa di quella cancellata
-                //Pros: rimuovo controllo           Cons: faccio cancellazione e inserimento anche in quel caso
-                comunicaCRDTInserimentoLocale(textEdit,&cursor,pos,add,algoritmoCRDT);
-                comunicaCRDTRimozioneLocale(pos+add-1,rem,algoritmoCRDT);            }
+            comunicaCRDTInserimentoLocale(textEdit,&cursor,pos,add,algoritmoCRDT);
+            comunicaCRDTRimozioneLocale(pos+add-1,rem,algoritmoCRDT);
         }
         else{
             if(pos==0){
@@ -1251,7 +1239,6 @@ void TextEdit::questoUserHaApertoIlDoc(QUser usr){
     //Cursore dell'utente appena loggato al documento
     QTextCursor *cursor =  new QTextCursor(textEdit->document());
     cursorMap->insert(usr.getUserId(),cursor);
-    //qDebug()<<"Inserito cursore per utente: "<<usr.getUserId();
     QLabel *lbl = new QLabel("",textEdit);
     labelMap->insert(usr.getUserId(),lbl);
     disconnect(textEdit, &QTextEdit::cursorPositionChanged,
@@ -1260,12 +1247,10 @@ void TextEdit::questoUserHaApertoIlDoc(QUser usr){
     connect(textEdit, &QTextEdit::cursorPositionChanged,
             this, &TextEdit::cursorPositionChanged);
     QRect rect = textEdit->cursorRect(*cursor);
-    //qDebug()<<textEdit->fontPointSize();
     lbl->setFrameStyle(QFrame::VLine | QFrame::Plain);
     lbl->setFixedSize(3,textEdit->fontPointSize());
     lbl->move(rect.left(),rect.top());
     lbl->raise();
-   // lbl->setFont(textEdit->font());
     lbl->setMargin(3);
     lbl->setStyleSheet("QLabel { background-color: "+colors[usr.getUserId()]+"; color: "+colors[usr.getUserId()]+"}");
     lbl->show();

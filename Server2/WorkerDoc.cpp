@@ -11,7 +11,6 @@ WorkerDoc::~WorkerDoc(){
     delete cursorMap;
 }
 /*
-    COMMENTI EDO:
      * crea il file
      * crea l'oggetto CRDT(il cui costruttore inizializza la lista di Char sulla base del contenuto del file(ora è vuoto))
      * emette il segnale SigEsitoCreaDoc (esito, rappresentazione del file) dove:
@@ -20,8 +19,6 @@ WorkerDoc::~WorkerDoc(){
      * fa QObject::disconnect(this, &WorkerDoc::SigEsitoCreaDoc, wsP, &WorkerSocket::rispondiEsitoCreaDoc);
      * */
 
-//DA MODIFICARE IL COSTRUTTORE DI COPIA DEL CRDT, SE RICEVO UN CRDT CON SITEID 0, VUOL DIRE CHE LO RICEVO DAL SERVER. DEVO COSTRUIRE NEL CLIENT 
-//INVECE UN CRDT IDENTICO MA CON SITEID QUELLO DEL CLIENT, QUINDI LA GESTIONE VIENE DELEGATA AL COSTRUTTORE DI COPIA
 void WorkerDoc::workerDocCreaDoc(QString nomeFile, WorkerSocket* wsP){
     crdt = new CRDT(0); //CRDT vuoto perchè nuovo file
     //crdt->localInsert('\0',QTextCharFormat(),0);
