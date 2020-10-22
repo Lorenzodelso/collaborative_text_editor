@@ -95,6 +95,16 @@ void NewProfileDialog::abortPressed(){
     close();
 }
 
+//******************************************************************
+//
+//Controlla se il campo userEdit contiene spazi. Se non li contiene
+//setta il flag ad 1 e, nel caso sia l'user flag che il password flag
+//siano ad 1, attiva il tasto registerUser. Nel caso contenesse degli spazi
+//un messaggio di errore viene visualizzato, il flag settato a 0
+//ed il tasto registerUser viene disabilitato.
+//
+//******************************************************************
+
 void NewProfileDialog::userWhitespaces(){
     QString tempUsername = userEdit->text();
     if(checkString(tempUsername)){

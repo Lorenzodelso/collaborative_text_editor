@@ -39,12 +39,9 @@ EditProfile::EditProfile(QWidget *parent, WorkerSocketClient* wscP, QUtente* ute
     newRepPass->setBuddy(newRepPassEdit);
     usernameEdit->setText(utente->getUsername());
     usernameEdit->setEnabled(true);
-    if(!QFileInfo::exists(QDir::currentPath()+"/"+utente->getNomeImg()) ||
-       !QFileInfo(QDir::currentPath()+"/"+utente->getNomeImg()).isFile()){
-
-        profilePic->load(rsrc+"/colored-edit-profile.png");
+    if(!QFileInfo::exists(QDir::currentPath()+"/"+utente->getNomeImg()) || !QFileInfo(QDir::currentPath()+"/"+utente->getNomeImg()).isFile()){
+       profilePic->load(rsrc+"/colored-edit-profile.png");
        userPic->setPixmap(*profilePic);
-
     }else{
        profilePic->load(QDir::currentPath()+"/"+utente->getNomeImg());
        QPixmap scaled = profilePic->scaled(147, 200, Qt::AspectRatioMode::KeepAspectRatio);
@@ -235,7 +232,7 @@ void EditProfile::esitoModificaProfiloUtente(QString esito/*esito*/, QUtente use
 }
 
 //**********************************************************
-//Compare the password and password repetition.
+//Compares the password and password repetition.
 //If they're equal and without whitespaces, it sets
 //the flag at 1 and it saves the new value in a local QUtente.
 //If all the flags of other fields are set to 1,
