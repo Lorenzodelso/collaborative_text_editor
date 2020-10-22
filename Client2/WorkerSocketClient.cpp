@@ -87,11 +87,10 @@ void WorkerSocketClient::EmitSigEsitoLogin(){
         BlockReader(socketConnesso).stream() >> user;
         BlockReader(socketConnesso).stream() >> dimension;
         BlockReader(socketConnesso).stream() >> data;
-        std::cout<< "dentro";
         if(user.getNomeImg() != NULL){
               image->loadFromData(data,user.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
-              std::cout<< QDir::currentPath().toStdString()+val.toStdString()+user.getNomeImg().toStdString();
-              std::cout<<image->save(QDir::currentPath()+val+user.getNomeImg(), user.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
+              QDir::currentPath().toStdString()+val.toStdString()+user.getNomeImg().toStdString();
+              image->save(QDir::currentPath()+val+user.getNomeImg(), user.getNomeImg().split('.',QString::SkipEmptyParts)[1].toLocal8Bit().data());
               this->currentImg=image;
         }
         BlockReader(socketConnesso).stream() >> nomiFilesEditati;
